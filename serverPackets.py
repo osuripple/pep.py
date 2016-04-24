@@ -18,7 +18,10 @@ def forceUpdate():
 	return packetHelper.buildPacket(packetIDs.server_userID, [[-2, dataTypes.sInt32]])
 
 def loginBanned():
-	return packetHelper.buildPacket(packetIDs.server_userID, [[-3, dataTypes.sInt32]])
+	packets = packetHelper.buildPacket(packetIDs.server_userID, [[-1, dataTypes.sInt32]])
+	packets += notification("You are banned. You can ask to get unbanned after 1 month since your ban by contacting support@ripple.moe")
+	return packets
+	#return packetHelper.buildPacket(packetIDs.server_userID, [[-3, dataTypes.sInt32]])
 
 def loginError():
 	return packetHelper.buildPacket(packetIDs.server_userID, [[-5, dataTypes.sInt32]])

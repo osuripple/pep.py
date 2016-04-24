@@ -261,8 +261,17 @@ def getPP(userID, gameMode):
 	Get userID's PP relative to gameMode
 
 	userID -- user
-	return -- gameMode number
+	return -- PP
 	"""
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
 	return glob.db.fetch("SELECT pp_{} FROM users_stats WHERE id = ?".format(modeForDB), [userID])["pp_{}".format(modeForDB)]
+
+def setAllowed(userID, allowed):
+	"""
+	Set userID's allowed status
+
+	userID -- user
+	allowed -- allowed status. 1: normal, 0: banned
+	"""
+	glob.db.execute("UPDATE users SET allowed = ? WHERE id = ?", [allowed, userID])

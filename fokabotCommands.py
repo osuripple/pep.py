@@ -180,6 +180,43 @@ def removeSilence(fro, chan, message):
 
 	return "{}'s silence reset".format(target)
 
+def ban(fro, chan, message):
+	# Get parameters
+	for i in message:
+		i = i.lower()
+	target = message[0].replace("_", " ")
+
+	# Make sure the user exists
+	targetUserID = userHelper.getID(target)
+	if targetUserID == False:
+		return "{}: user not found".format(target)
+
+	# Set allowed to 0
+	userHelper.setAllowed(targetUserID, 0)
+
+	# Send ban packet to the user if he's online
+	targetToken = glob.tokens.getTokenFromUsername(target)
+	if targetToken != None:
+		targetToken.enqueue(serverPackets.loginBanned())
+
+	return "RIP {}. You will not be missed.".format(target)
+
+def unban(fro, chan, message):
+	# Get parameters
+	for i in message:
+		i = i.lower()
+	target = message[0].replace("_", " ")
+
+	# Make sure the user exists
+	targetUserID = userHelper.getID(target)
+	if targetUserID == False:
+		return "{}: user not found".format(target)
+
+	# Set allowed to 1
+	userHelper.setAllowed(targetUserID, 1)
+
+	return "Welcome back {}!".format(target)
+
 def restartShutdown(restart):
 	"""Restart (if restart = True) or shutdown (if restart = False) pep.py safely"""
 	msg = "We are performing some maintenance. Bancho will {} in 5 seconds. Thank you for your patience.".format("restart" if restart else "shutdown")
@@ -344,6 +381,16 @@ commands = [
 		"trigger": "!system status",
 		"minRank": 3,
 		"callback": systemStatus
+	}, {
+		"trigger": "!ban",
+		"syntax": "<target>",
+		"minRank": 3,
+		"callback": ban
+	}, {
+		"trigger": "!unban",
+		"syntax": "<target>",
+		"minRank": 3,
+		"callback": unban
 	}
 ]
 
