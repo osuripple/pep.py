@@ -1,4 +1,4 @@
 D:
-cd D:\DevStuff\ripple-v15\c.ppy.sh
+cd D:\DevStuff\newripple\pep.py
 python pep.py
 pause
