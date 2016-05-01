@@ -126,7 +126,8 @@ def handle(flaskRequest):
 		if generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]):
 			# Get location and country from IP
 			location = locationHelper.getLocation(requestIP)
-			country = countryHelper.getCountryID(locationHelper.getCountry(requestIP))
+			countryLetters = locationHelper.getCountry(requestIP)
+			country = countryHelper.getCountryID(countryLetters)
 		else:
 			# Set location to 0,0 and get country from db
 			print("[!] Location skipped")
@@ -136,6 +137,10 @@ def handle(flaskRequest):
 		# Set location and country
 		responseToken.setLocation(location)
 		responseToken.setCountry(country)
+
+		# Set country in db if user has no country (first bancho login)
+		if userHelper.getCountry(userID) == "XX":
+			userHelper.setCountry(userID, countryLetters)
 
 		# Send to everyone our userpanel and userStats (so they now we have logged in)
 		glob.tokens.enqueueAll(serverPackets.userPanel(userID))

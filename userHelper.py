@@ -275,3 +275,12 @@ def setAllowed(userID, allowed):
 	allowed -- allowed status. 1: normal, 0: banned
 	"""
 	glob.db.execute("UPDATE users SET allowed = ? WHERE id = ?", [allowed, userID])
+
+def setCountry(userID, country):
+	"""
+	Set userID's country (two letters)
+
+	userID -- userID
+	country -- country letters
+	"""
+	glob.db.execute("UPDATE users_stats SET country = ? WHERE id = ?", [country, userID])

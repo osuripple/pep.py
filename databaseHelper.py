@@ -2,6 +2,7 @@ import pymysql
 import bcolors
 import consoleHelper
 import threading
+import glob
 
 class db:
 	"""A MySQL database connection"""
