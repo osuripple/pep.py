@@ -1,5 +1,6 @@
 import passwordHelper
 import gameModes
+import generalFunctions
 import glob
 
 def getID(username):
@@ -284,3 +285,15 @@ def setCountry(userID, country):
 	country -- country letters
 	"""
 	glob.db.execute("UPDATE users_stats SET country = ? WHERE id = ?", [country, userID])
+
+def getShowCountry(userID):
+	"""
+	Get userID's show country status
+
+	userID -- userID
+	return -- True if country is shown, False if it's hidden
+	"""
+	country = glob.db.fetch("SELECT show_country FROM users_stats WHERE id = ?", [userID])
+	if country == None:
+		return False
+	return generalFunctions.stringToBool(country)

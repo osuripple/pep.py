@@ -124,14 +124,21 @@ def handle(flaskRequest):
 
 		# Get location and country from ip.zxq.co or database
 		if generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]):
-			# Get location and country from IP
-			location = locationHelper.getLocation(requestIP)
-			countryLetters = locationHelper.getCountry(requestIP)
-			country = countryHelper.getCountryID(countryLetters)
+			# Make sure this user has not disabled his country flag
+			if userHelper.getShowCountry(userID) == False:
+				location = [0,0]
+				countryLetters = "XX"
+				country = 0
+			else:
+				# Get location and country from IP
+				location = locationHelper.getLocation(requestIP)
+				countryLetters = locationHelper.getCountry(requestIP)
+				country = countryHelper.getCountryID(countryLetters)
 		else:
 			# Set location to 0,0 and get country from db
 			print("[!] Location skipped")
 			location = [0,0]
+			countryLetters = "XX"
 			country = countryHelper.getCountryID(userHelper.getCountry(userID))
 
 		# Set location and country
