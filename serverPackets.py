@@ -135,7 +135,8 @@ def userStats(userID):
 	totalScore = 	userHelper.getTotalScore(userID, userToken.gameMode)
 	gameRank = 		userHelper.getGameRank(userID, userToken.gameMode)
 	pp = 			int(userHelper.getPP(userID, userToken.gameMode))
-
+	allowed = 		userHelper.getAllowed(userID)
+	
 	return packetHelper.buildPacket(packetIDs.server_userStats,
 	[
 		[userID, 				dataTypes.uInt32],
