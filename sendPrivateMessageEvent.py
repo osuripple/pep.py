@@ -5,6 +5,7 @@ import serverPackets
 import glob
 import fokabot
 import exceptions
+import messageTemplates
 
 def handle(userToken, packetData):
 	"""
@@ -32,6 +33,10 @@ def handle(userToken, packetData):
 			token = glob.tokens.getTokenFromUsername(packetData["to"])
 			if token == None:
 				raise exceptions.tokenNotFoundException()
+
+			# Check message templates (mods/admins only)
+			if packetData["message"] in messageTemplates.templates and userToken.rank >= 3:
+				packetData["message"] = messageTemplates.templates[packetData["message"]]
 
 			# Send message to target
 			token.enqueue(serverPackets.sendMessage(username, packetData["to"], packetData["message"]))
