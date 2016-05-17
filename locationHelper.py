@@ -21,7 +21,7 @@ def getCountry(ip):
 
 	try:
 		# Try to get country from Pikolo Aul's Go-Sanic ip API
-		country = json.loads(urllib.request.urlopen("{}/{}".format(URL, ip)).read().decode())["country"]
+		country = json.loads(urllib.request.urlopen("{}/{}".format(URL, ip), timeout=3).read().decode())["country"]
 	except:
 		consoleHelper.printColored("[!] Error in get country", bcolors.RED)
 
@@ -41,7 +41,7 @@ def getLocation(ip):
 
 	try:
 		# Try to get position from Pikolo Aul's Go-Sanic ip API
-		data = json.loads(urllib.request.urlopen("{}/{}".format(URL, ip)).read().decode())["loc"].split(",")
+		data = json.loads(urllib.request.urlopen("{}/{}".format(URL, ip), timeout=3).read().decode())["loc"].split(",")
 	except:
 		consoleHelper.printColored("[!] Error in get position", bcolors.RED)
 
