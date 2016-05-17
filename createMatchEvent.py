@@ -1,8 +1,8 @@
 import serverPackets
 import clientPackets
 import glob
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import joinMatchEvent
 import exceptions
 

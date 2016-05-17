@@ -5,8 +5,8 @@ import matchTeamTypes
 import matchModModes
 import slotStatuses
 import glob
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import serverPackets
 import dataTypes
 import matchTeams

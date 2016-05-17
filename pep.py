@@ -10,7 +10,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
 # pep.py files
-import bcolors
+from constants import bcolors
 import packetIDs
 import serverPackets
 import config
@@ -58,7 +58,7 @@ import matchChangeTeamEvent
 
 # pep.py helpers
 import packetHelper
-import consoleHelper
+from helpers import consoleHelper
 import databaseHelper
 import responseHelper
 import generalFunctions

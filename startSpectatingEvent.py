@@ -1,5 +1,5 @@
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import clientPackets
 import serverPackets
 import exceptions

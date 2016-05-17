@@ -1,7 +1,7 @@
 """FokaBot related functions"""
 import userHelper
 import glob
-import actions
+from constants import actions
 import serverPackets
 import fokabotCommands
 

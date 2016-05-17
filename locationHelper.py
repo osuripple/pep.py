@@ -1,8 +1,8 @@
 import urllib.request
 import json
 
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 
 # API URL
 URL = "http://ip.zxq.co/"

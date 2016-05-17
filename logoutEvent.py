@@ -1,6 +1,6 @@
 import glob
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import serverPackets
 import time
 

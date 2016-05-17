@@ -1,6 +1,6 @@
 import pymysql
-import bcolors
-import consoleHelper
+from constants import bcolors
+from helpers import consoleHelper
 import threading
 import glob
 

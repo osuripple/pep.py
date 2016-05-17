@@ -3,8 +3,8 @@ Event called when someone joins a channel
 """
 
 import clientPackets
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import serverPackets
 import glob
 import exceptions

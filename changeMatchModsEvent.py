@@ -1,7 +1,7 @@
 import glob
 import clientPackets
 import matchModModes
-import mods
+from constants import mods
 
 def handle(userToken, packetData):
 	# Get token data

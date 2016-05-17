@@ -1,6 +1,6 @@
 """Some console related functions"""
 
-import bcolors
+from constants import bcolors
 import glob
 
 def printServerStartHeader(asciiArt):

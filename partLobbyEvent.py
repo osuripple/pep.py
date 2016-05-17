@@ -1,7 +1,7 @@
 import glob
 import channelPartEvent
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 
 def handle(userToken, _):
 	# Get usertoken data

@@ -1,8 +1,8 @@
 import glob
 import clientPackets
 import matchModModes
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import random
 import matchTeamTypes
 import matchTeams

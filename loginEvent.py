@@ -2,13 +2,15 @@ import userHelper
 import serverPackets
 import exceptions
 import glob
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import locationHelper
 import countryHelper
 import time
 import generalFunctions
 import channelJoinEvent
+import sys
+import traceback
 
 def handle(flaskRequest):
 	# Data to return
@@ -123,7 +125,7 @@ def handle(flaskRequest):
 		responseToken.enqueue(serverPackets.onlineUsers())
 
 		# Get location and country from ip.zxq.co or database
-		if generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]):			
+		if generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]):
 			# Get location and country from IP
 			location = locationHelper.getLocation(requestIP)
 			countryLetters = locationHelper.getCountry(requestIP)
@@ -170,6 +172,10 @@ def handle(flaskRequest):
 		# Bancho is restarting
 		responseData += serverPackets.notification("Bancho is restarting. Try again in a few minutes.")
 		responseData += serverPackets.loginError()
+	except:
+		# Unknown exception
+		msg = "UNKNOWN ERROR IN LOGIN!!!\n{}\n{}".format(sys.exc_info(), traceback.format_exc())
+		consoleHelper.printColored("[!] {}".format(msg), bcolors.RED)
 	finally:
 		# Print login failed message to console if needed
 		if err == True:

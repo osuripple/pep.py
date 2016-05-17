@@ -1,7 +1,7 @@
 import glob
 import clientPackets
 import serverPackets
-import actions
+from constants import actions
 import userHelper
 
 def handle(userToken, packetData):

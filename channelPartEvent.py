@@ -2,8 +2,8 @@
 Event called when someone parts a channel
 """
 
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import glob
 import clientPackets
 import serverPackets

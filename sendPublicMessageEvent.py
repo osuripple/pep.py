@@ -2,8 +2,8 @@ import exceptions
 import clientPackets
 import glob
 import fokabot
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import serverPackets
 
 def handle(userToken, packetData):

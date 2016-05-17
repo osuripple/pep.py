@@ -4,8 +4,8 @@ import psutil
 import os
 import sys
 
-import consoleHelper
-import bcolors
+from helpers import consoleHelper
+from constants import bcolors
 import threading
 import signal
 

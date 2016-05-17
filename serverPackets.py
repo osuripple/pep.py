@@ -103,7 +103,7 @@ def userPanel(userID):
 	elif rank == 4:
 		userRank = userRanks.ADMIN
 	elif rank == 3:
-		userRank = userRank.MOD
+		userRank = userRanks.MOD
 	elif rank == 2:
 		userRank = userRanks.SUPPORTER
 	else:
