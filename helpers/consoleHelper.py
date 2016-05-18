@@ -1,7 +1,7 @@
 """Some console related functions"""
 
 from constants import bcolors
-import glob
+from objects import glob
 
 def printServerStartHeader(asciiArt):
 	"""Print server start header with optional ascii art

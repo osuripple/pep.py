@@ -11,58 +11,58 @@ from tornado.ioloop import IOLoop
 
 # pep.py files
 from constants import bcolors
-import packetIDs
-import serverPackets
-import config
-import exceptions
-import glob
-import fokabot
-import banchoConfig
+from constants import packetIDs
+from constants import serverPackets
+from helpers import configHelper
+from constants import exceptions
+from objects import glob
+from objects import fokabot
+from objects import banchoConfig
 
-import sendPublicMessageEvent
-import sendPrivateMessageEvent
-import channelJoinEvent
-import channelPartEvent
-import changeActionEvent
-import cantSpectateEvent
-import startSpectatingEvent
-import stopSpectatingEvent
-import spectateFramesEvent
-import friendAddEvent
-import friendRemoveEvent
-import logoutEvent
-import loginEvent
-import setAwayMessageEvent
-import joinLobbyEvent
-import createMatchEvent
-import partLobbyEvent
-import changeSlotEvent
-import joinMatchEvent
-import partMatchEvent
-import changeMatchSettingsEvent
-import changeMatchPasswordEvent
-import changeMatchModsEvent
-import matchReadyEvent
-import matchLockEvent
-import matchStartEvent
-import matchPlayerLoadEvent
-import matchSkipEvent
-import matchFramesEvent
-import matchCompleteEvent
-import matchNoBeatmapEvent
-import matchHasBeatmapEvent
-import matchTransferHostEvent
-import matchFailedEvent
-import matchInviteEvent
-import matchChangeTeamEvent
+from events import sendPublicMessageEvent
+from events import sendPrivateMessageEvent
+from events import channelJoinEvent
+from events import channelPartEvent
+from events import changeActionEvent
+from events import cantSpectateEvent
+from events import startSpectatingEvent
+from events import stopSpectatingEvent
+from events import spectateFramesEvent
+from events import friendAddEvent
+from events import friendRemoveEvent
+from events import logoutEvent
+from events import loginEvent
+from events import setAwayMessageEvent
+from events import joinLobbyEvent
+from events import createMatchEvent
+from events import partLobbyEvent
+from events import changeSlotEvent
+from events import joinMatchEvent
+from events import partMatchEvent
+from events import changeMatchSettingsEvent
+from events import changeMatchPasswordEvent
+from events import changeMatchModsEvent
+from events import matchReadyEvent
+from events import matchLockEvent
+from events import matchStartEvent
+from events import matchPlayerLoadEvent
+from events import matchSkipEvent
+from events import matchFramesEvent
+from events import matchCompleteEvent
+from events import matchNoBeatmapEvent
+from events import matchHasBeatmapEvent
+from events import matchTransferHostEvent
+from events import matchFailedEvent
+from events import matchInviteEvent
+from events import matchChangeTeamEvent
 
 # pep.py helpers
-import packetHelper
+from helpers import packetHelper
 from helpers import consoleHelper
-import databaseHelper
-import responseHelper
-import generalFunctions
-import systemHelper
+from helpers import databaseHelper
+from helpers import responseHelper
+from helpers import generalFunctions
+from helpers import systemHelper
 
 # Create flask instance
 app = flask.Flask(__name__)
@@ -249,7 +249,7 @@ if __name__ == "__main__":
 
 	# Read config.ini
 	consoleHelper.printNoNl("> Loading config file... ")
-	glob.conf = config.config("config.ini")
+	glob.conf = configHelper.config("config.ini")
 
 	if glob.conf.default == True:
 		# We have generated a default config.ini, quit server
