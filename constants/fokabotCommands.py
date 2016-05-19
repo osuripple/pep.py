@@ -11,6 +11,10 @@ import requests
 import json
 from constants import mods
 from helpers import generalFunctions
+import sys
+import traceback
+from helpers import consoleHelper
+from constants import bcolors
 
 """
 Commands callbacks
@@ -303,10 +307,16 @@ def systemStatus(fro, chan, message):
 	return msg
 
 
-def getPPMessage(beatmapID, mods = 0):
+def getPPMessage(userID):
 	try:
+		# Get user token
+		token = glob.tokens.getTokenFromUserID(userID)
+		if token == None:
+			return False
+
 		# Send request to LETS api
-		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}".format(beatmapID, mods), timeout=5).text
+		furl = "http://127.0.0.1:5002/api/v1/pp?b={}&m={}&a={}".format(token.tillerino[0], token.tillerino[1], token.tillerino[2])
+		resp = requests.get(furl, timeout=5).text
 		data = json.loads(resp)
 
 		# Make sure status is in response data
@@ -321,22 +331,24 @@ def getPPMessage(beatmapID, mods = 0):
 				raise exceptions.apiException
 
 		# Make sure we have 4 pp values
-		if len(data["pp"]) < 4:
-			return "Error in LETS API call (expected 4 pp values, got {}). Please tell this to a dev.".format(len(data["pp"]))
+		#if len(data["pp"]) < 4:
+		#	return "Error in LETS API call (expected 4 pp values, got {}). Please tell this to a dev.".format(len(data["pp"]))
 
 		# Return response in chat
-		return "{song}{plus}{mods}  95%: {pp95}pp | 98%: {pp98}pp | 99% {pp99}pp | 100%: {pp100}pp | {bpm} BPM | AR {ar} | {stars:.2f} stars".format(
-			song=data["song_name"],
-			plus="+" if mods > 0 else "",
-			mods=generalFunctions.readableMods(mods),
-			pp100=data["pp"][0],
-			pp99=data["pp"][1],
-			pp98=data["pp"][2],
-			pp95=data["pp"][3],
-			bpm=data["bpm"],
-			stars=data["stars"],
-			ar=data["ar"]
-		)
+		# Song name and mods
+		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if token.tillerino[1] > 0 else "", mods=generalFunctions.readableMods(token.tillerino[1]))
+
+		# PP values
+		if token.tillerino[2] == -1:
+			msg += "95%: {pp95}pp | 98%: {pp98}pp | 99% {pp99}pp | 100%: {pp100}pp".format(pp100=data["pp"][0], pp99=data["pp"][1], pp98=data["pp"][2], pp95=data["pp"][3])
+		else:
+			msg += "{acc:.2f}%: {pp}pp".format(acc=token.tillerino[2], pp=data["pp"][0])
+
+		# Beatmap info
+		msg += " | {bpm} BPM | AR {ar} | {stars:.2f} stars".format(bpm=data["bpm"],	stars=data["stars"], ar=data["ar"])
+
+		# Return final message
+		return msg
 	except requests.exceptions.RequestException:
 		# RequestException
 		return "Error while contacting LETS API. Please tell this to a dev."
@@ -364,58 +376,95 @@ def tillerinoNp(fro, chan, message):
 		# Update latest tillerino song for current token
 		token = glob.tokens.getTokenFromUsername(fro)
 		if token != None:
-			token.latestTillerino = int(beatmapID)
+			token.tillerino = [int(beatmapID), 0, -1.0]
+		userID = token.userID
 
 		# Return tillerino message
-		return getPPMessage(beatmapID, 0)
+		return getPPMessage(userID)
 	except:
 		return False
 
 
 def tillerinoMods(fro, chan, message):
-	#try:
-	# Run the command in PM only
-	if chan.startswith("#"):
+	try:
+		# Run the command in PM only
+		if chan.startswith("#"):
+			return False
+
+		# Get token and user ID
+		token = glob.tokens.getTokenFromUsername(fro)
+		if token == None:
+			return False
+		userID = token.userID
+
+		# Make sure the user has triggered the bot with /np command
+		if token.tillerino[0] == 0:
+			return "Please give me a beatmap first with /np command."
+
+		# Check passed mods and convert to enum
+		modsList = [message[0][i:i+2].upper() for i in range(0, len(message[0]), 2)]
+		modsEnum = 0
+		for i in modsList:
+			if i not in ["NO", "NF", "EZ", "HD", "HR", "DT", "HT", "NC", "FL", "SO"]:
+				return "Invalid mods. Allowed mods: NO, NF, EZ, HD, HR, DT, HT, NC, FL, SO. Do not use spaces for multiple mods."
+			if i == "NO":
+				modsEnum = 0
+				break
+			elif i == "NF":
+				modsEnum += mods.NoFail
+			elif i == "EZ":
+				modsEnum += mods.Easy
+			elif i == "HD":
+				modsEnum += mods.Hidden
+			elif i == "HR":
+				modsEnum += mods.HardRock
+			elif i == "DT":
+				modsEnum += mods.DoubleTime
+			elif i == "HT":
+				modsEnum += mods.HalfTime
+			elif i == "NC":
+				modsEnum += mods.Nightcore
+			elif i == "FL":
+				modsEnum += mods.Flashlight
+			elif i == "SO":
+				modsEnum += mods.SpunOut
+
+		# Set mods
+		token.tillerino[1] = modsEnum
+
+		# Return tillerino message for that beatmap with mods
+		return getPPMessage(userID)
+	except:
 		return False
 
-	# Get token
-	token = glob.tokens.getTokenFromUsername(fro)
-	if token == None:
+def tillerinoAcc(fro, chan, message):
+	try:
+		# Run the command in PM only
+		if chan.startswith("#"):
+			return False
+
+		# Get token and user ID
+		token = glob.tokens.getTokenFromUsername(fro)
+		if token == None:
+			return False
+		userID = token.userID
+
+		# Make sure the user has triggered the bot with /np command
+		if token.tillerino[0] == 0:
+			return "Please give me a beatmap first with /np command."
+
+		# Convert acc to float
+		acc = float(message[0])
+
+		# Set new tillerino list acc value
+		token.tillerino[2] = acc
+
+		# Return tillerino message for that beatmap with mods
+		return getPPMessage(userID)
+	except ValueError:
+		return "Invalid acc value"
+	except:
 		return False
-
-	# Make sure the user has triggered the bot with /np command
-	if token.latestTillerino == 0:
-		return "Please give me a beatmap first with /np command."
-
-	# Check passed mods and convert to enum
-	modsList = [message[0][i:i+2].upper() for i in range(0, len(message[0]), 2)]
-	modsEnum = 0
-	for i in modsList:
-		if i not in ["NF", "EZ", "HD", "HR", "DT", "HT", "NC", "FL", "SO"]:
-			return "Invalid mods. Allowed mods: NF, EZ, HD, HR, DT, HT, NC, FL, SO. Do not use spaces for multiple mods."
-		if i == "NF":
-			modsEnum += mods.NoFail
-		elif i == "EZ":
-			modsEnum += mods.Easy
-		elif i == "HD":
-			modsEnum += mods.Hidden
-		elif i == "HR":
-			modsEnum += mods.HardRock
-		elif i == "DT":
-			modsEnum += mods.DoubleTime
-		elif i == "HT":
-			modsEnum += mods.HalfTime
-		elif i == "NC":
-			modsEnum += mods.Nightcore
-		elif i == "FL":
-			modsEnum += mods.Flashlight
-		elif i == "SO":
-			modsEnum += mods.SpunOut
-
-	# Return tillerino message for that beatmap with mods
-	return getPPMessage(token.latestTillerino, modsEnum)
-	#except:
-		#return False
 
 
 """
@@ -519,7 +568,12 @@ commands = [
 		"trigger": "!with",
 		"callback": tillerinoMods,
 		"syntax": "<mods>"
-	}
+	},
+	#
+	#	"trigger": "!acc",
+	#	"callback": tillerinoAcc,
+	#	"syntax": "<accuarcy>"
+	#}
 ]
 
 # Commands list default values

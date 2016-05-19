@@ -90,7 +90,7 @@ class token:
 		self.location = [0,0]
 		self.awayMessage = ""
 		self.matchID = -1
-		self.latestTillerino = 0
+		self.tillerino = [0,0,-1.0]	# beatmap, mods, acc
 		self.queue = bytes()
 
 		# Generate/set token
