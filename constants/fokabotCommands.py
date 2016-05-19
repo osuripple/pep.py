@@ -367,10 +367,15 @@ def tillerinoNp(fro, chan, message):
 			return False
 
 		# Get URL from message
-		beatmapURL = str(message[3][1:])
+		if message[1] == "listening":
+			beatmapURL = str(message[3][1:])
+		elif message[1] == "playing":
+			beatmapURL = str(message[2][1:])
+		else:
+			return False
 
 		# Get beatmap id from URL
-		p = re.compile("https:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
+		p = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
 		beatmapID = p.search(beatmapURL).groups(0)[0]
 
 		# Update latest tillerino song for current token
@@ -563,6 +568,9 @@ commands = [
 		"callback": unban
 	}, {
 		"trigger": "ACTION is listening to [",
+		"callback": tillerinoNp
+	}, {
+		"trigger": "ACTION is playing [",
 		"callback": tillerinoNp
 	}, {
 		"trigger": "!with",
