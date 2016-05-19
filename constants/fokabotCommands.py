@@ -29,8 +29,6 @@ return the message or **False** if there's no response by the bot
 def faq(fro, chan, message):
 	if message[0] == "rules":
 		return "Please make sure to check (Ripple's rules)[http://ripple.moe/?p=23]."
-	elif message[0] == "rules":
-		return "Please make sure to check (Ripple's rules)[http://ripple.moe/?p=23]."
 	elif message[0] == "swearing":
 		return "Please don't abuse swearing"
 	elif message[0] == "spam":
@@ -47,6 +45,8 @@ def faq(fro, chan, message):
 		return "Check the (changelog)[https://ripple.moe/index.php?p=17] !"
 	elif message[0] == "status":
 		return "Check the server status (here!)[https://ripple.moe/index.php?p=27]"
+	elif message[0] == "english":
+		return "Please keep this channel in english."
 
 def roll(fro, chan, message):
 	maxPoints = 100
