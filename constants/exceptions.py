@@ -56,3 +56,6 @@ class matchCreateError(Exception):
 
 class banchoRestartingException(Exception):
 	pass
+
+class apiException(Exception):
+	pass

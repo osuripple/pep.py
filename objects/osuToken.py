@@ -28,9 +28,10 @@ class token:
 	country -- osu country code. Use countryHelper to convert from letter country code to osu country code
 	pingTime -- latest packet received UNIX time
 	loginTime -- login UNIX time
+	latestTillerino -- beatmap ID of latest song from tillerino bot
 	"""
 
-	token = ""
+	'''token = ""
 	userID = 0
 	username = ""
 	rank = 0
@@ -56,6 +57,8 @@ class token:
 
 	matchID = -1
 
+	latestTillerino = 0'''
+
 
 	def __init__(self, __userID, __token = None):
 		"""
@@ -80,10 +83,15 @@ class token:
 		self.joinedChannels = []
 		self.actionID = actions.idle
 		self.actionText = ""
+		self.actionMd5 = ""
 		self.actionMods = 0
 		self.gameMode = gameModes.std
+		self.country = 0
+		self.location = [0,0]
 		self.awayMessage = ""
 		self.matchID = -1
+		self.latestTillerino = 0
+		self.queue = bytes()
 
 		# Generate/set token
 		if __token != None:

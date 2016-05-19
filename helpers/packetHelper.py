@@ -110,7 +110,7 @@ def packData(__data, __dataType):
 			# Non empty string
 			data += b"\x0B"
 			data += uleb128Encode(len(__data))
-			data += str.encode(__data, "latin_1")
+			data += str.encode(__data, "utf-8")
 	elif __dataType == dataTypes.uInt16:
 		packType = "<H"
 	elif __dataType == dataTypes.sInt16:

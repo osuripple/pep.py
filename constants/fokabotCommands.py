@@ -6,6 +6,11 @@ from constants import exceptions
 from helpers import userHelper
 import time
 from helpers import systemHelper
+import re
+import requests
+import json
+from constants import mods
+from helpers import generalFunctions
 
 """
 Commands callbacks
@@ -297,6 +302,122 @@ def systemStatus(fro, chan, message):
 
 	return msg
 
+
+def getPPMessage(beatmapID, mods = 0):
+	try:
+		# Send request to LETS api
+		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}".format(beatmapID, mods), timeout=5).text
+		data = json.loads(resp)
+
+		# Make sure status is in response data
+		if "status" not in data:
+			raise exceptions.apiException
+
+		# Make sure status is 200
+		if data["status"] != 200:
+			if "message" in data:
+				return "Error in LETS API call ({}). Please tell this to a dev.".format(data["message"])
+			else:
+				raise exceptions.apiException
+
+		# Make sure we have 4 pp values
+		if len(data["pp"]) < 4:
+			return "Error in LETS API call (expected 4 pp values, got {}). Please tell this to a dev.".format(len(data["pp"]))
+
+		# Return response in chat
+		return "{song}{plus}{mods}  95%: {pp95}pp | 98%: {pp98}pp | 99% {pp99}pp | 100%: {pp100}pp | {bpm} BPM | AR {ar} | {stars:.2f} stars".format(
+			song=data["song_name"],
+			plus="+" if mods > 0 else "",
+			mods=generalFunctions.readableMods(mods),
+			pp100=data["pp"][0],
+			pp99=data["pp"][1],
+			pp98=data["pp"][2],
+			pp95=data["pp"][3],
+			bpm=data["bpm"],
+			stars=data["stars"],
+			ar=data["ar"]
+		)
+	except requests.exceptions.RequestException:
+		# RequestException
+		return "Error while contacting LETS API. Please tell this to a dev."
+	except exceptions.apiException:
+		# API error
+		return "Unknown error in LETS API call. Please tell this to a dev."
+	except:
+		# Unknown exception
+		# TODO: print exception
+		return False
+
+def tillerinoNp(fro, chan, message):
+	try:
+		# Run the command in PM only
+		if chan.startswith("#"):
+			return False
+
+		# Get URL from message
+		beatmapURL = str(message[3][1:])
+
+		# Get beatmap id from URL
+		p = re.compile("https:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
+		beatmapID = p.search(beatmapURL).groups(0)[0]
+
+		# Update latest tillerino song for current token
+		token = glob.tokens.getTokenFromUsername(fro)
+		if token != None:
+			token.latestTillerino = int(beatmapID)
+
+		# Return tillerino message
+		return getPPMessage(beatmapID, 0)
+	except:
+		return False
+
+
+def tillerinoMods(fro, chan, message):
+	#try:
+	# Run the command in PM only
+	if chan.startswith("#"):
+		return False
+
+	# Get token
+	token = glob.tokens.getTokenFromUsername(fro)
+	if token == None:
+		return False
+
+	# Make sure the user has triggered the bot with /np command
+	if token.latestTillerino == 0:
+		return "Please give me a beatmap first with /np command."
+
+	# Check passed mods and convert to enum
+	modsList = [message[0][i:i+2].upper() for i in range(0, len(message[0]), 2)]
+	modsEnum = 0
+	for i in modsList:
+		if i not in ["NF", "EZ", "HD", "HR", "DT", "HT", "NC", "FL", "SO"]:
+			return "Invalid mods. Allowed mods: NF, EZ, HD, HR, DT, HT, NC, FL, SO. Do not use spaces for multiple mods."
+		if i == "NF":
+			modsEnum += mods.NoFail
+		elif i == "EZ":
+			modsEnum += mods.Easy
+		elif i == "HD":
+			modsEnum += mods.Hidden
+		elif i == "HR":
+			modsEnum += mods.HardRock
+		elif i == "DT":
+			modsEnum += mods.DoubleTime
+		elif i == "HT":
+			modsEnum += mods.HalfTime
+		elif i == "NC":
+			modsEnum += mods.Nightcore
+		elif i == "FL":
+			modsEnum += mods.Flashlight
+		elif i == "SO":
+			modsEnum += mods.SpunOut
+
+	# Return tillerino message for that beatmap with mods
+	return getPPMessage(token.latestTillerino, modsEnum)
+	#except:
+		#return False
+
+
 """
 Commands list
 
@@ -391,6 +512,13 @@ commands = [
 		"syntax": "<target>",
 		"minRank": 3,
 		"callback": unban
+	}, {
+		"trigger": "ACTION is listening to [",
+		"callback": tillerinoNp
+	}, {
+		"trigger": "!with",
+		"callback": tillerinoMods,
+		"syntax": "<mods>"
 	}
 ]
 
