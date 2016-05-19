@@ -6,6 +6,7 @@ from objects import glob
 from objects import fokabot
 from constants import exceptions
 from constants import messageTemplates
+from time import gmtime, strftime
 
 def handle(userToken, packetData):
 	"""
@@ -47,6 +48,10 @@ def handle(userToken, packetData):
 
 		# Console output
 		consoleHelper.printColored("> {}>{}: {}".format(username, packetData["to"], packetData["message"]), bcolors.PINK)
+
+		# Log to file
+		with open(".data/chatlog_private.txt", "a") as f:
+			f.write("[{date}] {fro} -> {to}: {message}\n".format(date=strftime("%Y-%m-%d %H:%M:%S", gmtime()), fro=username, to=packetData["to"], message=str(packetData["message"].encode("utf-8"))[2:-1]))
 	except exceptions.tokenNotFoundException:
 		# Token not found, user disconnected
 		consoleHelper.printColored("[!] {} tried to send a message to {}, but their token couldn't be found".format(username, packetData["to"]), bcolors.RED)

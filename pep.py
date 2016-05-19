@@ -3,6 +3,7 @@ import logging
 import sys
 import flask
 import datetime
+import os
 
 # Tornado server
 from tornado.wsgi import WSGIContainer
@@ -14,6 +15,7 @@ from constants import bcolors
 from constants import packetIDs
 from constants import serverPackets
 from helpers import configHelper
+from helpers import discordBotHelper
 from constants import exceptions
 from objects import glob
 from objects import fokabot
@@ -289,6 +291,14 @@ if __name__ == "__main__":
 		consoleHelper.printColored("[!] Error while loading bancho_settings. Please make sure the table in DB has all the required rows", bcolors.RED)
 		raise
 
+	# Create data folder if needed
+	consoleHelper.printNoNl("> Checking folders... ")
+	paths = [".data"]
+	for i in paths:
+		if not os.path.exists(i):
+			os.makedirs(i, 0o770)
+	consoleHelper.printDone()
+
 	# Initialize chat channels
 	consoleHelper.printNoNl("> Initializing chat channels... ")
 	glob.channels.loadChannels()
@@ -320,6 +330,9 @@ if __name__ == "__main__":
 	serverPort = int(glob.conf.config["server"]["port"])
 	serverOutputPackets = generalFunctions.stringToBool(glob.conf.config["server"]["outputpackets"])
 	serverOutputRequestTime = generalFunctions.stringToBool(glob.conf.config["server"]["outputrequesttime"])
+
+	# Send server start message
+	discordBotHelper.sendConfidential("w00t p00t! (pep.py started)")
 
 	# Run server sanic way
 	if serverName == "tornado":

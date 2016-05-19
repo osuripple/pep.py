@@ -63,6 +63,9 @@ class config:
 				self.config.get("flask","debug")
 				self.config.get("flask","logger")
 
+			self.config.get("discord","enable")
+			self.config.get("discord","boturl")
+
 			self.config.get("ci","key")
 			return True
 		except:
@@ -102,6 +105,10 @@ class config:
 		self.config.add_section("ci")
 		self.config.set("ci", "key", "changeme")
 
+		self.config.add_section("discord")
+		self.config.set("discord", "enable", "False")
+		self.config.set("discord", "boturl", "")
+		
 		# Write ini to file and close
 		self.config.write(f)
 		f.close()
