@@ -4,6 +4,10 @@ from objects import glob
 from constants import actions
 from constants import serverPackets
 from constants import fokabotCommands
+import re
+
+# Tillerino np regex, compiled only once to increase performance
+npRegex = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
 
 def connect():
 	"""Add FokaBot to connected users and send userpanel/stats packet to everyone"""

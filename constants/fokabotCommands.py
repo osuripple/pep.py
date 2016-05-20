@@ -6,15 +6,10 @@ from constants import exceptions
 from helpers import userHelper
 import time
 from helpers import systemHelper
-import re
 import requests
 import json
 from constants import mods
 from helpers import generalFunctions
-import sys
-import traceback
-from helpers import consoleHelper
-from constants import bcolors
 
 """
 Commands callbacks
@@ -328,7 +323,7 @@ def getPPMessage(userID):
 				return "Error in LETS API call ({}). Please tell this to a dev.".format(data["message"])
 			else:
 				raise exceptions.apiException
-				
+
 		# Return response in chat
 		# Song name and mods
 		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if token.tillerino[1] > 0 else "", mods=generalFunctions.readableMods(token.tillerino[1]))
@@ -370,8 +365,7 @@ def tillerinoNp(fro, chan, message):
 			return False
 
 		# Get beatmap id from URL
-		p = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
-		beatmapID = p.search(beatmapURL).groups(0)[0]
+		beatmapID = fokabot.npRegex.search(beatmapURL).groups(0)[0]
 
 		# Update latest tillerino song for current token
 		token = glob.tokens.getTokenFromUsername(fro)
