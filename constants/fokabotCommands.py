@@ -315,8 +315,7 @@ def getPPMessage(userID):
 			return False
 
 		# Send request to LETS api
-		furl = "http://127.0.0.1:5002/api/v1/pp?b={}&m={}&a={}".format(token.tillerino[0], token.tillerino[1], token.tillerino[2])
-		resp = requests.get(furl, timeout=5).text
+		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}&a={}".format(token.tillerino[0], token.tillerino[1], token.tillerino[2]), timeout=10).text
 		data = json.loads(resp)
 
 		# Make sure status is in response data
@@ -329,11 +328,7 @@ def getPPMessage(userID):
 				return "Error in LETS API call ({}). Please tell this to a dev.".format(data["message"])
 			else:
 				raise exceptions.apiException
-
-		# Make sure we have 4 pp values
-		#if len(data["pp"]) < 4:
-		#	return "Error in LETS API call (expected 4 pp values, got {}). Please tell this to a dev.".format(len(data["pp"]))
-
+				
 		# Return response in chat
 		# Song name and mods
 		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if token.tillerino[1] > 0 else "", mods=generalFunctions.readableMods(token.tillerino[1]))
@@ -351,7 +346,7 @@ def getPPMessage(userID):
 		return msg
 	except requests.exceptions.RequestException:
 		# RequestException
-		return "Error while contacting LETS API. Please tell this to a dev."
+		return "API Timeout."
 	except exceptions.apiException:
 		# API error
 		return "Unknown error in LETS API call. Please tell this to a dev."
