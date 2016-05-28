@@ -5,6 +5,7 @@ from constants import actions
 from constants import serverPackets
 from constants import fokabotCommands
 import re
+from helpers import generalFunctions
 
 # Tillerino np regex, compiled only once to increase performance
 npRegex = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
@@ -35,14 +36,21 @@ def fokabotResponse(fro, chan, message):
 
 	for i in fokabotCommands.commands:
 		# Loop though all commands
-		if i["trigger"] in message:
+		#if i["trigger"] in message:
+		if generalFunctions.strContains(message, i["trigger"]):
 			# message has triggered a command
 
 			# Make sure the user has right permissions
-			if i["minRank"] > 1:
-				# Get rank from db only if minrank > 1, so we save some CPU
-				if userHelper.getRankPrivileges(userHelper.getID(fro)) < i["minRank"]:
+			if i["rank"] != None:
+				# Rank = x
+				if userHelper.getRankPrivileges(userHelper.getID(fro)) != i["rank"]:
 					return False
+			else:
+				# Rank > x
+				if i["minRank"] > 1:
+					# Get rank from db only if minrank > 1, so we save some CPU
+					if userHelper.getRankPrivileges(userHelper.getID(fro)) < i["minRank"]:
+						return False
 
 			# Check argument number
 			message = message.split(" ")

@@ -101,9 +101,9 @@ def userPanel(userID):
 	if username == "FokaBot":
 		userRank = userRanks.MOD
 	elif rank == 4:
-		userRank = userRanks.ADMIN
-	elif rank == 3:
 		userRank = userRanks.MOD
+	elif rank == 3:
+		userRank = userRanks.ADMIN
 	elif rank == 2:
 		userRank = userRanks.SUPPORTER
 	else:
