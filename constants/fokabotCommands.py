@@ -490,6 +490,10 @@ def tillerinoLast(fro, chan, message):
 		print(a)
 		return False
 
+def mm00(fro, chan, message):
+	random.seed()
+	return random.choice(["meme", "MA MAURO ESISTE?"])
+
 """
 Commands list
 
@@ -531,7 +535,7 @@ commands = [
 		"callback": ask
 	}, {
 		"trigger": "!mm00",
-		"response": random.choice(["meme", "MA MAURO ESISTE?"])
+		"callback": mm00
 	}, {
 		"trigger": "!alert",
 		"syntax": "<message>",
