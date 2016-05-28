@@ -475,6 +475,20 @@ def tillerinoAcc(fro, chan, message):
 	except:
 		return False
 
+def tillerinoLast(fro, chan, message):
+	try:
+		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores.username, scores.pp
+		FROM scores
+		LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores.beatmap_md5
+		WHERE username = ?
+		ORDER BY scores.time DESC
+		LIMIT 1""", [fro])
+		if data == None:
+			return False
+		return "{0:.2f}pp ({1} on {2})".format(data["pp"], data["username"], data["sn"])
+	except Exception as a:
+		print(a)
+		return False
 
 """
 Commands list
@@ -595,7 +609,10 @@ commands = [
 		"trigger": "!with",
 		"callback": tillerinoMods,
 		"syntax": "<mods>"
-	},
+	}, {
+		"trigger": "!last",
+		"callback": tillerinoLast
+	}
 	#
 	#	"trigger": "!acc",
 	#	"callback": tillerinoAcc,
