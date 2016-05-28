@@ -51,3 +51,7 @@ def readableMods(__mods):
 		r += "SO"
 
 	return r
+
+
+def strContains(s, w):
+	return (' ' + w + ' ') in (' ' + s + ' ')

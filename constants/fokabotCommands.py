@@ -11,6 +11,9 @@ import json
 from constants import mods
 from helpers import generalFunctions
 
+from helpers import consoleHelper
+from constants import bcolors
+
 """
 Commands callbacks
 
@@ -46,6 +49,8 @@ def faq(fro, chan, message):
 		return "Check the server status (here!)[https://ripple.moe/index.php?p=27]"
 	elif message[0] == "english":
 		return "Please keep this channel in english."
+	else:
+		return False
 
 def roll(fro, chan, message):
 	maxPoints = 100
@@ -62,6 +67,16 @@ def ask(fro, chan, message):
 def alert(fro, chan, message):
 	glob.tokens.enqueueAll(serverPackets.notification(' '.join(message[:])))
 	return False
+
+def alertUser(fro, chan, message):
+	target = message[0].replace("_", " ")
+
+	targetToken = glob.tokens.getTokenFromUsername(target)
+	if targetToken != None:
+		targetToken.enqueue(serverPackets.notification(' '.join(message[1:])))
+		return False
+	else:
+		return "User offline."
 
 def moderated(fro, chan, message):
 	try:
@@ -341,7 +356,7 @@ def getPPMessage(userID):
 		return msg
 	except requests.exceptions.RequestException:
 		# RequestException
-		return "API Timeout."
+		return "API Timeout. Please try again in a few seconds."
 	except exceptions.apiException:
 		# API error
 		return "Unknown error in LETS API call. Please tell this to a dev."
@@ -469,8 +484,18 @@ callback: function to call when the command is triggered. Optional.
 response: text to return when the command is triggered. Optional.
 syntax: command syntax. Arguments must be separated by spaces (eg: <arg1> <arg2>)
 minRank: minimum rank to execute that command. Optional (default = 1)
+rank: EXACT rank used to execute that command. Optional.
 
-You MUST set trigger and callback/response, or the command won't work.
+RANKS:
+1: Normal user
+2: Supporter
+3: Developer
+4: Community manager
+
+NOTES:
+- You CAN'T use both rank and minRank at the same time.
+- If both rank and minrank are **not** present, everyone will be able to run that command.
+- You MUST set trigger and callback/response, or the command won't work.
 """
 commands = [
 	{
@@ -496,15 +521,20 @@ commands = [
 	}, {
 		"trigger": "!alert",
 		"syntax": "<message>",
-		"minRank": 4,
+		"minRank": 3,
 		"callback": alert
+	}, {
+		"trigger": "!alertuser",
+		"syntax": "<username> <message>",
+		"minRank": 3,
+		"callback": alertUser,
 	}, {
 		"trigger": "!moderated",
 		"minRank": 3,
 		"callback": moderated
 	}, {
 		"trigger": "!kickall",
-		"minRank": 4,
+		"rank": 3,
 		"callback": kickAll
 	}, {
 		"trigger": "!kick",
@@ -527,11 +557,11 @@ commands = [
 		"callback": removeSilence
 	}, {
 		"trigger": "!system restart",
-		"minRank": 4,
+		"rank": 3,
 		"callback": systemRestart
 	}, {
 		"trigger": "!system shutdown",
-		"minRank": 4,
+		"rank": 3,
 		"callback": systemShutdown
 	}, {
 		"trigger": "!system reload",
@@ -539,11 +569,11 @@ commands = [
 		"callback": systemReload
 	}, {
 		"trigger": "!system maintenance",
-		"minRank": 3,
+		"rank": 3,
 		"callback": systemMaintenance
 	}, {
 		"trigger": "!system status",
-		"minRank": 3,
+		"rank": 3,
 		"callback": systemStatus
 	}, {
 		"trigger": "!ban",
@@ -577,5 +607,6 @@ commands = [
 for cmd in commands:
 	cmd.setdefault("syntax", "")
 	cmd.setdefault("minRank", 1)
+	cmd.setdefault("rank", None)
 	cmd.setdefault("callback", None)
 	cmd.setdefault("response", "u w0t m8?")
