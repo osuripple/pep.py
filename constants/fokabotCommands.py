@@ -605,10 +605,10 @@ commands = [
 		"minRank": 3,
 		"callback": unban
 	}, {
-		"trigger": "ACTION is listening to [",
+		"trigger": "\x01ACTION is listening to",
 		"callback": tillerinoNp
 	}, {
-		"trigger": "ACTION is playing [",
+		"trigger": "\x01ACTION is playing",
 		"callback": tillerinoNp
 	}, {
 		"trigger": "!with",
