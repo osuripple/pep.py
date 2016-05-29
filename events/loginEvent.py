@@ -51,6 +51,9 @@ def handle(flaskRequest):
 			# Banned
 			raise exceptions.loginBannedException()
 
+		# Log user IP
+		userHelper.IPLog(userID, requestIP)
+
 		# No login errors!
 		# Delete old tokens for that user and generate a new one
 		glob.tokens.deleteOldTokens(userID)

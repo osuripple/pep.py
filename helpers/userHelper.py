@@ -297,3 +297,11 @@ def getShowCountry(userID):
 	if country == None:
 		return False
 	return generalFunctions.stringToBool(country)
+
+def IPLog(userID, ip):
+	"""
+	Botnet the user
+	(log his ip for multiaccount detection)
+	"""
+	glob.db.execute("""INSERT INTO ip_user (userid, ip, occurencies) VALUES (?, ?, '1')
+						ON DUPLICATE KEY UPDATE occurencies = occurencies + 1""", [userID, ip])
