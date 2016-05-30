@@ -66,6 +66,8 @@ from helpers import responseHelper
 from helpers import generalFunctions
 from helpers import systemHelper
 
+from flask import request
+
 # Create flask instance
 app = flask.Flask(__name__)
 
@@ -106,6 +108,18 @@ def serverStatus():
 	return flask.jsonify({
 		"response" : 200,
 		"status" : -1 if glob.restarting == True else 1
+	})
+
+@app.route("/api/v1/isOnline")
+def apiUserOnline():
+	username = request.args.get("u")
+	if username == None:
+		result = False
+	else:
+		token = glob.tokens.getTokenFromUsername(username)
+		result = True if token != None else False
+	return flask.jsonify({
+		"result": result
 	})
 
 
