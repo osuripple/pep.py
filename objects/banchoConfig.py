@@ -39,4 +39,4 @@ class banchoConfig:
 		"""
 
 		self.config["banchoMaintenance"] = __maintenance
-		glob.db.execute("UPDATE bancho_settings SET value_int = ? WHERE name = 'bancho_maintenance'", [int(__maintenance)])
+		glob.db.execute("UPDATE bancho_settings SET value_int = %s WHERE name = 'bancho_maintenance'", [int(__maintenance)])

@@ -13,7 +13,7 @@ def getID(username):
 	"""
 
 	# Get user ID from db
-	userID = glob.db.fetch("SELECT id FROM users WHERE username = ?", [username])
+	userID = glob.db.fetch("SELECT id FROM users WHERE username = %s", [username])
 
 	# Make sure the query returned something
 	if userID == None:
@@ -34,7 +34,7 @@ def checkLogin(userID, password):
 	"""
 
 	# Get password data
-	passwordData = glob.db.fetch("SELECT password_md5, salt, password_version FROM users WHERE id = ?", [userID])
+	passwordData = glob.db.fetch("SELECT password_md5, salt, password_version FROM users WHERE id = %s", [userID])
 
 	# Make sure the query returned something
 	if passwordData == None:
@@ -48,7 +48,7 @@ def checkLogin(userID, password):
 		ok = passwordHelper.checkOldPassword(password, passwordData["salt"], passwordData["password_md5"])
 		if not ok: return False
 		newpass = passwordHelper.genBcrypt(password)
-		glob.db.execute("UPDATE users SET password_md5=?, salt='', password_version='2' WHERE id = ?", [newpass, userID])
+		glob.db.execute("UPDATE users SET password_md5=%s, salt='', password_version='2' WHERE id = %s", [newpass, userID])
 
 
 def exists(userID):
@@ -59,7 +59,7 @@ def exists(userID):
 	return -- bool
 	"""
 
-	result = glob.db.fetch("SELECT id FROM users WHERE id = ?", [userID])
+	result = glob.db.fetch("SELECT id FROM users WHERE id = %s", [userID])
 	if result == None:
 		return False
 	else:
@@ -74,7 +74,7 @@ def getAllowed(userID):
 	return -- allowed int
 	"""
 
-	return glob.db.fetch("SELECT allowed FROM users WHERE id = ?", [userID])["allowed"]
+	return glob.db.fetch("SELECT allowed FROM users WHERE id = %s", [userID])["allowed"]
 
 
 def getRankPrivileges(userID):
@@ -83,7 +83,7 @@ def getRankPrivileges(userID):
 	If you want to get that rank, user getUserGameRank instead
 	"""
 
-	return glob.db.fetch("SELECT rank FROM users WHERE id = ?", [userID])["rank"]
+	return glob.db.fetch("SELECT rank FROM users WHERE id = %s", [userID])["rank"]
 
 
 def getSilenceEnd(userID):
@@ -95,7 +95,7 @@ def getSilenceEnd(userID):
 	return -- UNIX time
 	"""
 
-	return glob.db.fetch("SELECT silence_end FROM users WHERE id = ?", [userID])["silence_end"]
+	return glob.db.fetch("SELECT silence_end FROM users WHERE id = %s", [userID])["silence_end"]
 
 
 def silence(userID, silenceEndTime, silenceReason):
@@ -108,7 +108,7 @@ def silence(userID, silenceEndTime, silenceReason):
 	silenceReason -- Silence reason shown on website
 	"""
 
-	glob.db.execute("UPDATE users SET silence_end = ?, silence_reason = ? WHERE id = ?", [silenceEndTime, silenceReason, userID])
+	glob.db.execute("UPDATE users SET silence_end = %s, silence_reason = %s WHERE id = %s", [silenceEndTime, silenceReason, userID])
 
 def getRankedScore(userID, gameMode):
 	"""
@@ -120,7 +120,7 @@ def getRankedScore(userID, gameMode):
 	"""
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
-	return glob.db.fetch("SELECT ranked_score_"+modeForDB+" FROM users_stats WHERE id = ?", [userID])["ranked_score_"+modeForDB]
+	return glob.db.fetch("SELECT ranked_score_"+modeForDB+" FROM users_stats WHERE id = %s", [userID])["ranked_score_"+modeForDB]
 
 
 def getTotalScore(userID, gameMode):
@@ -133,7 +133,7 @@ def getTotalScore(userID, gameMode):
 	"""
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
-	return glob.db.fetch("SELECT total_score_"+modeForDB+" FROM users_stats WHERE id = ?", [userID])["total_score_"+modeForDB]
+	return glob.db.fetch("SELECT total_score_"+modeForDB+" FROM users_stats WHERE id = %s", [userID])["total_score_"+modeForDB]
 
 
 def getAccuracy(userID, gameMode):
@@ -146,7 +146,7 @@ def getAccuracy(userID, gameMode):
 	"""
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
-	return glob.db.fetch("SELECT avg_accuracy_"+modeForDB+" FROM users_stats WHERE id = ?", [userID])["avg_accuracy_"+modeForDB]
+	return glob.db.fetch("SELECT avg_accuracy_"+modeForDB+" FROM users_stats WHERE id = %s", [userID])["avg_accuracy_"+modeForDB]
 
 
 def getGameRank(userID, gameMode):
@@ -159,7 +159,7 @@ def getGameRank(userID, gameMode):
 	"""
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
-	result = glob.db.fetch("SELECT position FROM leaderboard_"+modeForDB+" WHERE user = ?", [userID])
+	result = glob.db.fetch("SELECT position FROM leaderboard_"+modeForDB+" WHERE user = %s", [userID])
 	if result == None:
 		return 0
 	else:
@@ -176,7 +176,7 @@ def getPlaycount(userID, gameMode):
 	"""
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
-	return glob.db.fetch("SELECT playcount_"+modeForDB+" FROM users_stats WHERE id = ?", [userID])["playcount_"+modeForDB]
+	return glob.db.fetch("SELECT playcount_"+modeForDB+" FROM users_stats WHERE id = %s", [userID])["playcount_"+modeForDB]
 
 
 def getUsername(userID):
@@ -187,7 +187,7 @@ def getUsername(userID):
 	return -- username
 	"""
 
-	return glob.db.fetch("SELECT username FROM users WHERE id = ?", [userID])["username"]
+	return glob.db.fetch("SELECT username FROM users WHERE id = %s", [userID])["username"]
 
 
 def getFriendList(userID):
@@ -199,7 +199,7 @@ def getFriendList(userID):
 	"""
 
 	# Get friends from db
-	friends = glob.db.fetchAll("SELECT user2 FROM users_relationships WHERE user1 = ?", [userID])
+	friends = glob.db.fetchAll("SELECT user2 FROM users_relationships WHERE user1 = %s", [userID])
 
 	if friends == None or len(friends) == 0:
 		# We have no friends, return 0 list
@@ -225,11 +225,11 @@ def addFriend(userID, friendID):
 		return
 
 	# check user isn't already a friend of ours
-	if glob.db.fetch("SELECT id FROM users_relationships WHERE user1 = ? AND user2 = ?", [userID, friendID]) != None:
+	if glob.db.fetch("SELECT id FROM users_relationships WHERE user1 = %s AND user2 = %s", [userID, friendID]) != None:
 		return
 
 	# Set new value
-	glob.db.execute("INSERT INTO users_relationships (user1, user2) VALUES (?, ?)", [userID, friendID])
+	glob.db.execute("INSERT INTO users_relationships (user1, user2) VALUES (%s, %s)", [userID, friendID])
 
 
 def removeFriend(userID, friendID):
@@ -242,7 +242,7 @@ def removeFriend(userID, friendID):
 
 	# Delete user relationship. We don't need to check if the relationship was there, because who gives a shit,
 	# if they were not friends and they don't want to be anymore, be it. ¯\_(ツ)_/¯
-	glob.db.execute("DELETE FROM users_relationships WHERE user1 = ? AND user2 = ?", [userID, friendID])
+	glob.db.execute("DELETE FROM users_relationships WHERE user1 = %s AND user2 = %s", [userID, friendID])
 
 
 def getCountry(userID):
@@ -255,7 +255,7 @@ def getCountry(userID):
 	return -- country code (two letters)
 	"""
 
-	return glob.db.fetch("SELECT country FROM users_stats WHERE id = ?", [userID])["country"]
+	return glob.db.fetch("SELECT country FROM users_stats WHERE id = %s", [userID])["country"]
 
 def getPP(userID, gameMode):
 	"""
@@ -266,7 +266,7 @@ def getPP(userID, gameMode):
 	"""
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
-	return glob.db.fetch("SELECT pp_{} FROM users_stats WHERE id = ?".format(modeForDB), [userID])["pp_{}".format(modeForDB)]
+	return glob.db.fetch("SELECT pp_{} FROM users_stats WHERE id = %s".format(modeForDB), [userID])["pp_{}".format(modeForDB)]
 
 def setAllowed(userID, allowed):
 	"""
@@ -275,7 +275,7 @@ def setAllowed(userID, allowed):
 	userID -- user
 	allowed -- allowed status. 1: normal, 0: banned
 	"""
-	glob.db.execute("UPDATE users SET allowed = ? WHERE id = ?", [allowed, userID])
+	glob.db.execute("UPDATE users SET allowed = %s WHERE id = %s", [allowed, userID])
 
 def setCountry(userID, country):
 	"""
@@ -284,7 +284,7 @@ def setCountry(userID, country):
 	userID -- userID
 	country -- country letters
 	"""
-	glob.db.execute("UPDATE users_stats SET country = ? WHERE id = ?", [country, userID])
+	glob.db.execute("UPDATE users_stats SET country = %s WHERE id = %s", [country, userID])
 
 def getShowCountry(userID):
 	"""
@@ -293,7 +293,7 @@ def getShowCountry(userID):
 	userID -- userID
 	return -- True if country is shown, False if it's hidden
 	"""
-	country = glob.db.fetch("SELECT show_country FROM users_stats WHERE id = ?", [userID])
+	country = glob.db.fetch("SELECT show_country FROM users_stats WHERE id = %s", [userID])
 	if country == None:
 		return False
 	return generalFunctions.stringToBool(country)
@@ -303,5 +303,5 @@ def IPLog(userID, ip):
 	Botnet the user
 	(log his ip for multiaccount detection)
 	"""
-	glob.db.execute("""INSERT INTO ip_user (userid, ip, occurencies) VALUES (?, ?, '1')
+	glob.db.execute("""INSERT INTO ip_user (userid, ip, occurencies) VALUES (%s, %s, '1')
 						ON DUPLICATE KEY UPDATE occurencies = occurencies + 1""", [userID, ip])

@@ -1,81 +1,33 @@
 """Hello, pep.py here, ex-owner of ripple and prime minister of Ripwot."""
-import logging
 import sys
-import flask
-import datetime
 import os
+from multiprocessing.pool import ThreadPool
 
-# Tornado server
-from tornado.wsgi import WSGIContainer
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+# Tornado
+import tornado.ioloop
+import tornado.web
+import tornado.httpserver
+import tornado.gen
 
 # pep.py files
 from constants import bcolors
-from constants import packetIDs
-from constants import serverPackets
 from helpers import configHelper
 from helpers import discordBotHelper
-from constants import exceptions
 from objects import glob
 from objects import fokabot
 from objects import banchoConfig
-
-from events import sendPublicMessageEvent
-from events import sendPrivateMessageEvent
-from events import channelJoinEvent
-from events import channelPartEvent
-from events import changeActionEvent
-from events import cantSpectateEvent
-from events import startSpectatingEvent
-from events import stopSpectatingEvent
-from events import spectateFramesEvent
-from events import friendAddEvent
-from events import friendRemoveEvent
-from events import logoutEvent
-from events import loginEvent
-from events import setAwayMessageEvent
-from events import joinLobbyEvent
-from events import createMatchEvent
-from events import partLobbyEvent
-from events import changeSlotEvent
-from events import joinMatchEvent
-from events import partMatchEvent
-from events import changeMatchSettingsEvent
-from events import changeMatchPasswordEvent
-from events import changeMatchModsEvent
-from events import matchReadyEvent
-from events import matchLockEvent
-from events import matchStartEvent
-from events import matchPlayerLoadEvent
-from events import matchSkipEvent
-from events import matchFramesEvent
-from events import matchCompleteEvent
-from events import matchNoBeatmapEvent
-from events import matchHasBeatmapEvent
-from events import matchTransferHostEvent
-from events import matchFailedEvent
-from events import matchInviteEvent
-from events import matchChangeTeamEvent
-
-# pep.py helpers
-from helpers import packetHelper
+from handlers import mainHandler
 from helpers import consoleHelper
-from helpers import databaseHelper
-from helpers import responseHelper
+from helpers import databaseHelperNew
 from helpers import generalFunctions
-from helpers import systemHelper
 
-from flask import request
-
-# Create flask instance
-app = flask.Flask(__name__)
-
-# Get flask logger
-flaskLogger = logging.getLogger("werkzeug")
+def make_app():
+	return tornado.web.Application([
+		(r"/", mainHandler.handler)
+	])
 
 # Ci trigger
-@app.route("/ci-trigger")
+'''@app.route("/ci-trigger")
 @app.route("/api/ci-trigger")
 def ciTrigger():
 	# Ci restart trigger
@@ -133,135 +85,10 @@ def apiOnlineUsers():
 def banchoServer():
 	if flask.request.method == 'POST':
 
-		# Track time if needed
-		if serverOutputRequestTime == True:
-			# Start time
-			st = datetime.datetime.now()
 
-		# Client's token string and request data
-		requestTokenString = flask.request.headers.get('osu-token')
-		requestData = flask.request.data
-
-		# Server's token string and request data
-		responseTokenString = "ayy"
-		responseData = bytes()
-
-		if requestTokenString == None:
-			# No token, first request. Handle login.
-			responseTokenString, responseData = loginEvent.handle(flask.request)
-		else:
-			try:
-				# This is not the first packet, send response based on client's request
-				# Packet start position, used to read stacked packets
-				pos = 0
-
-				# Make sure the token exists
-				if requestTokenString not in glob.tokens.tokens:
-					raise exceptions.tokenNotFoundException()
-
-				# Token exists, get its object
-				userToken = glob.tokens.tokens[requestTokenString]
-
-				# Keep reading packets until everything has been read
-				while pos < len(requestData):
-					# Get packet from stack starting from new packet
-					leftData = requestData[pos:]
-
-					# Get packet ID, data length and data
-					packetID = packetHelper.readPacketID(leftData)
-					dataLength = packetHelper.readPacketLength(leftData)
-					packetData = requestData[pos:(pos+dataLength+7)]
-
-					# Console output if needed
-					if serverOutputPackets == True and packetID != 4:
-						consoleHelper.printColored("Incoming packet ({})({}):".format(requestTokenString, userToken.username), bcolors.GREEN)
-						consoleHelper.printColored("Packet code: {}\nPacket length: {}\nSingle packet data: {}\n".format(str(packetID), str(dataLength), str(packetData)), bcolors.YELLOW)
-
-					# Event handler
-					def handleEvent(ev):
-						def wrapper():
-							ev.handle(userToken, packetData)
-						return wrapper
-
-					eventHandler = {
-						# TODO: Rename packets and events
-						# TODO: Host check for multi
-						packetIDs.client_sendPublicMessage: handleEvent(sendPublicMessageEvent),
-						packetIDs.client_sendPrivateMessage: handleEvent(sendPrivateMessageEvent),
-						packetIDs.client_setAwayMessage: handleEvent(setAwayMessageEvent),
-						packetIDs.client_channelJoin: handleEvent(channelJoinEvent),
-						packetIDs.client_channelPart: handleEvent(channelPartEvent),
-						packetIDs.client_changeAction: handleEvent(changeActionEvent),
-						packetIDs.client_startSpectating: handleEvent(startSpectatingEvent),
-						packetIDs.client_stopSpectating: handleEvent(stopSpectatingEvent),
-						packetIDs.client_cantSpectate: handleEvent(cantSpectateEvent),
-						packetIDs.client_spectateFrames: handleEvent(spectateFramesEvent),
-						packetIDs.client_friendAdd: handleEvent(friendAddEvent),
-						packetIDs.client_friendRemove: handleEvent(friendRemoveEvent),
-						packetIDs.client_logout: handleEvent(logoutEvent),
-						packetIDs.client_joinLobby: handleEvent(joinLobbyEvent),
-						packetIDs.client_partLobby: handleEvent(partLobbyEvent),
-						packetIDs.client_createMatch: handleEvent(createMatchEvent),
-						packetIDs.client_joinMatch: handleEvent(joinMatchEvent),
-						packetIDs.client_partMatch: handleEvent(partMatchEvent),
-						packetIDs.client_matchChangeSlot: handleEvent(changeSlotEvent),
-						packetIDs.client_matchChangeSettings: handleEvent(changeMatchSettingsEvent),
-						packetIDs.client_matchChangePassword: handleEvent(changeMatchPasswordEvent),
-						packetIDs.client_matchChangeMods: handleEvent(changeMatchModsEvent),
-						packetIDs.client_matchReady: handleEvent(matchReadyEvent),
-						packetIDs.client_matchNotReady: handleEvent(matchReadyEvent),
-						packetIDs.client_matchLock: handleEvent(matchLockEvent),
-						packetIDs.client_matchStart: handleEvent(matchStartEvent),
-						packetIDs.client_matchLoadComplete: handleEvent(matchPlayerLoadEvent),
-						packetIDs.client_matchSkipRequest: handleEvent(matchSkipEvent),
-						packetIDs.client_matchScoreUpdate: handleEvent(matchFramesEvent),
-						packetIDs.client_matchComplete: handleEvent(matchCompleteEvent),
-						packetIDs.client_matchNoBeatmap: handleEvent(matchNoBeatmapEvent),
-						packetIDs.client_matchHasBeatmap: handleEvent(matchHasBeatmapEvent),
-						packetIDs.client_matchTransferHost: handleEvent(matchTransferHostEvent),
-						packetIDs.client_matchFailed: handleEvent(matchFailedEvent),
-						packetIDs.client_invite: handleEvent(matchInviteEvent),
-						packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent)
-					}
-
-					if packetID != 4:
-						if packetID in eventHandler:
-							eventHandler[packetID]()
-						else:
-							consoleHelper.printColored("[!] Unknown packet id from {} ({})".format(requestTokenString, packetID), bcolors.RED)
-
-					# Update pos so we can read the next stacked packet
-					# +7 because we add packet ID bytes, unused byte and data length bytes
-					pos += dataLength+7
-
-				# Token queue built, send it
-				responseTokenString = userToken.token
-				responseData = userToken.queue
-				userToken.resetQueue()
-
-				# Update ping time for timeout
-				userToken.updatePingTime()
-			except exceptions.tokenNotFoundException:
-				# Token not found. Disconnect that user
-				responseData = serverPackets.loginError()
-				responseData += serverPackets.notification("Whoops! Something went wrong, please login again.")
-				consoleHelper.printColored("[!] Received packet from unknown token ({}).".format(requestTokenString), bcolors.RED)
-				consoleHelper.printColored("> {} have been disconnected (invalid token)".format(requestTokenString), bcolors.YELLOW)
-
-		if serverOutputRequestTime == True:
-			# End time
-			et = datetime.datetime.now()
-
-			# Total time:
-			tt = float((et.microsecond-st.microsecond)/1000)
-			consoleHelper.printColored("Request time: {}ms".format(tt), bcolors.PINK)
-
-		# Send server's response to client
-		# We don't use token object because we might not have a token (failed login)
-		return responseHelper.generateResponse(responseTokenString, responseData)
 	else:
 		# Not a POST request, send html page
-		return responseHelper.HTMLResponse()
+		return responseHelper.HTMLResponse()'''
 
 
 if __name__ == "__main__":
@@ -291,14 +118,23 @@ if __name__ == "__main__":
 
 	# Connect to db
 	try:
-		consoleHelper.printNoNl("> Connecting to MySQL db... ")
-		glob.db = databaseHelper.db(glob.conf.config["db"]["host"], glob.conf.config["db"]["username"], glob.conf.config["db"]["password"], glob.conf.config["db"]["database"], int(glob.conf.config["db"]["pingtime"]))
+		print("> Connecting to MySQL db... ")
+		glob.db = databaseHelperNew.db(glob.conf.config["db"]["host"], glob.conf.config["db"]["username"], glob.conf.config["db"]["password"], glob.conf.config["db"]["database"], int(glob.conf.config["db"]["workers"]))
 		consoleHelper.printDone()
 	except:
 		# Exception while connecting to db
 		consoleHelper.printError()
 		consoleHelper.printColored("[!] Error while connection to database. Please check your config.ini and run the server again", bcolors.RED)
 		raise
+
+	# Create threads pool
+	try:
+		consoleHelper.printNoNl("> Creating threads pool... ")
+		glob.pool = ThreadPool(int(glob.conf.config["server"]["threads"]))
+		consoleHelper.printDone()
+	except:
+		consoleHelper.printError()
+		consoleHelper.printColored("[!] Error while creating threads pool. Please check your config.ini and run the server again", bcolors.RED)
 
 	# Load bancho_settings
 	try:
@@ -344,41 +180,14 @@ if __name__ == "__main__":
 		consoleHelper.printColored("[!] Warning! users localization is disabled!", bcolors.YELLOW)
 
 	# Get server parameters from config.ini
-	serverName = glob.conf.config["server"]["server"]
-	serverHost = glob.conf.config["server"]["host"]
 	serverPort = int(glob.conf.config["server"]["port"])
-	serverOutputPackets = generalFunctions.stringToBool(glob.conf.config["server"]["outputpackets"])
-	serverOutputRequestTime = generalFunctions.stringToBool(glob.conf.config["server"]["outputrequesttime"])
+	glob.requestTime = generalFunctions.stringToBool(glob.conf.config["server"]["outputrequesttime"])
 
-	# Send server start message
+	# Server start message and console output
 	discordBotHelper.sendConfidential("w00t p00t! (pep.py started)")
+	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
-	# Run server sanic way
-	if serverName == "tornado":
-		# Tornado server
-		consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
-		webServer = HTTPServer(WSGIContainer(app))
-		webServer.listen(serverPort)
-		IOLoop.instance().start()
-	elif serverName == "flask":
-		# Flask server
-		# Get flask settings
-		flaskThreaded = generalFunctions.stringToBool(glob.conf.config["flask"]["threaded"])
-		flaskDebug = generalFunctions.stringToBool(glob.conf.config["flask"]["debug"])
-		flaskLoggerStatus = not generalFunctions.stringToBool(glob.conf.config["flask"]["logger"])
-
-		# Set flask debug mode and logger
-		app.debug = flaskDebug
-		flaskLogger.disabled = flaskLoggerStatus
-
-		# Console output
-		if flaskDebug == False:
-			consoleHelper.printColored("> Flask listening for clients on {}.{}...".format(serverHost, serverPort), bcolors.GREEN)
-		else:
-			consoleHelper.printColored("> Flask "+bcolors.YELLOW+"(debug mode)"+bcolors.ENDC+" listening for clients on {}:{}...".format(serverHost, serverPort), bcolors.GREEN)
-
-		# Run flask server
-		app.run(host=serverHost, port=serverPort, threaded=flaskThreaded)
-	else:
-		print(bcolors.RED+"[!] Unknown server. Please set the server key in config.ini to "+bcolors.ENDC+bcolors.YELLOW+"tornado"+bcolors.ENDC+bcolors.RED+" or "+bcolors.ENDC+bcolors.YELLOW+"flask"+bcolors.ENDC)
-		sys.exit()
+	# Start tornado
+	app = tornado.httpserver.HTTPServer(make_app())
+	app.listen(serverPort)
+	tornado.ioloop.IOLoop.instance().start()

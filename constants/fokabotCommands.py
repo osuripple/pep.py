@@ -481,7 +481,7 @@ def tillerinoLast(fro, chan, message):
 		FROM scores
 		LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores.beatmap_md5
 		LEFT JOIN users ON users.id = scores.userid
-		WHERE users.username = ?
+		WHERE users.username = %s
 		ORDER BY scores.time DESC
 		LIMIT 1""", [fro])
 		if data == None:

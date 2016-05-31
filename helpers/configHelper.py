@@ -46,22 +46,15 @@ class config:
 			self.config.get("db","username")
 			self.config.get("db","password")
 			self.config.get("db","database")
-			self.config.get("db","pingtime")
+			self.config.get("db","workers")
 
-			self.config.get("server","server")
-			self.config.get("server","host")
+			self.config.get("server","threads")
 			self.config.get("server","port")
 			self.config.get("server","localizeusers")
 			self.config.get("server","outputpackets")
 			self.config.get("server","outputrequesttime")
 			self.config.get("server","timeouttime")
 			self.config.get("server","timeoutlooptime")
-
-			if self.config["server"]["server"] == "flask":
-				# Flask only config
-				self.config.get("flask","threaded")
-				self.config.get("flask","debug")
-				self.config.get("flask","logger")
 
 			self.config.get("discord","enable")
 			self.config.get("discord","boturl")
@@ -85,11 +78,10 @@ class config:
 		self.config.set("db", "username", "root")
 		self.config.set("db", "password", "")
 		self.config.set("db", "database", "ripple")
-		self.config.set("db", "pingtime", "600")
+		self.config.set("db", "workers", "4")
 
 		self.config.add_section("server")
-		self.config.set("server", "server", "tornado")
-		self.config.set("server", "host", "0.0.0.0")
+		self.config.set("server", "threads", "16")
 		self.config.set("server", "port", "5001")
 		self.config.set("server", "localizeusers", "1")
 		self.config.set("server", "outputpackets", "0")
@@ -97,18 +89,13 @@ class config:
 		self.config.set("server", "timeoutlooptime", "100")
 		self.config.set("server", "timeouttime", "100")
 
-		self.config.add_section("flask")
-		self.config.set("flask", "threaded", "1")
-		self.config.set("flask", "debug", "0")
-		self.config.set("flask", "logger", "0")
-
 		self.config.add_section("ci")
 		self.config.set("ci", "key", "changeme")
 
 		self.config.add_section("discord")
 		self.config.set("discord", "enable", "False")
 		self.config.set("discord", "boturl", "")
-		
+
 		# Write ini to file and close
 		self.config.write(f)
 		f.close()

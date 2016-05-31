@@ -11,23 +11,22 @@ from helpers import generalFunctions
 from events import channelJoinEvent
 import sys
 import traceback
+from helpers import requestHelper
 
-def handle(flaskRequest):
+def handle(tornadoRequest):
 	# Data to return
 	responseTokenString = "ayy"
 	responseData = bytes()
 
 	# Get IP from flask request
-	requestIP = flaskRequest.headers.get('X-Real-IP')
-	if requestIP == None:
-		requestIP = flaskRequest.remote_addr
+	requestIP = tornadoRequest.getRequestIP()
 
 	# Console output
 	print("> Accepting connection from {}...".format(requestIP))
 
 	# Split POST body so we can get username/password/hardware data
 	# 2:-3 thing is because requestData has some escape stuff that we don't need
-	loginData = str(flaskRequest.data)[2:-3].split("\\n")
+	loginData = str(tornadoRequest.request.body)[2:-3].split("\\n")
 
 	# Process login
 	print("> Processing login request for {}...".format(loginData[0]))

@@ -14,3 +14,5 @@ channels = channelList.channelList()
 matches = matchList.matchList()
 memes = True
 restarting = False
+pool = None
+requestTime = False
