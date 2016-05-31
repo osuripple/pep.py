@@ -111,7 +111,7 @@ def serverStatus():
 	})
 
 @app.route("/api/v1/isOnline")
-def apiUserOnline():
+def apiIsOnline():
 	username = request.args.get("u")
 	if username == None:
 		result = False
@@ -122,6 +122,11 @@ def apiUserOnline():
 		"result": result
 	})
 
+@app.route("/api/v1/onlineUsers")
+def apiOnlineUsers():
+	return flask.jsonify({
+		"result": len(glob.tokens.tokens)
+	})
 
 # Main bancho server
 @app.route("/", methods=['GET', 'POST'])
