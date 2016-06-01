@@ -47,10 +47,8 @@ from events import matchChangeTeamEvent
 from helpers import discordBotHelper
 import sys
 import traceback
-from tornado import web
 
 class handler(requestHelper.asyncRequestHandler):
-	@web.asynchronous
 	def asyncPost(self):
 		try:
 			# Track time if needed

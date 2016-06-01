@@ -190,4 +190,6 @@ if __name__ == "__main__":
 	# Start tornado
 	app = tornado.httpserver.HTTPServer(make_app())
 	app.listen(serverPort)
-	tornado.ioloop.IOLoop.instance().start()
+	glob.iol = tornado.ioloop.IOLoop.instance()
+	glob.iol.start()
+	#tornado.ioloop.IOLoop.instance().start()
