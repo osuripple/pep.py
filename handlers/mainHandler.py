@@ -189,7 +189,7 @@ class handler(requestHelper.asyncRequestHandler):
 			consoleHelper.printColored("[!] {}".format(msg), bcolors.RED)
 			discordBotHelper.sendConfidential(msg)
 		finally:
-			self.finish()
+			self.flush()
 
 	def asyncGet(self):
 		html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
