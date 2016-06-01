@@ -16,4 +16,3 @@ memes = True
 restarting = False
 pool = None
 requestTime = False
-iol = None
