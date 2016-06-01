@@ -183,9 +183,8 @@ class handler(requestHelper.asyncRequestHandler):
 			self.add_header("Connection", "keep-alive")
 			self.add_header("Content-Type", "text/html; charset=UTF-8")
 			self.add_header("Vary", "Accept-Encoding")
-			#self.add_header("Content-Encoding", "gzip")
-			#self.write(gzip.compress(responseData, 6))
-			self.write(responseData)
+			self.add_header("Content-Encoding", "gzip")
+			self.write(gzip.compress(responseData, 6))
 		except:
 			msg = "**asyncppytornadovroom error** *(aka test server, ignore this)*\nUnhandled exception in mainHandler:\n```\n{}\n{}\n```".format(sys.exc_info(), traceback.format_exc())
 			consoleHelper.printColored("[!] {}".format(msg), bcolors.RED)
