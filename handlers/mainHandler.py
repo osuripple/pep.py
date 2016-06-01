@@ -47,8 +47,10 @@ from events import matchChangeTeamEvent
 from helpers import discordBotHelper
 import sys
 import traceback
+from tornado import web
 
 class handler(requestHelper.asyncRequestHandler):
+	@web.asynchronous
 	def asyncPost(self):
 		try:
 			# Track time if needed
@@ -176,20 +178,22 @@ class handler(requestHelper.asyncRequestHandler):
 
 			# Send server's response to client
 			# We don't use token object because we might not have a token (failed login)
+			self.set_status(200)
 			self.add_header("cho-token", responseTokenString)
 			self.add_header("cho-protocol", "19")
 			self.add_header("Keep-Alive", "timeout=5, max=100")
 			self.add_header("Connection", "keep-alive")
 			self.add_header("Content-Type", "text/html; charset=UTF-8")
 			self.add_header("Vary", "Accept-Encoding")
-			self.add_header("Content-Encoding", "gzip")
-			self.write(gzip.compress(responseData, 6))
+			#self.add_header("Content-Encoding", "gzip")
+			#self.write(gzip.compress(responseData, 6))
+			self.write(responseData)
 		except:
 			msg = "**asyncppytornadovroom error** *(aka test server, ignore this)*\nUnhandled exception in mainHandler:\n```\n{}\n{}\n```".format(sys.exc_info(), traceback.format_exc())
 			consoleHelper.printColored("[!] {}".format(msg), bcolors.RED)
 			discordBotHelper.sendConfidential(msg)
 		finally:
-			self.flush()
+			self.finish()
 
 	def asyncGet(self):
 		html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
