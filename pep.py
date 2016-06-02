@@ -190,8 +190,6 @@ if __name__ == "__main__":
 
 	# Server start message and console output
 	discordBotHelper.sendConfidential("Server started!")
-	from helpers import logHelper
-	logHelper.warning("Test warning")
 	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 	# Start tornado
