@@ -50,6 +50,7 @@ import traceback
 
 class handler(requestHelper.asyncRequestHandler):
 	def asyncPost(self):
+		glob.meme.acquire()
 		try:
 			# Track time if needed
 			if glob.requestTime == True:
@@ -57,7 +58,7 @@ class handler(requestHelper.asyncRequestHandler):
 				st = datetime.datetime.now()
 
 			# Client's token string and request data
-			requestTokenString = self.request.headers.get('osu-token')
+			requestTokenString = self.request.headers.get("osu-token")
 			requestData = self.request.body
 
 			# Server's token string and request data
@@ -191,6 +192,7 @@ class handler(requestHelper.asyncRequestHandler):
 			discordBotHelper.sendConfidential(msg)
 		finally:
 			self.finish()
+			glob.meme.release()
 
 	def asyncGet(self):
 		html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
