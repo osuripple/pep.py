@@ -50,7 +50,6 @@ import traceback
 
 class handler(requestHelper.asyncRequestHandler):
 	def asyncPost(self):
-		glob.meme.acquire()
 		try:
 			# Track time if needed
 			if glob.requestTime == True:
@@ -69,6 +68,7 @@ class handler(requestHelper.asyncRequestHandler):
 				# No token, first request. Handle login.
 				responseTokenString, responseData = loginEvent.handle(self)
 			else:
+				userToken = None	# default value
 				try:
 					# This is not the first packet, send response based on client's request
 					# Packet start position, used to read stacked packets
@@ -78,8 +78,10 @@ class handler(requestHelper.asyncRequestHandler):
 					if requestTokenString not in glob.tokens.tokens:
 						raise exceptions.tokenNotFoundException()
 
-					# Token exists, get its object
+					# Token exists, get its object and lock it
 					userToken = glob.tokens.tokens[requestTokenString]
+					userToken.lock.acquire()
+					consoleHelper.printColored("[{}] locked".format(userToken.token), bcolors.YELLOW)
 
 					# Keep reading packets until everything has been read
 					while pos < len(requestData):
@@ -166,6 +168,11 @@ class handler(requestHelper.asyncRequestHandler):
 					responseData += serverPackets.notification("Whoops! Something went wrong, please login again.")
 					consoleHelper.printColored("[!] Received packet from unknown token ({}).".format(requestTokenString), bcolors.RED)
 					consoleHelper.printColored("> {} have been disconnected (invalid token)".format(requestTokenString), bcolors.YELLOW)
+				finally:
+					# Unlock token
+					if userToken != None:
+						consoleHelper.printColored("[{}] unlocked".format(userToken.token), bcolors.GREEN)
+						userToken.lock.release()
 
 			if glob.requestTime == True:
 				# End time
@@ -192,7 +199,6 @@ class handler(requestHelper.asyncRequestHandler):
 			discordBotHelper.sendConfidential(msg)
 		finally:
 			self.finish()
-			glob.meme.release()
 
 	def asyncGet(self):
 		html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"

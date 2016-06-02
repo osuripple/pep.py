@@ -184,7 +184,7 @@ if __name__ == "__main__":
 	glob.requestTime = generalFunctions.stringToBool(glob.conf.config["server"]["outputrequesttime"])
 
 	# Server start message and console output
-	discordBotHelper.sendConfidential("w00t p00t! (pep.py started)")
+	discordBotHelper.sendConfidential("**asyncppytornadovroom** Server started!")
 	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 	# Start tornado

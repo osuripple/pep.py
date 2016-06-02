@@ -7,6 +7,7 @@ from helpers import consoleHelper
 from constants import bcolors
 from constants import serverPackets
 from events import logoutEvent
+import threading
 
 class token:
 	"""Osu Token object
@@ -75,6 +76,7 @@ class token:
 		self.rank = userHelper.getRankPrivileges(self.userID)
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
+		self.lock = threading.Lock()	# <-- Sync primitive
 
 		# Default variables
 		self.spectators = []

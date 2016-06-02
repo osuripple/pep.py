@@ -5,7 +5,7 @@ from objects import channelList
 from objects import matchList
 import threading
 
-VERSION = "0.9"
+VERSION = "1.2"
 
 db = None
 conf = None
@@ -17,4 +17,3 @@ memes = True
 restarting = False
 pool = None
 requestTime = False
-meme = threading.Lock()
