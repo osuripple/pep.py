@@ -1,5 +1,6 @@
 """Some functions that don't fit in any other file"""
 from constants import mods
+from time import gmtime, strftime
 
 def stringToBool(s):
 	"""
@@ -55,3 +56,10 @@ def readableMods(__mods):
 
 def strContains(s, w):
 	return (' ' + w + ' ') in (' ' + s + ' ')
+
+def getTimestamp():
+	"""
+	Return current time in YYYY-MM-DD HH:MM:SS format.
+	Used in logs.
+	"""
+	return strftime("%Y-%m-%d %H:%M:%S", gmtime())
