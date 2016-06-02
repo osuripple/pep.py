@@ -12,6 +12,7 @@ from events import channelJoinEvent
 import sys
 import traceback
 from helpers import requestHelper
+from helpers import discordBotHelper
 
 def handle(tornadoRequest):
 	# Data to return
@@ -183,4 +184,8 @@ def handle(tornadoRequest):
 		if err == True:
 			consoleHelper.printColored("> {}'s login failed".format(loginData[0]), bcolors.YELLOW)
 
+		# Discord message
+		discordBotHelper.sendConfidential("Bancho login request from {} for user {} ({})".format(requestIP, loginData[0], "failed" if err == True else "success"))
+
+		# Return token string and data
 		return (responseTokenString, responseData)

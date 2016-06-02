@@ -12,6 +12,7 @@ from constants import mods
 from helpers import generalFunctions
 
 from helpers import consoleHelper
+from helpers import discordBotHelper
 from constants import bcolors
 
 """
@@ -176,7 +177,10 @@ def silence(fro, chan, message):
 	if targetToken != None:
 		targetToken.enqueue(serverPackets.silenceEndTime(silenceTime))
 
-	return "{} has been silenced for the following reason: {}".format(target, reason)
+	# Log message
+	msg = "{} has been silenced for the following reason: {}".format(target, reason)
+	discordBotHelper.sendConfidential(msg)
+	return msg
 
 def removeSilence(fro, chan, message):
 	# Get parameters

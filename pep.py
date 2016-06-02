@@ -176,15 +176,20 @@ if __name__ == "__main__":
 		raise
 
 	# Localize warning
-	if(generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]) == False):
+	if generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]) == False:
 		consoleHelper.printColored("[!] Warning! users localization is disabled!", bcolors.YELLOW)
+
+	# Discord
+	glob.discord = generalFunctions.stringToBool(glob.conf.config["discord"]["enable"])
+	if glob.discord == False:
+		consoleHelper.printColored("[!] Discord logging is disabled!", bcolors.YELLOW)
 
 	# Get server parameters from config.ini
 	serverPort = int(glob.conf.config["server"]["port"])
 	glob.requestTime = generalFunctions.stringToBool(glob.conf.config["server"]["outputrequesttime"])
 
 	# Server start message and console output
-	discordBotHelper.sendConfidential("**asyncppytornadovroom** Server started!")
+	discordBotHelper.sendConfidential("Server started!")
 	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 	# Start tornado

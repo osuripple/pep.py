@@ -81,7 +81,7 @@ class handler(requestHelper.asyncRequestHandler):
 					# Token exists, get its object and lock it
 					userToken = glob.tokens.tokens[requestTokenString]
 					userToken.lock.acquire()
-					consoleHelper.printColored("[{}] locked".format(userToken.token), bcolors.YELLOW)
+					#consoleHelper.printColored("[{}] locked".format(userToken.token), bcolors.YELLOW)
 
 					# Keep reading packets until everything has been read
 					while pos < len(requestData):
@@ -171,7 +171,7 @@ class handler(requestHelper.asyncRequestHandler):
 				finally:
 					# Unlock token
 					if userToken != None:
-						consoleHelper.printColored("[{}] unlocked".format(userToken.token), bcolors.GREEN)
+						#consoleHelper.printColored("[{}] unlocked".format(userToken.token), bcolors.GREEN)
 						userToken.lock.release()
 
 			if glob.requestTime == True:
@@ -194,32 +194,38 @@ class handler(requestHelper.asyncRequestHandler):
 			self.add_header("Content-Encoding", "gzip")
 			self.write(gzip.compress(responseData, 6))
 		except:
-			msg = "**asyncppytornadovroom error** *(aka test server, ignore this)*\nUnhandled exception in mainHandler:\n```\n{}\n{}\n```".format(sys.exc_info(), traceback.format_exc())
+			msg = "Unhandled exception in mainHandler:\n```\n{}\n{}\n```".format(sys.exc_info(), traceback.format_exc())
 			consoleHelper.printColored("[!] {}".format(msg), bcolors.RED)
-			discordBotHelper.sendConfidential(msg)
+			discordBotHelper.sendConfidential(msg, True)
 		finally:
-			self.finish()
+			try:
+				if not self._finished:
+					self.finish()
+			except:
+				pass
 
 	def asyncGet(self):
-		html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
-		html += "           _                 __<br>"
-		html += "          (_)              /  /<br>"
-		html += "   ______ __ ____   ____  /  /____<br>"
-		html += "  /  ___/  /  _  \\/  _  \\/  /  _  \\<br>"
-		html += " /  /  /  /  /_) /  /_) /  /  ____/<br>"
-		html += "/__/  /__/  .___/  .___/__/ \\_____/<br>"
-		html += "        /  /   /  /<br>"
-		html += "       /__/   /__/<br>"
-		html += "<b>PYTHON > ALL VERSION</b><br><br>"
-		html += "<marquee style='white-space:pre;'><br>"
-		html += "                          .. o  .<br>"
-		html += "                         o.o o . o<br>"
-		html += "                        oo...<br>"
-		html += "                    __[]__<br>"
-		html += "    phwr-->  _\\:D/_/o_o_o_|__     <span style=\"font-family: 'Comic Sans MS'; font-size: 8pt;\">u wot m8</span><br>"
-		html += "             \\\"\"\"\"\"\"\"\"\"\"\"\"\"\"/<br>"
-		html += "              \\ . ..  .. . /<br>"
-		html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
-		html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.</pre></body></html>"
-		self.write(html)
-		self.finish()
+		try:
+			html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
+			html += "           _                 __<br>"
+			html += "          (_)              /  /<br>"
+			html += "   ______ __ ____   ____  /  /____<br>"
+			html += "  /  ___/  /  _  \\/  _  \\/  /  _  \\<br>"
+			html += " /  /  /  /  /_) /  /_) /  /  ____/<br>"
+			html += "/__/  /__/  .___/  .___/__/ \\_____/<br>"
+			html += "        /  /   /  /<br>"
+			html += "       /__/   /__/<br>"
+			html += "<b>PYTHON > ALL VERSION</b><br><br>"
+			html += "<marquee style='white-space:pre;'><br>"
+			html += "                          .. o  .<br>"
+			html += "                         o.o o . o<br>"
+			html += "                        oo...<br>"
+			html += "                    __[]__<br>"
+			html += "    phwr-->  _\\:D/_/o_o_o_|__     <span style=\"font-family: 'Comic Sans MS'; font-size: 8pt;\">u wot m8</span><br>"
+			html += "             \\\"\"\"\"\"\"\"\"\"\"\"\"\"\"/<br>"
+			html += "              \\ . ..  .. . /<br>"
+			html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
+			html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.</pre></body></html>"
+			self.write(html)
+		finally:
+			self.finish()

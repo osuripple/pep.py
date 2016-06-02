@@ -3,7 +3,6 @@
 from objects import tokenList
 from objects import channelList
 from objects import matchList
-import threading
 
 VERSION = "1.2"
 
@@ -13,7 +12,7 @@ banchoConf = None
 tokens = tokenList.tokenList()
 channels = channelList.channelList()
 matches = matchList.matchList()
-memes = True
 restarting = False
 pool = None
 requestTime = False
+discord = False
