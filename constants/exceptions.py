@@ -59,3 +59,6 @@ class banchoRestartingException(Exception):
 
 class apiException(Exception):
 	pass
+
+class invalidArgumentsException(Exception):
+	pass

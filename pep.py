@@ -16,80 +16,24 @@ from helpers import discordBotHelper
 from objects import glob
 from objects import fokabot
 from objects import banchoConfig
-from handlers import mainHandler
 from helpers import consoleHelper
 from helpers import databaseHelperNew
 from helpers import generalFunctions
 
+from handlers import mainHandler
+from handlers import apiIsOnlineHandler
+from handlers import apiOnlineUsersHandler
+from handlers import apiServerStatusHandler
+from handlers import ciTriggerHandler
+
 def make_app():
 	return tornado.web.Application([
-		(r"/", mainHandler.handler)
+		(r"/", mainHandler.handler),
+		(r"/api/v1/isOnline", apiIsOnlineHandler.handler),
+		(r"/api/v1/onlineUsers", apiOnlineUsersHandler.handler),
+		(r"/api/v1/serverStatus", apiServerStatusHandler.handler),
+		(r"/api/v1/ciTrigger", ciTriggerHandler.handler),
 	])
-
-# Ci trigger
-'''@app.route("/ci-trigger")
-@app.route("/api/ci-trigger")
-def ciTrigger():
-	# Ci restart trigger
-
-	# Get ket from GET
-	key = flask.request.args.get('k')
-
-	# Get request ip
-	requestIP = flask.request.headers.get('X-Real-IP')
-	if requestIP == None:
-		requestIP = flask.request.remote_addr
-
-	# Check key
-	if key is None or key != glob.conf.config["ci"]["key"]:
-		consoleHelper.printColored("[!] Invalid ci trigger from {}".format(requestIP), bcolors.RED)
-		return flask.jsonify({"response" : "-1"})
-
-	# Ci event triggered, schedule server shutdown
-	consoleHelper.printColored("[!] Ci event triggered from {}".format(requestIP), bcolors.PINK)
-	systemHelper.scheduleShutdown(5, False, "A new Bancho update is available and the server will be restarted in 5 seconds. Thank you for your patience.")
-
-	return flask.jsonify({"response" : 1})
-
-
-@app.route("/api/server-status")
-def serverStatus():
-	# Server status api
-	# 1: Online
-	# -1: Restarting
-	return flask.jsonify({
-		"response" : 200,
-		"status" : -1 if glob.restarting == True else 1
-	})
-
-@app.route("/api/v1/isOnline")
-def apiIsOnline():
-	username = request.args.get("u")
-	if username == None:
-		result = False
-	else:
-		token = glob.tokens.getTokenFromUsername(username)
-		result = True if token != None else False
-	return flask.jsonify({
-		"result": result
-	})
-
-@app.route("/api/v1/onlineUsers")
-def apiOnlineUsers():
-	return flask.jsonify({
-		"result": len(glob.tokens.tokens)
-	})
-
-# Main bancho server
-@app.route("/", methods=['GET', 'POST'])
-def banchoServer():
-	if flask.request.method == 'POST':
-
-
-	else:
-		# Not a POST request, send html page
-		return responseHelper.HTMLResponse()'''
-
 
 if __name__ == "__main__":
 	# Server start
