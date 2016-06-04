@@ -2,10 +2,9 @@ from constants import exceptions
 from constants import clientPackets
 from objects import glob
 from objects import fokabot
-from helpers import consoleHelper
-from constants import bcolors
 from constants import serverPackets
 from helpers import discordBotHelper
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	"""
@@ -97,16 +96,16 @@ def handle(userToken, packetData):
 		if fokaMessage != False:
 			who.append(userID)
 			glob.tokens.multipleEnqueue(serverPackets.sendMessage("FokaBot", packetData["to"], fokaMessage), who, False)
-			consoleHelper.printColored("> FokaBot@{}: {}".format(packetData["to"], str(fokaMessage.encode("UTF-8"))), bcolors.PINK)
+			log.chat("FokaBot @ {}: {}".format(packetData["to"], str(fokaMessage.encode("UTF-8"))))
 
-		# Console output
-		consoleHelper.printColored("> {}@{}: {}".format(username, packetData["to"], str(packetData["message"].encode("utf-8"))), bcolors.PINK)
+		# Console and file log
+		log.chat("{fro} @ {to}: {message}".format(fro=username, to=packetData["to"], message=str(packetData["message"].encode("utf-8"))))
 
-		# Discord/file log
-		discordBotHelper.sendChatlog("**{fro}{type}{to}:** {message}".format(fro=username, type="@" if packetData["to"].startswith("#") else ">", to=packetData["to"], message=str(packetData["message"].encode("utf-8"))[2:-1]))
+		# Discord log
+		discordBotHelper.sendChatlog("**{fro} @ {to}:** {message}".format(fro=username, to=packetData["to"], message=str(packetData["message"].encode("utf-8"))[2:-1]))
 	except exceptions.channelModeratedException:
-		consoleHelper.printColored("[!] {} tried to send a message to a channel that is in moderated mode ({})".format(username, packetData["to"]), bcolors.RED)
+		log.warning("{} tried to send a message to a channel that is in moderated mode ({})".format(username, packetData["to"]))
 	except exceptions.channelUnknownException:
-		consoleHelper.printColored("[!] {} tried to send a message to an unknown channel ({})".format(username, packetData["to"]), bcolors.RED)
+		log.warning("{} tried to send a message to an unknown channel ({})".format(username, packetData["to"]))
 	except exceptions.channelNoPermissionsException:
-		consoleHelper.printColored("[!] {} tried to send a message to channel {}, but they have no write permissions".format(username, packetData["to"]), bcolors.RED)
+		log.warning("{} tried to send a message to channel {}, but they have no write permissions".format(username, packetData["to"]))

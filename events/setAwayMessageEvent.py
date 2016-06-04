@@ -1,5 +1,6 @@
 from constants import clientPackets
 from constants import serverPackets
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# get token data
@@ -17,4 +18,4 @@ def handle(userToken, packetData):
 	else:
 		fokaMessage = "Your away message is now: {}".format(packetData["awayMessage"])
 	userToken.enqueue(serverPackets.sendMessage("FokaBot", username, fokaMessage))
-	print("{} has changed their away message to: {}".format(username, packetData["awayMessage"]))
+	log.info("{} has changed their away message to: {}".format(username, packetData["awayMessage"]))

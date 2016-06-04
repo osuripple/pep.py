@@ -1,10 +1,9 @@
 from constants import serverPackets
 from constants import clientPackets
 from objects import glob
-from helpers import consoleHelper
-from constants import bcolors
 from events import joinMatchEvent
 from constants import exceptions
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	try:
@@ -39,6 +38,6 @@ def handle(userToken, packetData):
 				token.enqueue(serverPackets.createMatch(matchID))
 
 		# Console output
-		consoleHelper.printColored("> MPROOM{}: Room created!".format(matchID), bcolors.BLUE)
+		log.info("MPROOM{}: Room created!".format(matchID))
 	except exceptions.matchCreateError:
-		consoleHelper.printColored("[!] Error while creating match!", bcolors.RED)
+		log.error("Error while creating match!")

@@ -10,6 +10,7 @@ from constants import bcolors
 from constants import serverPackets
 from constants import dataTypes
 from constants import matchTeams
+from helpers import logHelper as log
 
 class match:
 	"""Multiplayer match object"""
@@ -128,7 +129,7 @@ class match:
 		if token != None:
 			token.enqueue(serverPackets.matchTransferHost())
 
-		consoleHelper.printColored("> MPROOM{}: {} is now the host".format(self.matchID, newHost), bcolors.BLUE)
+		log.info("MPROOM{}: {} is now the host".format(self.matchID, newHost))
 
 	def setSlot(self, slotID, slotStatus = None, slotTeam = None, slotUserID = None, slotMods = None, slotLoaded = None, slotSkip = None, slotComplete = None):
 		"""
@@ -177,7 +178,7 @@ class match:
 		# Set new slot data and send update
 		self.setSlot(slotID, None, None, None, mods)
 		self.sendUpdate()
-		consoleHelper.printColored("> MPROOM{}: Slot{} mods changed to {}".format(self.matchID, slotID, mods), bcolors.BLUE)
+		log.info("MPROOM{}: Slot{} mods changed to {}".format(self.matchID, slotID, mods))
 
 
 	def toggleSlotReady(self, slotID):
@@ -195,7 +196,7 @@ class match:
 			newStatus = slotStatuses.ready
 		self.setSlot(slotID, newStatus, None, None, None)
 		self.sendUpdate()
-		consoleHelper.printColored("> MPROOM{}: Slot{} changed ready status to {}".format(self.matchID, slotID, self.slots[slotID]["status"]), bcolors.BLUE)
+		log.info("MPROOM{}: Slot{} changed ready status to {}".format(self.matchID, slotID, self.slots[slotID]["status"]))
 
 	def toggleSlotLock(self, slotID):
 		"""
@@ -224,7 +225,7 @@ class match:
 
 		# Send updates to everyone else
 		self.sendUpdate()
-		consoleHelper.printColored("> MPROOM{}: Slot{} {}".format(self.matchID, slotID, "locked" if newStatus == slotStatuses.locked else "unlocked"), bcolors.BLUE)
+		log.info("MPROOM{}: Slot{} {}".format(self.matchID, slotID, "locked" if newStatus == slotStatuses.locked else "unlocked"))
 
 	def playerLoaded(self, userID):
 		"""
@@ -238,7 +239,7 @@ class match:
 
 		# Set loaded to True
 		self.slots[slotID]["loaded"] = True
-		consoleHelper.printColored("> MPROOM{}: User {} loaded".format(self.matchID, userID), bcolors.BLUE)
+		log.info("MPROOM{}: User {} loaded".format(self.matchID, userID))
 
 		# Check all loaded
 		total = 0
@@ -261,7 +262,7 @@ class match:
 				if token != None:
 					token.enqueue(serverPackets.allPlayersLoaded())
 
-		consoleHelper.printColored("> MPROOM{}: All players loaded! Corrispondere iniziare in 3...".format(self.matchID), bcolors.BLUE)
+		log.info("MPROOM{}: All players loaded! Match starting...".format(self.matchID))
 
 
 	def playerSkip(self, userID):
@@ -276,7 +277,7 @@ class match:
 
 		# Set skip to True
 		self.slots[slotID]["skip"] = True
-		consoleHelper.printColored("> MPROOM{}: User {} skipped".format(self.matchID, userID), bcolors.BLUE)
+		log.info("MPROOM{}: User {} skipped".format(self.matchID, userID))
 
 		# Send skip packet to every playing useR
 		for i in range(0,16):
@@ -284,7 +285,6 @@ class match:
 			if self.slots[i]["status"] == slotStatuses.playing and uid > -1:
 				token = glob.tokens.getTokenFromUserID(uid)
 				if token != None:
-					print("Enqueueueue {}".format(uid))
 					token.enqueue(serverPackets.playerSkipped(uid))
 
 		# Check all skipped
@@ -307,7 +307,7 @@ class match:
 				if token != None:
 					token.enqueue(serverPackets.allPlayersSkipped())
 
-		consoleHelper.printColored("> MPROOM{}: All players skipped!".format(self.matchID), bcolors.BLUE)
+		log.info("MPROOM{}: All players have skipped!".format(self.matchID))
 
 	def playerCompleted(self, userID):
 		"""
@@ -321,7 +321,7 @@ class match:
 		self.setSlot(slotID, None, None, None, None, None, None, True)
 
 		# Console output
-		consoleHelper.printColored("> MPROOM{}: User {} has completed".format(self.matchID, userID), bcolors.BLUE)
+		log.info("MPROOM{}: User {} has completed his play".format(self.matchID, userID))
 
 		# Check all completed
 		total = 0
@@ -360,7 +360,7 @@ class match:
 					token.enqueue(serverPackets.matchComplete())
 
 		# Console output
-		consoleHelper.printColored("> MPROOM{}: Match completed".format(self.matchID), bcolors.BLUE)
+		log.info("MPROOM{}: Match completed".format(self.matchID))
 
 
 
@@ -395,7 +395,7 @@ class match:
 				self.sendUpdate()
 
 				# Console output
-				consoleHelper.printColored("> MPROOM{}: {} joined the room".format(self.matchID, userID), bcolors.BLUE)
+				log.info("MPROOM{}: {} joined the room".format(self.matchID, userID))
 
 				return True
 
@@ -420,7 +420,7 @@ class match:
 		if self.countUsers() == 0:
 			# Dispose match
 			glob.matches.disposeMatch(self.matchID)
-			consoleHelper.printColored("> MPROOM{}: Room disposed".format(self.matchID), bcolors.BLUE)
+			log.info("MPROOM{}: Room disposed".format(self.matchID))
 			return
 
 		# Check if host left
@@ -436,7 +436,7 @@ class match:
 		self.sendUpdate()
 
 		# Console output
-		consoleHelper.printColored("> MPROOM{}: {} left the room".format(self.matchID, userID), bcolors.BLUE)
+		log.info("MPROOM{}: {} left the room".format(self.matchID, userID))
 
 
 	def userChangeSlot(self, userID, newSlotID):
@@ -469,7 +469,7 @@ class match:
 		self.sendUpdate()
 
 		# Console output
-		consoleHelper.printColored("> MPROOM{}: {} moved to slot {}".format(self.matchID, userID, newSlotID), bcolors.BLUE)
+		log.info("MPROOM{}: {} moved to slot {}".format(self.matchID, userID, newSlotID))
 
 	def changePassword(self, newPassword):
 		"""
@@ -490,7 +490,7 @@ class match:
 		self.sendUpdate()
 
 		# Console output
-		consoleHelper.printColored("> MPROOM{}: Password changed to {}".format(self.matchID, self.matchPassword), bcolors.BLUE)
+		log.info("MPROOM{}: Password changed to {}".format(self.matchID, self.matchPassword))
 
 
 	def changeMatchMods(self, mods):
@@ -502,7 +502,7 @@ class match:
 		# Set new mods and send update
 		self.mods = mods
 		self.sendUpdate()
-		consoleHelper.printColored("> MPROOM{}: Mods changed to {}".format(self.matchID, self.mods), bcolors.BLUE)
+		log.info("MPROOM{}: Mods changed to {}".format(self.matchID, self.mods))
 
 	def userHasBeatmap(self, userID, has = True):
 		"""
@@ -560,7 +560,7 @@ class match:
 					token.enqueue(serverPackets.playerFailed(slotID))
 
 		# Console output
-		consoleHelper.printColored("> MPROOM{}: {} has failed!".format(self.matchID, userID), bcolors.BLUE)
+		log.info("MPROOM{}: {} has failed!".format(self.matchID, userID))
 
 
 	def invite(self, fro, to):
@@ -649,8 +649,8 @@ class match:
 				if firstTeam == -1:
 					firstTeam = self.slots[i]["team"]
 				elif firstTeam != self.slots[i]["teams"]:
-					consoleHelper.printColored("> MPROOM{}: Teams are valid".format(self.matchID), bcolors.BLUE)
+					log.info("MPROOM{}: Teams are valid".format(self.matchID))
 					return True
 
-		consoleHelper.printColored("> MPROOM{}: Invalid teams!".format(self.matchID), bcolors.RED)
+		log.warning("MPROOM{}: Invalid teams!".format(self.matchID))
 		return False

@@ -1,10 +1,9 @@
-from helpers import consoleHelper
-from constants import bcolors
 from constants import clientPackets
 from constants import serverPackets
 from constants import exceptions
 from objects import glob
 from helpers import userHelper
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	try:
@@ -43,9 +42,8 @@ def handle(userToken, packetData):
 			targetToken.enqueue(serverPackets.channelJoinSuccess(userID, "#spectator"))
 
 		# Console output
-		consoleHelper.printColored("> {} are spectating {}".format(username, userHelper.getUsername(packetData["userID"])), bcolors.PINK)
-		consoleHelper.printColored("> {}'s spectators: {}".format(str(packetData["userID"]), str(targetToken.spectators)), bcolors.BLUE)
+		log.info("{} are spectating {}".format(username, userHelper.getUsername(packetData["userID"])))
 	except exceptions.tokenNotFoundException:
 		# Stop spectating if token not found
-		consoleHelper.printColored("[!] Spectator start: token not found", bcolors.RED)
+		log.warning("Spectator start: token not found")
 		userToken.stopSpectating()

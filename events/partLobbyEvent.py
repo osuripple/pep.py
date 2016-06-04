@@ -1,7 +1,6 @@
 from objects import glob
 from events import channelPartEvent
-from helpers import consoleHelper
-from constants import bcolors
+from helpers import logHelper as log
 
 def handle(userToken, _):
 	# Get usertoken data
@@ -15,4 +14,4 @@ def handle(userToken, _):
 	channelPartEvent.partChannel(userToken, "#lobby", True)
 
 	# Console output
-	consoleHelper.printColored("> {} has left multiplayer lobby".format(username), bcolors.BLUE)
+	log.info("{} has left multiplayer lobby".format(username))

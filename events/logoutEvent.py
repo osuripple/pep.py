@@ -3,6 +3,7 @@ from helpers import consoleHelper
 from constants import bcolors
 from constants import serverPackets
 import time
+from helpers import logHelper as log
 
 def handle(userToken, _):
 	# get usertoken data
@@ -36,4 +37,4 @@ def handle(userToken, _):
 		glob.tokens.deleteToken(requestToken)
 
 		# Console output
-		consoleHelper.printColored("> {} have been disconnected.".format(username), bcolors.YELLOW)
+		log.info("{} have been disconnected.".format(username))

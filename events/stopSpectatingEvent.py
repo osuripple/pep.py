@@ -1,8 +1,7 @@
-from helpers import consoleHelper
-from constants import bcolors
 from objects import glob
 from constants import serverPackets
 from constants import exceptions
+from helpers import logHelper as log
 
 def handle(userToken, _):
 	try:
@@ -22,10 +21,9 @@ def handle(userToken, _):
 
 		# Console output
 		# TODO: Move messages in stop spectating
-		consoleHelper.printColored("> {} are no longer spectating whoever they were spectating".format(username), bcolors.PINK)
-		consoleHelper.printColored("> {}'s spectators: {}".format(str(target), str(targetToken.spectators)), bcolors.BLUE)
+		log.info("{} are no longer spectating whoever they were spectating".format(username))
 	except exceptions.tokenNotFoundException:
-		consoleHelper.printColored("[!] Spectator stop: token not found", bcolors.RED)
+		log.warning("Spectator stop: token not found")
 	finally:
 		# Set our spectating user to 0
 		userToken.stopSpectating()

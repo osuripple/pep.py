@@ -12,13 +12,13 @@ import tornado.gen
 # pep.py files
 from constants import bcolors
 from helpers import configHelper
-from helpers import discordBotHelper
 from objects import glob
 from objects import fokabot
 from objects import banchoConfig
 from helpers import consoleHelper
 from helpers import databaseHelperNew
 from helpers import generalFunctions
+from helpers import logHelper as log
 
 from handlers import mainHandler
 from handlers import apiIsOnlineHandler
@@ -71,15 +71,6 @@ if __name__ == "__main__":
 		consoleHelper.printColored("[!] Error while connection to database. Please check your config.ini and run the server again", bcolors.RED)
 		raise
 
-	# Create threads pool
-	try:
-		consoleHelper.printNoNl("> Creating threads pool... ")
-		glob.pool = ThreadPool(int(glob.conf.config["server"]["threads"]))
-		consoleHelper.printDone()
-	except:
-		consoleHelper.printError()
-		consoleHelper.printColored("[!] Error while creating threads pool. Please check your config.ini and run the server again", bcolors.RED)
-
 	# Load bancho_settings
 	try:
 		consoleHelper.printNoNl("> Loading bancho settings from DB... ")
@@ -89,6 +80,15 @@ if __name__ == "__main__":
 		consoleHelper.printError()
 		consoleHelper.printColored("[!] Error while loading bancho_settings. Please make sure the table in DB has all the required rows", bcolors.RED)
 		raise
+
+	# Create threads pool
+	try:
+		consoleHelper.printNoNl("> Creating threads pool... ")
+		glob.pool = ThreadPool(int(glob.conf.config["server"]["threads"]))
+		consoleHelper.printDone()
+	except:
+		consoleHelper.printError()
+		consoleHelper.printColored("[!] Error while creating threads pool. Please check your config.ini and run the server again", bcolors.RED)
 
 	# Create data folder if needed
 	consoleHelper.printNoNl("> Checking folders... ")
@@ -109,31 +109,41 @@ if __name__ == "__main__":
 	consoleHelper.printDone()
 
 	# Initialize user timeout check loop
-	try:
-		consoleHelper.printNoNl("> Initializing user timeout check loop... ")
-		glob.tokens.usersTimeoutCheckLoop(int(glob.conf.config["server"]["timeouttime"]), int(glob.conf.config["server"]["timeoutlooptime"]))
-		consoleHelper.printDone()
-	except:
-		consoleHelper.printError()
-		consoleHelper.printColored("[!] Error while initializing user timeout check loop", bcolors.RED)
-		consoleHelper.printColored("[!] Make sure that 'timeouttime' and 'timeoutlooptime' in config.ini are numbers", bcolors.RED)
-		raise
+	consoleHelper.printNoNl("> Initializing user timeout check loop... ")
+	glob.tokens.usersTimeoutCheckLoop()
+	consoleHelper.printDone()
 
 	# Localize warning
-	if generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]) == False:
-		consoleHelper.printColored("[!] Warning! users localization is disabled!", bcolors.YELLOW)
+	glob.localize = generalFunctions.stringToBool(glob.conf.config["server"]["localize"])
+	if glob.localize == False:
+		consoleHelper.printColored("[!] Warning! Users localization is disabled!", bcolors.YELLOW)
 
 	# Discord
 	glob.discord = generalFunctions.stringToBool(glob.conf.config["discord"]["enable"])
 	if glob.discord == False:
-		consoleHelper.printColored("[!] Discord logging is disabled!", bcolors.YELLOW)
+		consoleHelper.printColored("[!] Warning! Discord logging is disabled!", bcolors.YELLOW)
 
-	# Get server parameters from config.ini
-	serverPort = int(glob.conf.config["server"]["port"])
-	glob.requestTime = generalFunctions.stringToBool(glob.conf.config["server"]["outputrequesttime"])
+	# Gzip
+	glob.gzip = generalFunctions.stringToBool(glob.conf.config["server"]["gzip"])
+	glob.gziplevel = int(glob.conf.config["server"]["gziplevel"])
+	if glob.gzip == False:
+		consoleHelper.printColored("[!] Warning! Gzip compression is disabled!", bcolors.YELLOW)
+
+	# Debug mode
+	glob.debug = generalFunctions.stringToBool(glob.conf.config["debug"]["enable"])
+	glob.outputPackets = generalFunctions.stringToBool(glob.conf.config["debug"]["packets"])
+	glob.outputRequestTime = generalFunctions.stringToBool(glob.conf.config["debug"]["time"])
+	if glob.debug == True:
+		consoleHelper.printColored("[!] Warning! Server running in debug mode!", bcolors.YELLOW)
+
+	# Server port
+	try:
+		serverPort = int(glob.conf.config["server"]["port"])
+	except:
+		consoleHelper.printColored("[!] Invalid server port! Please check your config.ini and run the server again", bcolors.RED)
 
 	# Server start message and console output
-	discordBotHelper.sendConfidential("Server started!")
+	log.logMessage("Server started!", discord=True, of="info.txt", stdout=False)
 	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 	# Start tornado

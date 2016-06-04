@@ -44,15 +44,15 @@ from events import matchTransferHostEvent
 from events import matchFailedEvent
 from events import matchInviteEvent
 from events import matchChangeTeamEvent
-from helpers import discordBotHelper
 import sys
 import traceback
+from helpers import logHelper as log
 
 class handler(requestHelper.asyncRequestHandler):
 	def asyncPost(self):
 		try:
 			# Track time if needed
-			if glob.requestTime == True:
+			if glob.outputRequestTime == True:
 				# Start time
 				st = datetime.datetime.now()
 
@@ -81,7 +81,6 @@ class handler(requestHelper.asyncRequestHandler):
 					# Token exists, get its object and lock it
 					userToken = glob.tokens.tokens[requestTokenString]
 					userToken.lock.acquire()
-					#consoleHelper.printColored("[{}] locked".format(userToken.token), bcolors.YELLOW)
 
 					# Keep reading packets until everything has been read
 					while pos < len(requestData):
@@ -94,9 +93,8 @@ class handler(requestHelper.asyncRequestHandler):
 						packetData = requestData[pos:(pos+dataLength+7)]
 
 						# Console output if needed
-						if glob.conf.config["server"]["outputpackets"] == True and packetID != 4:
-							consoleHelper.printColored("Incoming packet ({})({}):".format(requestTokenString, userToken.username), bcolors.GREEN)
-							consoleHelper.printColored("Packet code: {}\nPacket length: {}\nSingle packet data: {}\n".format(str(packetID), str(dataLength), str(packetData)), bcolors.YELLOW)
+						if glob.outputPackets == True and packetID != 4:
+							log.debug("Incoming packet ({})({}):\n\nPacket code: {}\nPacket length: {}\nSingle packet data: {}\n".format(requestTokenString, userToken.username, str(packetID), str(dataLength), str(packetData)))
 
 						# Event handler
 						def handleEvent(ev):
@@ -149,7 +147,7 @@ class handler(requestHelper.asyncRequestHandler):
 							if packetID in eventHandler:
 								eventHandler[packetID]()
 							else:
-								consoleHelper.printColored("[!] Unknown packet id from {} ({})".format(requestTokenString, packetID), bcolors.RED)
+								log.warning("Unknown packet id from {} ({})".format(requestTokenString, packetID))
 
 						# Update pos so we can read the next stacked packet
 						# +7 because we add packet ID bytes, unused byte and data length bytes
@@ -166,21 +164,20 @@ class handler(requestHelper.asyncRequestHandler):
 					# Token not found. Disconnect that user
 					responseData = serverPackets.loginError()
 					responseData += serverPackets.notification("Whoops! Something went wrong, please login again.")
-					consoleHelper.printColored("[!] Received packet from unknown token ({}).".format(requestTokenString), bcolors.RED)
-					consoleHelper.printColored("> {} have been disconnected (invalid token)".format(requestTokenString), bcolors.YELLOW)
+					log.warning("Received packet from unknown token ({}).".format(requestTokenString))
+					log.info("{} have been disconnected (invalid token)".format(requestTokenString))
 				finally:
 					# Unlock token
 					if userToken != None:
-						#consoleHelper.printColored("[{}] unlocked".format(userToken.token), bcolors.GREEN)
 						userToken.lock.release()
 
-			if glob.requestTime == True:
+			if glob.outputRequestTime == True:
 				# End time
 				et = datetime.datetime.now()
 
 				# Total time:
 				tt = float((et.microsecond-st.microsecond)/1000)
-				consoleHelper.printColored("Request time: {}ms".format(tt), bcolors.PINK)
+				log.debug("Request time: {}ms".format(tt))
 
 			# Send server's response to client
 			# We don't use token object because we might not have a token (failed login)
@@ -190,13 +187,16 @@ class handler(requestHelper.asyncRequestHandler):
 			self.add_header("Keep-Alive", "timeout=5, max=100")
 			self.add_header("Connection", "keep-alive")
 			self.add_header("Content-Type", "text/html; charset=UTF-8")
-			self.add_header("Vary", "Accept-Encoding")
-			self.add_header("Content-Encoding", "gzip")
-			self.write(gzip.compress(responseData, 6))
+
+			if glob.gzip == True:
+				self.add_header("Vary", "Accept-Encoding")
+				self.add_header("Content-Encoding", "gzip")
+				self.write(gzip.compress(responseData, int(glob.conf.config["server"]["gziplevel"])))
+			else:
+				self.write(responseData)
 		except:
 			msg = "Unhandled exception in mainHandler:\n```\n{}\n{}\n```".format(sys.exc_info(), traceback.format_exc())
-			consoleHelper.printColored("[!] {}".format(msg), bcolors.RED)
-			discordBotHelper.sendConfidential(msg, True)
+			log.error("{}".format(msg), True)
 		finally:
 			try:
 				if not self._finished:

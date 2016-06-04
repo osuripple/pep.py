@@ -7,6 +7,7 @@ from constants import bcolors
 from objects import glob
 from constants import clientPackets
 from constants import serverPackets
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# Channel part packet
@@ -33,4 +34,4 @@ def partChannel(userToken, channelName, kick = False):
 			userToken.enqueue(serverPackets.channelKicked(channelName))
 
 		# Console output
-		consoleHelper.printColored("> {} parted channel {}".format(username, channelName), bcolors.YELLOW)
+		log.info("{} parted channel {}".format(username, channelName))

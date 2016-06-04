@@ -10,10 +10,8 @@ import requests
 import json
 from constants import mods
 from helpers import generalFunctions
-
-from helpers import consoleHelper
 from helpers import discordBotHelper
-from constants import bcolors
+from helpers import logHelper as log
 
 """
 Commands callbacks
@@ -492,7 +490,7 @@ def tillerinoLast(fro, chan, message):
 			return False
 		return "{0:.2f}pp ({1} on {2})".format(data["pp"], fro, data["sn"])
 	except Exception as a:
-		print(a)
+		log.error(a)
 		return False
 
 def mm00(fro, chan, message):

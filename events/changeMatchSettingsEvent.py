@@ -7,6 +7,7 @@ import random
 from constants import matchTeamTypes
 from constants import matchTeams
 from constants import slotStatuses
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# Read new settings
@@ -105,5 +106,5 @@ def handle(userToken, packetData):
 	match.sendUpdate()
 
 	# Console output
-	consoleHelper.printColored("> MPROOM{}: Updated room settings".format(match.matchID), bcolors.BLUE)
+	log.info("MPROOM{}: Updated room settings".format(match.matchID))
 	#consoleHelper.printColored("> MPROOM{}: DEBUG: Host is {}".format(match.matchID, match.hostUserID), bcolors.PINK)

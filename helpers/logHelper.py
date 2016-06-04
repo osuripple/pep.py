@@ -1,8 +1,11 @@
 from constants import bcolors
 from helpers import discordBotHelper
 from helpers import generalFunctions
+from helpers.systemHelper import runningUnderUnix
+from objects import glob
 
-def logMessage(message, alertType = INFO, messageColor = bcolors.ENDC, discord = False, alertDev = False, of = None):
+ENDL = "\n" if runningUnderUnix() else "\r\n"
+def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord = False, alertDev = False, of = None, stdout = True):
 	"""
 	Logs a message to stdout/discord/file
 
@@ -12,15 +15,17 @@ def logMessage(message, alertType = INFO, messageColor = bcolors.ENDC, discord =
 	discord -- if True, the message will be logged on #bunker channel on discord. Default: False
 	alertDev -- if True, devs will receive an hl on discord. Default: False
 	of -- if not None but a string, log the message to that file (inside .data folder). Eg: "warnings.txt" Default: None (don't log to file)
+	stdout -- if True, print the message to stdout. Default: True
 	"""
-
 	# Get type color from alertType
 	if alertType == "INFO":
 		typeColor = bcolors.GREEN
 	elif alertType == "WARNING":
 		typeColor = bcolors.YELLOW
-	elif typeColor == "ERROR":
+	elif alertType == "ERROR":
 		typeColor = bcolors.RED
+	elif alertType == "CHAT":
+		typeColor = bcolors.BLUE
 	else:
 		typeColor = bcolors.ENDC
 
@@ -37,8 +42,9 @@ def logMessage(message, alertType = INFO, messageColor = bcolors.ENDC, discord =
 		messageColor=messageColor,
 		endc=bcolors.ENDC)
 
-	# Always log to console
-	print(finalMessageConsole)
+	# Log to console
+	if stdout == True:
+		print(finalMessageConsole)
 
 	# Log to discord if needed
 	if discord == True:
@@ -48,7 +54,7 @@ def logMessage(message, alertType = INFO, messageColor = bcolors.ENDC, discord =
 	if of != None:
 		# TODO: Lock
 		with open(".data/{}".format(of), "a") as f:
-			f.write(finalMessage)
+			f.write(finalMessage+ENDL)
 
 def warning(message, discord = False, alertDev = False):
 	"""
@@ -69,3 +75,38 @@ def error(message, discord = False, alertDev = True):
 	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
 	"""
 	logMessage(message, "ERROR", bcolors.RED, discord, alertDev, "errors.txt")
+
+def info(message, discord = False, alertDev = False):
+	"""
+	Log an error to stdout (and info.log)
+
+	message -- info message
+	discord -- if True, send error to #bunker. Optional. Default = False.
+	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
+	"""
+	logMessage(message, "INFO", bcolors.ENDC, discord, alertDev, "info.txt")
+
+def debug(message):
+	"""
+	Log a debug message to stdout and debug.log if server is running in debug mode
+
+	message -- debug message
+	"""
+	if glob.debug == True:
+		logMessage(message, "DEBUG", bcolors.PINK, of="debug.txt")
+
+def chat(message):
+	"""
+	Log public messages to stdout and chatlog_public.txt
+
+	message -- chat message
+	"""
+	logMessage(message, "CHAT", bcolors.BLUE, of="chatlog_public.txt")
+
+def pm(message):
+	"""
+	Log private messages to stdout and chatlog_private.txt
+
+	message -- chat message
+	"""
+	logMessage(message, "CHAT", bcolors.BLUE, of="chatlog_private.txt")

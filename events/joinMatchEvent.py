@@ -1,9 +1,8 @@
 from constants import clientPackets
 from constants import serverPackets
 from objects import glob
-from helpers import consoleHelper
-from constants import bcolors
 from constants import exceptions
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# read packet data
@@ -12,7 +11,6 @@ def handle(userToken, packetData):
 	# Get match from ID
 	joinMatch(userToken, packetData["matchID"], packetData["password"])
 
-
 def joinMatch(userToken, matchID, password):
 	try:
 		# TODO: leave other matches
@@ -20,7 +18,6 @@ def joinMatch(userToken, matchID, password):
 
 		# get usertoken data
 		userID = userToken.userID
-		username = userToken.username
 
 		# Make sure the match exists
 		if matchID not in glob.matches.matches:
@@ -51,10 +48,10 @@ def joinMatch(userToken, matchID, password):
 		#userToken.enqueue(serverPackets.sendMessage("FokaBot", "#multiplayer", "Hi {}, and welcome to Ripple's multiplayer mode! This feature is still WIP and might have some issues. If you find any bugs, please report them (by clicking here)[https://ripple.moe/index.php?p=22].".format(username)))
 	except exceptions.matchNotFoundException:
 		userToken.enqueue(serverPackets.matchJoinFail())
-		consoleHelper.printColored("[!] {} has tried to join a mp room, but it doesn't exist".format(userToken.username), bcolors.RED)
+		log.warning("{} has tried to join a mp room, but it doesn't exist".format(userToken.username))
 	except exceptions.matchWrongPasswordException:
 		userToken.enqueue(serverPackets.matchJoinFail())
-		consoleHelper.printColored("[!] {} has tried to join a mp room, but he typed the wrong password".format(userToken.username), bcolors.RED)
+		log.warning("{} has tried to join a mp room, but he typed the wrong password".format(userToken.username))
 	except exceptions.matchJoinErrorException:
 		userToken.enqueue(serverPackets.matchJoinFail())
-		consoleHelper.printColored("[!] {} has tried to join a mp room, but an error has occured".format(userToken.username), bcolors.RED)
+		log.warning("{} has tried to join a mp room, but an error has occured".format(userToken.username))

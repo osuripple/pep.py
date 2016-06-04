@@ -1,8 +1,8 @@
 from objects import glob
 from constants import clientPackets
 from constants import serverPackets
-from constants import actions
 from helpers import userHelper
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# Get usertoken data
@@ -29,4 +29,4 @@ def handle(userToken, packetData):
 	glob.tokens.enqueueAll(serverPackets.userStats(userID))
 
 	# Console output
-	print("> {} changed action: {} [{}][{}]".format(username, str(userToken.actionID), userToken.actionText, userToken.actionMd5))
+	log.info("{} changed action: {} [{}][{}]".format(username, str(userToken.actionID), userToken.actionText, userToken.actionMd5))

@@ -1,6 +1,7 @@
 from objects import glob
 from constants import slotStatuses
 from constants import serverPackets
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# Get usertoken data
@@ -22,10 +23,6 @@ def handle(userToken, packetData):
 
 	# Change slot id in packetData
 	slotID = match.getUserSlotID(userID)
-	'''opd = packetData[4]
-	packetData = bytearray(packetData)
-	packetData[4] = slotID
-	print("User: {}, slot {}, oldPackData: {}, packData {}".format(userID, slotID, opd, packetData[4]))'''
 
 	# Enqueue frames to who's playing
 	for i in range(0,16):

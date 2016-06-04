@@ -2,9 +2,8 @@ from helpers import requestHelper
 from constants import exceptions
 import json
 from objects import glob
-from helpers import consoleHelper
-from constants import bcolors
 from helpers import systemHelper
+from helpers import logHelper as log
 
 class handler(requestHelper.asyncRequestHandler):
 	def asyncGet(self):
@@ -17,10 +16,10 @@ class handler(requestHelper.asyncRequestHandler):
 
 			# Check ci key
 			key = self.get_argument("k")
-			if key is None or key != glob.conf.config["ci"]["key"]:
+			if key is None or key != glob.conf.config["server"]["cikey"]:
 				raise exceptions.invalidArgumentsException()
 
-			consoleHelper.printColored("[!] Ci event triggered!!", bcolors.PINK)
+			log.info("Ci event triggered!!")
 			systemHelper.scheduleShutdown(5, False, "A new Bancho update is available and the server will be restarted in 5 seconds. Thank you for your patience.")
 
 			# Status code and message

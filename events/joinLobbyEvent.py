@@ -1,7 +1,6 @@
 from constants import serverPackets
 from objects import glob
-from helpers import consoleHelper
-from constants import bcolors
+from helpers import logHelper as log
 
 def handle(userToken, _):
 	# Get userToken data
@@ -16,4 +15,4 @@ def handle(userToken, _):
 		userToken.enqueue(serverPackets.createMatch(key))
 
 	# Console output
-	consoleHelper.printColored("> {} has joined multiplayer lobby".format(username), bcolors.BLUE)
+	log.info("{} has joined multiplayer lobby".format(username))

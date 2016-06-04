@@ -127,10 +127,10 @@ class db:
 			if self.disconnected == True:
 				# If we were disconnected, set disconnected to false and print message
 				self.disconnected = False
-				consoleHelper.printColored("> Reconnected to MySQL server!", bcolors.GREEN)
+				log.error("> Reconnected to MySQL server!", bcolors.GREEN)
 		except:
 			# Can't ping MySQL server. Show error and call loop in 5 seconds
-			consoleHelper.printColored("[!] CRITICAL!! MySQL connection died! Make sure your MySQL server is running! Checking again in 5 seconds...", bcolors.RED)
+			log.error("[!] CRITICAL!! MySQL connection died! Make sure your MySQL server is running! Checking again in 5 seconds...", bcolors.RED)
 			self.disconnected = True
 			time = 5
 

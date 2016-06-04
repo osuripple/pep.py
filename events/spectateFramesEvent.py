@@ -1,6 +1,4 @@
 from objects import glob
-from helpers import consoleHelper
-from constants import bcolors
 from constants import serverPackets
 from constants import exceptions
 
@@ -9,7 +7,6 @@ def handle(userToken, packetData):
 	userID = userToken.userID
 
 	# Send spectator frames to every spectator
-	consoleHelper.printColored("> {}'s spectators: {}".format(str(userID), str(userToken.spectators)), bcolors.BLUE)
 	for i in userToken.spectators:
 		# Send to every user but host
 		if i != userID:

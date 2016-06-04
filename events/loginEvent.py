@@ -13,24 +13,19 @@ import sys
 import traceback
 from helpers import requestHelper
 from helpers import discordBotHelper
+from helpers import logHelper as log
 
 def handle(tornadoRequest):
 	# Data to return
 	responseTokenString = "ayy"
 	responseData = bytes()
 
-	# Get IP from flask request
+	# Get IP from tornado request
 	requestIP = tornadoRequest.getRequestIP()
-
-	# Console output
-	print("> Accepting connection from {}...".format(requestIP))
 
 	# Split POST body so we can get username/password/hardware data
 	# 2:-3 thing is because requestData has some escape stuff that we don't need
 	loginData = str(tornadoRequest.request.body)[2:-3].split("\\n")
-
-	# Process login
-	print("> Processing login request for {}...".format(loginData[0]))
 	try:
 		# If true, print error to console
 		err = False
@@ -128,14 +123,14 @@ def handle(tornadoRequest):
 		responseToken.enqueue(serverPackets.onlineUsers())
 
 		# Get location and country from ip.zxq.co or database
-		if generalFunctions.stringToBool(glob.conf.config["server"]["localizeusers"]):
+		if glob.localize == True:
 			# Get location and country from IP
 			location = locationHelper.getLocation(requestIP)
 			countryLetters = locationHelper.getCountry(requestIP)
 			country = countryHelper.getCountryID(countryLetters)
 		else:
 			# Set location to 0,0 and get country from db
-			print("[!] Location skipped")
+			log.warning("Location skipped")
 			location = [0,0]
 			countryLetters = "XX"
 			country = countryHelper.getCountryID(userHelper.getCountry(userID))
@@ -155,9 +150,6 @@ def handle(tornadoRequest):
 		# Set reponse data to right value and reset our queue
 		responseData = responseToken.queue
 		responseToken.resetQueue()
-
-		# Print logged in message
-		consoleHelper.printColored("> {} logged in ({})".format(loginData[0], responseToken.token), bcolors.GREEN)
 	except exceptions.loginFailedException:
 		# Login failed error packet
 		# (we don't use enqueue because we don't have a token since login has failed)
@@ -175,17 +167,10 @@ def handle(tornadoRequest):
 		# Bancho is restarting
 		responseData += serverPackets.notification("Bancho is restarting. Try again in a few minutes.")
 		responseData += serverPackets.loginError()
-	except:
-		# Unknown exception
-		msg = "UNKNOWN ERROR IN LOGIN!!!\n{}\n{}".format(sys.exc_info(), traceback.format_exc())
-		consoleHelper.printColored("[!] {}".format(msg), bcolors.RED)
 	finally:
-		# Print login failed message to console if needed
-		if err == True:
-			consoleHelper.printColored("> {}'s login failed".format(loginData[0]), bcolors.YELLOW)
-
-		# Discord message
-		discordBotHelper.sendConfidential("Bancho login request from {} for user {} ({})".format(requestIP, loginData[0], "failed" if err == True else "success"))
+		# Console and discord log
+		msg = "Bancho login request from {} for user {} ({})".format(requestIP, loginData[0], "failed" if err == True else "success")
+		log.info(msg, True)
 
 		# Return token string and data
 		return (responseTokenString, responseData)

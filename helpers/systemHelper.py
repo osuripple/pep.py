@@ -3,11 +3,9 @@ from constants import serverPackets
 import psutil
 import os
 import sys
-
-from helpers import consoleHelper
-from constants import bcolors
 import threading
 import signal
+from helpers import logHelper as log
 
 def runningUnderUnix():
 	"""
@@ -29,8 +27,8 @@ def scheduleShutdown(sendRestartTime, restart, message = ""):
 	"""
 
 	# Console output
-	consoleHelper.printColored("[!] Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+20), bcolors.PINK)
-	consoleHelper.printColored("[!] Sending server restart packets in {} seconds...".format(sendRestartTime), bcolors.PINK)
+	log.info("Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+20))
+	log.info("Sending server restart packets in {} seconds...".format(sendRestartTime))
 
 	# Send notification if set
 	if message != "":
@@ -52,13 +50,13 @@ def scheduleShutdown(sendRestartTime, restart, message = ""):
 
 def restartServer():
 	"""Restart pep.py script"""
-	print("> Restarting pep.py...")
+	log.info("Restarting pep.py...")
 	os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 def shutdownServer():
 	"""Shutdown pep.py"""
-	print("> Shutting down pep.py...")
+	log.info("> Shutting down pep.py...")
 	sig = signal.SIGKILL if runningUnderUnix() else signal.CTRL_C_EVENT
 	os.kill(os.getpid(), sig)
 

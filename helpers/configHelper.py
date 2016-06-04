@@ -48,19 +48,20 @@ class config:
 			self.config.get("db","database")
 			self.config.get("db","workers")
 
-			self.config.get("server","threads")
 			self.config.get("server","port")
-			self.config.get("server","localizeusers")
-			self.config.get("server","outputpackets")
-			self.config.get("server","outputrequesttime")
-			self.config.get("server","timeouttime")
-			self.config.get("server","timeoutlooptime")
+			self.config.get("server","threads")
+			self.config.get("server","gzip")
+			self.config.get("server","gziplevel")
+			self.config.get("server","localize")
+			self.config.get("server","cikey")
+
+			self.config.get("debug","enable")
+			self.config.get("debug","packets")
+			self.config.get("debug","time")
 
 			self.config.get("discord","enable")
 			self.config.get("discord","boturl")
 			self.config.get("discord","devgroup")
-
-			self.config.get("ci","key")
 			return True
 		except:
 			return False
@@ -82,19 +83,20 @@ class config:
 		self.config.set("db", "workers", "4")
 
 		self.config.add_section("server")
-		self.config.set("server", "threads", "16")
 		self.config.set("server", "port", "5001")
-		self.config.set("server", "localizeusers", "1")
-		self.config.set("server", "outputpackets", "0")
-		self.config.set("server", "outputrequesttime", "0")
-		self.config.set("server", "timeoutlooptime", "100")
-		self.config.set("server", "timeouttime", "100")
+		self.config.set("server", "threads", "16")
+		self.config.set("server", "gzip", "1")
+		self.config.set("server", "gziplevel", "6")
+		self.config.set("server", "localize", "1")
+		self.config.set("server", "cikey", "changeme")
 
-		self.config.add_section("ci")
-		self.config.set("ci", "key", "changeme")
+		self.config.add_section("debug")
+		self.config.set("debug", "enable", "0")
+		self.config.set("debug", "packets", "0")
+		self.config.set("debug", "time", "0")
 
 		self.config.add_section("discord")
-		self.config.set("discord", "enable", "False")
+		self.config.set("discord", "enable", "0")
 		self.config.set("discord", "boturl", "")
 		self.config.set("discord", "devgroup", "")
 

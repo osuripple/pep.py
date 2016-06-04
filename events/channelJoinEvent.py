@@ -8,6 +8,7 @@ from constants import bcolors
 from constants import serverPackets
 from objects import glob
 from constants import exceptions
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# Channel join packet
@@ -49,8 +50,8 @@ def joinChannel(userToken, channelName):
 		userToken.enqueue(serverPackets.channelJoinSuccess(userID, channelName))
 
 		# Console output
-		consoleHelper.printColored("> {} joined channel {}".format(username, channelName), bcolors.GREEN)
+		log.info("{} joined channel {}".format(username, channelName))
 	except exceptions.channelNoPermissionsException:
-		consoleHelper.printColored("[!] {} attempted to join channel {}, but they have no read permissions".format(username, channelName), bcolors.RED)
+		log.warning("{} attempted to join channel {}, but they have no read permissions".format(username, channelName))
 	except exceptions.channelUnknownException:
-		consoleHelper.printColored("[!] {} attempted to join an unknown channel ({})".format(username, channelName), bcolors.RED)
+		log.warning("{} attempted to join an unknown channel ({})".format(username, channelName))

@@ -14,5 +14,11 @@ channels = channelList.channelList()
 matches = matchList.matchList()
 restarting = False
 pool = None
-requestTime = False
+
+
+debug = False
+outputRequestTime = False
+outputPackets = False
 discord = False
+gzip = False
+localize = False

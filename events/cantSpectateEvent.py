@@ -1,8 +1,7 @@
 from objects import glob
 from constants import serverPackets
-from helpers import consoleHelper
-from constants import bcolors
 from constants import exceptions
+from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# get usertoken data
@@ -17,5 +16,5 @@ def handle(userToken, packetData):
 		targetToken.enqueue(serverPackets.noSongSpectator(userID))
 	except exceptions.tokenNotFoundException:
 		# Stop spectating if token not found
-		consoleHelper.printColored("[!] Spectator can't spectate: token not found", bcolors.RED)
+		log.warning("Spectator can't spectate: token not found")
 		userToken.stopSpectating()
