@@ -5,8 +5,6 @@ from constants import matchTeamTypes
 from constants import matchModModes
 from constants import slotStatuses
 from objects import glob
-from helpers import consoleHelper
-from constants import bcolors
 from constants import serverPackets
 from constants import dataTypes
 from constants import matchTeams

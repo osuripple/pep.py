@@ -5,6 +5,7 @@ from helpers.systemHelper import runningUnderUnix
 from objects import glob
 
 ENDL = "\n" if runningUnderUnix() else "\r\n"
+
 def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord = False, alertDev = False, of = None, stdout = True):
 	"""
 	Logs a message to stdout/discord/file
@@ -52,9 +53,12 @@ def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord
 
 	# Log to file if needed
 	if of != None:
-		# TODO: Lock
-		with open(".data/{}".format(of), "a") as f:
-			f.write(finalMessage+ENDL)
+		try:
+			glob.fLocks.lockFile(of)
+			with open(".data/{}".format(of), "a") as f:
+				f.write(finalMessage+ENDL)
+		finally:
+			glob.fLocks.unlockFile(of)
 
 def warning(message, discord = False, alertDev = False):
 	"""
