@@ -165,7 +165,7 @@ class handler(requestHelper.asyncRequestHandler):
 					responseData = serverPackets.loginError()
 					responseData += serverPackets.notification("Whoops! Something went wrong, please login again.")
 					log.warning("Received packet from unknown token ({}).".format(requestTokenString))
-					log.info("{} have been disconnected (invalid token)".format(requestTokenString))
+					log.info("{} has been disconnected (invalid token)".format(requestTokenString))
 				finally:
 					# Unlock token
 					if userToken != None:

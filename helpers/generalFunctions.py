@@ -53,6 +53,73 @@ def readableMods(__mods):
 
 	return r
 
+def getRank(gameMode, __mods, acc, c300, c100, c50, cmiss):
+	"""
+	Return a string with rank/grade for a given score.
+	Used mainly for "tillerino"
+
+	gameMode -- mode (0 = osu!, 1 = Taiko, 2 = CtB, 3 = osu!mania)
+	__mods -- mods bitwise number
+	acc -- accuracy
+	c300 -- 300 hit count
+	c100 -- 100 hit count
+	c50 -- 50 hit count
+	cmiss -- miss count
+	return -- rank/grade string
+	"""
+	total = c300 + c100 + c50 + cmiss
+	hdfl = (__mods & mods.Hidden > 0) or (__mods & mods.Flashlight > 0)
+
+	def ss():
+		return "sshd" if hdfl else "ss"
+
+	def s():
+		return "shd" if hdfl else "s"
+
+	if gameMode == 0:
+		# osu!std
+		if acc == 100:
+			return ss()
+		if c300 / total > 0.90 and c50 / total < 0.1 and cmiss == 0:
+			return s()
+		if (c300 / total > 0.80 and cmiss == 0) or (c300 / total > 0.90):
+			return "a"
+		if (c300 / total > 0.70 and cmiss == 0) or (c300 / total > 0.80):
+			return "b"
+		if c300 / total > 0.60:
+			return "c"
+		return "d"
+	elif gameMode == 1:
+		# taiko not implemented as of yet.
+		return "a"
+	elif gameMode == 2:
+		# CtB
+		if acc == 100:
+			return ss()
+		if acc >= 98.01 and acc <= 99.99:
+			return s()
+		if acc >= 94.01 and acc <= 98.00:
+			return "a"
+		if acc >= 90.01 and acc <= 94.00:
+			return "b"
+		if acc >= 98.01 and acc <= 90.00:
+			return "c"
+		return "d"
+	elif gameMode == 3:
+		# osu!mania
+		if acc == 100:
+			return ss()
+		if acc > 95:
+			return s()
+		if acc > 90:
+			return "a"
+		if acc > 80:
+			return "b"
+		if acc > 70:
+			return "c"
+		return "d"
+
+	return "a"
 
 def strContains(s, w):
 	return (' ' + w + ' ') in (' ' + s + ' ')

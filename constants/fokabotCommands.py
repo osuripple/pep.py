@@ -479,7 +479,8 @@ def tillerinoAcc(fro, chan, message):
 
 def tillerinoLast(fro, chan, message):
 	try:
-		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores.pp
+		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores.*,
+			beatmaps.beatmap_id as bid
 		FROM scores
 		LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores.beatmap_md5
 		LEFT JOIN users ON users.id = scores.userid
@@ -488,7 +489,19 @@ def tillerinoLast(fro, chan, message):
 		LIMIT 1""", [fro])
 		if data == None:
 			return False
-		return "{0:.2f}pp ({1} on {2})".format(data["pp"], fro, data["sn"])
+
+		rank = generalFunctions.getRank(data["play_mode"], data["mods"], data["accuracy"],\
+			data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
+
+		msg = "{0:.2f}pp".format(data["pp"])
+		msg += " on " if chan == "FokaBot" else " | {0} on ".format(fro)
+		msg += "({0})[http://osu.ppy.sh/b/{1}]".format(data["sn"], data["bid"])
+
+		if data["mods"]:
+			msg += ' +' + generalFunctions.readableMods(data["mods"])
+		msg += " ({0:.2f}%, {1})".format(data["accuracy"], rank.upper())
+
+		return msg
 	except Exception as a:
 		log.error(a)
 		return False

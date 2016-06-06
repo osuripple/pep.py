@@ -37,4 +37,4 @@ def handle(userToken, _):
 		glob.tokens.deleteToken(requestToken)
 
 		# Console output
-		log.info("{} have been disconnected.".format(username))
+		log.info("{} has been disconnected.".format(username))
