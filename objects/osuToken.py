@@ -1,12 +1,12 @@
-import uuid
 from constants import actions
 from constants import gameModes
 from helpers import userHelper
-import time
-from helpers import consoleHelper
-from constants import bcolors
 from constants import serverPackets
 from events import logoutEvent
+from helpers import logHelper as log
+from objects import glob
+import uuid
+import time
 import threading
 
 class token:
@@ -94,6 +94,12 @@ class token:
 		self.matchID = -1
 		self.tillerino = [0,0,-1.0]	# beatmap, mods, acc
 		self.queue = bytes()
+
+		self.longMessageWarning = False
+
+		# Spam protection
+		self.spamRate = 0
+		self.lastMessagetime = 0
 
 		# Generate/set token
 		if __token != None:
@@ -229,9 +235,47 @@ class token:
 	def kick(self):
 		"""Kick this user from the server"""
 		# Send packet to target
-		consoleHelper.printColored("> {} has been disconnected. (kick)".format(self.username), bcolors.YELLOW)
+		log.info("{} has been disconnected. (kick)".format(self.username))
 		self.enqueue(serverPackets.notification("You have been kicked from the server. Please login again."))
 		self.enqueue(serverPackets.loginFailed())
 
 		# Logout event
 		logoutEvent.handle(self, None)
+
+	def silence(self, seconds, reason):
+		"""
+		Silences this user (both db and packet)
+
+		seconds -- silence length in seconds
+		reason -- silence reason
+		"""
+		# Silence user in db
+		userHelper.silence(self.userID, int(time.time())+seconds, reason)
+
+		# Send silence packet to target
+		self.enqueue(serverPackets.silenceEndTime(seconds))
+
+		# Send silenced packet to everyone else
+		glob.tokens.enqueueAll(serverPackets.userSilenced(self.userID))
+
+		# Log
+		log.info("{} has been silenced for {} seconds for the following reason: {}".format(self.username, seconds, reason), True)
+
+	def spamProtection(self, increaseSpamRate = True):
+		"""
+		Silences the user if is spamming.
+
+		increaseSpamRate -- pass True if the user has sent a new message. Optional. Default: True
+		"""
+		if increaseSpamRate == True:
+			# Reset spam rate every 10 seconds
+			if int(time.time())-self.lastMessagetime >= 10:
+				self.spamRate = 0
+			else:
+				self.spamRate += 1
+			# Update last message time
+			self.lastMessagetime = time.time()
+
+		# Silence the user if needed
+		if self.spamRate > 10:
+			self.silence(1800, "Spamming (auto spam protection)")

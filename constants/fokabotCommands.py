@@ -164,16 +164,10 @@ def silence(fro, chan, message):
 	if silenceTime > 604800:
 		return "Invalid silence time. Max silence time is 7 days."
 
-	# Calculate silence end time
-	endTime = int(time.time())+silenceTime
-
-	# Update silence end in db
-	userHelper.silence(targetUserID, endTime, reason)
-
 	# Send silence packet to target if he's connected
 	targetToken = glob.tokens.getTokenFromUsername(target)
 	if targetToken != None:
-		targetToken.enqueue(serverPackets.silenceEndTime(silenceTime))
+		targetToken.silence(silenceTime, reason)
 
 	# Log message
 	msg = "{} has been silenced for the following reason: {}".format(target, reason)

@@ -7,7 +7,9 @@ from objects import fokabot
 from constants import exceptions
 from constants import messageTemplates
 from helpers import generalFunctions
+from helpers import userHelper
 from helpers import logHelper as log
+import time
 
 def handle(userToken, packetData):
 	"""
@@ -20,9 +22,17 @@ def handle(userToken, packetData):
 	try:
 		# Get usertoken username
 		username = userToken.username
+		userID = userToken.userID
 
 		# Private message packet
 		packetData = clientPackets.sendPrivateMessage(packetData)
+
+		# Check message length
+		if len(packetData["message"]) > 256:
+			if userToken.longMessageWarning == True:
+				raise exceptions.messageTooLongException
+			else:
+				raise exceptions.messageTooLongWarnException
 
 		if packetData["to"] == "FokaBot":
 			# FokaBot command check
@@ -47,12 +57,18 @@ def handle(userToken, packetData):
 			if token.awayMessage != "":
 				userToken.enqueue(serverPackets.sendMessage(packetData["to"], username, "This user is away: {}".format(token.awayMessage)))
 
+		# Spam protection
+		userToken.spamProtection()
+
 		# Console and file output
 		log.pm("{} -> {}: {}".format(username, packetData["to"], packetData["message"]))
-
-		# Log to chatlog_private
-		#with open(".data/chatlog_private.txt", "a") as f:
-		#	f.write("[{date}] {fro} -> {to}: {message}\n".format(date=generalFunctions.getTimestamp(), fro=username, to=packetData["to"], message=str(packetData["message"].encode("utf-8"))[2:-1]))
 	except exceptions.tokenNotFoundException:
 		# Token not found, user disconnected
 		log.warning("{} tried to send a message to {}, but their token couldn't be found".format(username, packetData["to"]))
+	except exceptions.messageTooLongWarnException:
+		# Message > 256 warn
+		userToken.longMessageWarning = True
+		userToken.enqueue(serverPackets.sendMessage("FokaBot", username, "Your message was too long and has not been sent. Please keep your messages under 256 characters. This is your last warning."))
+	except exceptions.messageTooLongException:
+		# Message > 256 silence
+		userToken.silence(2*3600, "Sending messages longer than 256 characters")

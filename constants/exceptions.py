@@ -62,3 +62,9 @@ class apiException(Exception):
 
 class invalidArgumentsException(Exception):
 	pass
+
+class messageTooLongWarnException(Exception):
+	pass
+
+class messageTooLongException(Exception):
+	pass

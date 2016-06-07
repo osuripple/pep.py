@@ -5,6 +5,8 @@ from objects import fokabot
 from constants import serverPackets
 from helpers import discordBotHelper
 from helpers import logHelper as log
+from helpers import userHelper
+import time
 
 def handle(userToken, packetData):
 	"""
@@ -26,6 +28,14 @@ def handle(userToken, packetData):
 		# Receivers
 		who = []
 
+		# Check message length
+		if len(packetData["message"]) > 256:
+			if userToken.longMessageWarning == True:
+				raise exceptions.messageTooLongException
+			else:
+				raise exceptions.messageTooLongWarnException
+
+		# Get receivers list
 		# Check #spectator
 		if packetData["to"] == "#spectator":
 			# Spectator channel
@@ -87,7 +97,7 @@ def handle(userToken, packetData):
 			if userID in who:
 				who.remove(userID)
 
-
+		# We have receivers
 		# Send packet to required users
 		glob.tokens.multipleEnqueue(serverPackets.sendMessage(username, packetData["to"], packetData["message"]), who, False)
 
@@ -97,6 +107,9 @@ def handle(userToken, packetData):
 			who.append(userID)
 			glob.tokens.multipleEnqueue(serverPackets.sendMessage("FokaBot", packetData["to"], fokaMessage), who, False)
 			log.chat("FokaBot @ {}: {}".format(packetData["to"], str(fokaMessage.encode("UTF-8"))))
+
+		# Spam protection
+		userToken.spamProtection()
 
 		# Console and file log
 		log.chat("{fro} @ {to}: {message}".format(fro=username, to=packetData["to"], message=str(packetData["message"].encode("utf-8"))))
@@ -109,3 +122,10 @@ def handle(userToken, packetData):
 		log.warning("{} tried to send a message to an unknown channel ({})".format(username, packetData["to"]))
 	except exceptions.channelNoPermissionsException:
 		log.warning("{} tried to send a message to channel {}, but they have no write permissions".format(username, packetData["to"]))
+	except exceptions.messageTooLongWarnException:
+		# Message > 256 warn
+		userToken.longMessageWarning = True
+		userToken.enqueue(serverPackets.sendMessage("FokaBot", username, "Your message was too long and has not been sent. Please keep your messages under 256 characters. This is your last warning."))
+	except exceptions.messageTooLongException:
+		# Message > 256 silence
+		userToken.silence(2*3600, "Sending messages longer than 256 characters")
