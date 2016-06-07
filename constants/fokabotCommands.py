@@ -143,6 +143,7 @@ def silence(fro, chan, message):
 
 	# Get target user ID
 	targetUserID = userHelper.getID(target)
+	userID = userHelper.getID(fro)
 
 	# Make sure the user exists
 	if targetUserID == False:
@@ -167,11 +168,14 @@ def silence(fro, chan, message):
 	# Send silence packet to target if he's connected
 	targetToken = glob.tokens.getTokenFromUsername(target)
 	if targetToken != None:
-		targetToken.silence(silenceTime, reason)
+		# user online, silence both in db and with packet
+		targetToken.silence(silenceTime, reason, userID)
+	else:
+		# User offline, silence user only in db
+		userHelper.silence(targetUserID, int(time.time())+silenceTime, reason, userID)
 
 	# Log message
 	msg = "{} has been silenced for the following reason: {}".format(target, reason)
-	discordBotHelper.sendConfidential(msg)
 	return msg
 
 def removeSilence(fro, chan, message):
@@ -182,16 +186,18 @@ def removeSilence(fro, chan, message):
 
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
+	userID = userHelper.getID(fro)
 	if targetUserID == False:
 		return "{}: user not found".format(target)
-
-	# Reset user silence time and reason in db
-	userHelper.silence(targetUserID, 0, "")
 
 	# Send new silence end packet to user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(target)
 	if targetToken != None:
-		targetToken.enqueue(serverPackets.silenceEndTime(0))
+		# User online, remove silence both in db and with packet
+		targetToken.silence(0, "", userID)
+	else:
+		# user offline, remove islene ofnlt from db
+		userHelper.silence(targetUserID, 0, "", userID)
 
 	return "{}'s silence reset".format(target)
 

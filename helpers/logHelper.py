@@ -3,6 +3,8 @@ from helpers import discordBotHelper
 from helpers import generalFunctions
 from helpers.systemHelper import runningUnderUnix
 from objects import glob
+from helpers import userHelper
+import time
 
 ENDL = "\n" if runningUnderUnix() else "\r\n"
 
@@ -114,3 +116,17 @@ def pm(message):
 	message -- chat message
 	"""
 	logMessage(message, "CHAT", bcolors.BLUE, of="chatlog_private.txt")
+
+def rap(userID, message, discord=False, through="FokaBot"):
+	"""
+	Log a private message to Admin logs
+
+	userID -- userID of who made the action
+	message -- message without subject (eg: "is a meme" becomes "user is a meme")
+	discord -- if True, send message to discord
+	through -- "through" thing string. Optional. Default: "FokaBot"
+	"""
+	glob.db.execute("INSERT INTO rap_logs (id, userid, text, datetime, through) VALUES (NULL, %s, %s, %s, %s)", [userID, message, int(time.time()), through])
+	if discord == True:
+		username = userHelper.getUsername(userID)
+		logMessage("{} {}".format(username, message), discord=True)

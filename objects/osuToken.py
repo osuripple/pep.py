@@ -242,24 +242,22 @@ class token:
 		# Logout event
 		logoutEvent.handle(self, None)
 
-	def silence(self, seconds, reason):
+	def silence(self, seconds, reason, author = 999):
 		"""
 		Silences this user (both db and packet)
 
 		seconds -- silence length in seconds
 		reason -- silence reason
+		author -- userID of who has silenced the target. Optional. Default: 999 (fokabot)
 		"""
 		# Silence user in db
-		userHelper.silence(self.userID, int(time.time())+seconds, reason)
+		userHelper.silence(self.userID, int(time.time())+seconds, reason, author)
 
 		# Send silence packet to target
 		self.enqueue(serverPackets.silenceEndTime(seconds))
 
 		# Send silenced packet to everyone else
 		glob.tokens.enqueueAll(serverPackets.userSilenced(self.userID))
-
-		# Log
-		log.info("{} has been silenced for {} seconds for the following reason: {}".format(self.username, seconds, reason), True)
 
 	def spamProtection(self, increaseSpamRate = True):
 		"""

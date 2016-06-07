@@ -2,6 +2,8 @@ from helpers import passwordHelper
 from constants import gameModes
 from helpers import generalFunctions
 from objects import glob
+from helpers import logHelper as log
+import time
 
 def getID(username):
 	"""
@@ -98,7 +100,8 @@ def getSilenceEnd(userID):
 	return glob.db.fetch("SELECT silence_end FROM users WHERE id = %s", [userID])["silence_end"]
 
 
-def silence(userID, silenceEndTime, silenceReason):
+def silence(userID, silenceEndTime, silenceReason, author = 999):
+	# TODO: user seconds insteaf od silenceEndTime
 	"""
 	Set userID's **ABSOLUTE** silence end UNIX time
 	Remember to add time.time() to the silence length
@@ -106,9 +109,19 @@ def silence(userID, silenceEndTime, silenceReason):
 	userID -- userID
 	silenceEndtime -- UNIX time when the silence ends
 	silenceReason -- Silence reason shown on website
+	author -- userID of who silenced the user. Default: 999
 	"""
-
+	# db qurey
 	glob.db.execute("UPDATE users SET silence_end = %s, silence_reason = %s WHERE id = %s", [silenceEndTime, silenceReason, userID])
+
+	# Loh
+	seconds = silenceEndTime-int(time.time())
+	targetUsername = getUsername(userID)
+	# TODO: exists check im drunk rn i need to sleep (stampa piede ubriaco confirmed)
+	if seconds > 0:
+		log.rap(author, "has silenced {} for {} seconds for the following reason: \"{}\"".format(targetUsername, seconds, silenceReason), True)
+	else:
+		log.rap(author, "has removed {}'s silence".format(targetUsername), True)
 
 def getRankedScore(userID, gameMode):
 	"""
