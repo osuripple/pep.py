@@ -22,7 +22,7 @@ def handle(userToken, _):
 			spec = glob.tokens.getTokenFromUserID(c)
 			spec.enqueue(serverPackets.fellowSpectatorLeft(userID))
 
-		targetToken.enqueue(serverPackets.fellowSpectatorLeft(userID))
+		#targetToken.enqueue(serverPackets.fellowSpectatorLeft(userID))
 
 		# Console output
 		# TODO: Move messages in stop spectating

@@ -44,7 +44,7 @@ def handle(userToken, packetData):
 		# send fellowSpectatorJoined to all spectators
 		for c in targetToken.spectators:
 			if c is not userID:
-				targetToken.enqueue(serverPackets.fellowSpectatorJoined(c))
+				#targetToken.enqueue(serverPackets.fellowSpectatorJoined(c))
 				specToken = glob.tokens.getTokenFromUserID(c)
 				specToken.enqueue(serverPackets.fellowSpectatorJoined(userID))
 
