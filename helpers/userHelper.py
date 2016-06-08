@@ -286,7 +286,8 @@ def setAllowed(userID, allowed):
 	userID -- user
 	allowed -- allowed status. 1: normal, 0: banned
 	"""
-	glob.db.execute("UPDATE users SET allowed = %s WHERE id = %s", [allowed, userID])
+	banDateTime = int(time.time()) if allowed == 0 else 0
+	glob.db.execute("UPDATE users SET allowed = %s, ban_datetime = %s WHERE id = %s", [allowed, banDateTime, userID])
 
 def setCountry(userID, country):
 	"""
