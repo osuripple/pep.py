@@ -18,6 +18,11 @@ def handle(userToken, _):
 
 		# Send the spectator left packet to host
 		targetToken.enqueue(serverPackets.removeSpectator(userID))
+		for c in targetToken.spectators:
+			spec = glob.tokens.getTokenFromUserID(c)
+			spec.enqueue(serverPackets.fellowSpectatorLeft(userID))
+
+		targetToken.enqueue(serverPackets.fellowSpectatorLeft(userID))
 
 		# Console output
 		# TODO: Move messages in stop spectating

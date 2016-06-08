@@ -188,6 +188,12 @@ def spectatorFrames(data):
 def noSongSpectator(userID):
 	return packetHelper.buildPacket(packetIDs.server_spectatorCantSpectate, [[userID, dataTypes.sInt32]])
 
+def fellowSpectatorJoined(userID):
+	return packetHelper.buildPacket(packetIDs.server_fellowSpectatorJoined, [[userID, dataTypes.sInt32]])
+
+def fellowSpectatorLeft(userID):
+	return packetHelper.buildPacket(packetIDs.server_fellowSpectatorLeft, [[userID, dataTypes.sInt32]])
+
 
 """ Multiplayer Packets """
 def createMatch(matchID):

@@ -41,6 +41,13 @@ def handle(userToken, packetData):
 			# First spectator, send #spectator join to host too
 			targetToken.enqueue(serverPackets.channelJoinSuccess(userID, "#spectator"))
 
+		# send fellowSpectatorJoined to all spectators
+		for c in targetToken.spectators:
+			if c is not userID:
+				targetToken.enqueue(serverPackets.fellowSpectatorJoined(c))
+				specToken = glob.tokens.getTokenFromUserID(c)
+				specToken.enqueue(serverPackets.fellowSpectatorJoined(userID))
+
 		# Console output
 		log.info("{} are spectating {}".format(username, userHelper.getUsername(packetData["userID"])))
 	except exceptions.tokenNotFoundException:
