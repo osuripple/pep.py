@@ -251,7 +251,7 @@ class token:
 		author -- userID of who has silenced the target. Optional. Default: 999 (fokabot)
 		"""
 		# Silence user in db
-		userHelper.silence(self.userID, int(time.time())+seconds, reason, author)
+		userHelper.silence(self.userID, seconds, reason, author)
 
 		# Send silence packet to target
 		self.enqueue(serverPackets.silenceEndTime(seconds))

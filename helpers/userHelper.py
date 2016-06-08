@@ -100,22 +100,20 @@ def getSilenceEnd(userID):
 	return glob.db.fetch("SELECT silence_end FROM users WHERE id = %s", [userID])["silence_end"]
 
 
-def silence(userID, silenceEndTime, silenceReason, author = 999):
-	# TODO: user seconds insteaf od silenceEndTime
+def silence(userID, seconds, silenceReason, author = 999):
 	"""
-	Set userID's **ABSOLUTE** silence end UNIX time
-	Remember to add time.time() to the silence length
+	Silence someone
 
 	userID -- userID
-	silenceEndtime -- UNIX time when the silence ends
+	seconds -- silence length in seconds
 	silenceReason -- Silence reason shown on website
 	author -- userID of who silenced the user. Default: 999
 	"""
 	# db qurey
+	silenceEndTime = int(time.time())+seconds
 	glob.db.execute("UPDATE users SET silence_end = %s, silence_reason = %s WHERE id = %s", [silenceEndTime, silenceReason, userID])
 
 	# Loh
-	seconds = silenceEndTime-int(time.time())
 	targetUsername = getUsername(userID)
 	# TODO: exists check im drunk rn i need to sleep (stampa piede ubriaco confirmed)
 	if seconds > 0:

@@ -172,7 +172,7 @@ def silence(fro, chan, message):
 		targetToken.silence(silenceTime, reason, userID)
 	else:
 		# User offline, silence user only in db
-		userHelper.silence(targetUserID, int(time.time())+silenceTime, reason, userID)
+		userHelper.silence(targetUserID, silenceTime, reason, userID)
 
 	# Log message
 	msg = "{} has been silenced for the following reason: {}".format(target, reason)
@@ -209,6 +209,7 @@ def ban(fro, chan, message):
 
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
+	userID = userHelper.getID(fro)
 	if targetUserID == False:
 		return "{}: user not found".format(target)
 
@@ -220,6 +221,7 @@ def ban(fro, chan, message):
 	if targetToken != None:
 		targetToken.enqueue(serverPackets.loginBanned())
 
+	log.rap(userID, "has banned {}".format(target), True)
 	return "RIP {}. You will not be missed.".format(target)
 
 def unban(fro, chan, message):
@@ -230,12 +232,14 @@ def unban(fro, chan, message):
 
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
+	userID = userHelper.getID(fro)
 	if targetUserID == False:
 		return "{}: user not found".format(target)
 
 	# Set allowed to 1
 	userHelper.setAllowed(targetUserID, 1)
 
+	log.rap(userID, "has unbanned {}".format(target), True)
 	return "Welcome back {}!".format(target)
 
 def restartShutdown(restart):
