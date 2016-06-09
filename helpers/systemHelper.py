@@ -75,7 +75,7 @@ def getSystemInfo():
 
 	# General stats
 	data["connectedUsers"] = len(glob.tokens.tokens)
-	data["webServer"] = glob.conf.config["server"]["server"]
+	data["matches"] = len(glob.matches.matches)
 	data["cpuUsage"] = psutil.cpu_percent()
 	data["totalMemory"] = "{0:.2f}".format(psutil.virtual_memory()[0]/1074000000)
 	data["usedMemory"] = "{0:.2f}".format(psutil.virtual_memory()[3]/1074000000)

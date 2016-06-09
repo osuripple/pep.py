@@ -307,18 +307,18 @@ def systemStatus(fro, chan, message):
 	data = systemHelper.getSystemInfo()
 
 	# Final message
-	msg =  "=== PEP.PY STATS ===\n"
-	msg += "Running pep.py server\n"
-	msg += "Webserver: {}\n".format(data["webServer"])
+	msg = "pep.py bancho server v{}\n".format(glob.VERSION)
+	msg += "made by the Ripple team\n"
 	msg += "\n"
 	msg += "=== BANCHO STATS ===\n"
-	msg += "Connected users: {}\n".format(str(data["connectedUsers"]))
+	msg += "Connected users: {}\n".format(data["connectedUsers"])
+	msg += "Multiplayer matches: {}\n".format(data["matches"])
 	msg += "\n"
 	msg += "=== SYSTEM STATS ===\n"
-	msg += "CPU: {}%\n".format(str(data["cpuUsage"]))
-	msg += "RAM: {}GB/{}GB\n".format(str(data["usedMemory"]), str(data["totalMemory"]))
+	msg += "CPU: {}%\n".format(data["cpuUsage"])
+	msg += "RAM: {}GB/{}GB\n".format(data["usedMemory"], data["totalMemory"])
 	if data["unix"] == True:
-		msg += "Load average: {}/{}/{}\n".format(str(data["loadAverage"][0]), str(data["loadAverage"][1]), str(data["loadAverage"][2]))
+		msg += "Load average: {}/{}/{}\n".format(data["loadAverage"][0], data["loadAverage"][1], data["loadAverage"][2])
 
 	return msg
 
