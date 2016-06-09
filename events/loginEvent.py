@@ -55,8 +55,11 @@ def handle(tornadoRequest):
 		responseToken = glob.tokens.addToken(userID)
 		responseTokenString = responseToken.token
 
-		# Get silence end
-		userSilenceEnd = max(0, userHelper.getSilenceEnd(userID)-int(time.time()))
+		# Set silence end UNIX time in token
+		responseToken.silenceEndTime = userHelper.getSilenceEnd(userID)
+
+		# Get only silence remaining seconds
+		silenceSeconds = responseToken.getSilenceSecondsLeft()
 
 		# Get supporter/GMT
 		userRank = userHelper.getRankPrivileges(userID)
@@ -80,7 +83,7 @@ def handle(tornadoRequest):
 				responseToken.enqueue(serverPackets.notification("Bancho is in maintenance mode. Only mods/admins have full access to the server.\nType !system maintenance off in chat to turn off maintenance mode."))
 
 		# Send all needed login packets
-		responseToken.enqueue(serverPackets.silenceEndTime(userSilenceEnd))
+		responseToken.enqueue(serverPackets.silenceEndTime(silenceSeconds))
 		responseToken.enqueue(serverPackets.userID(userID))
 		responseToken.enqueue(serverPackets.protocolVersion())
 		responseToken.enqueue(serverPackets.userSupporterGMT(userSupporter, userGMT))
@@ -104,6 +107,7 @@ def handle(tornadoRequest):
 			if value.publicRead == True:
 				responseToken.enqueue(serverPackets.channelInfo(key))
 
+		# Send friends list
 		responseToken.enqueue(serverPackets.friendList(userID))
 
 		# Send main menu icon and login notification if needed

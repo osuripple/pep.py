@@ -27,6 +27,10 @@ def handle(userToken, packetData):
 		# Private message packet
 		packetData = clientPackets.sendPrivateMessage(packetData)
 
+		# Make sure the user is not silenced
+		if userToken.isSilenced() == True:
+			raise exceptions.userSilencedException
+
 		# Check message length
 		if len(packetData["message"]) > 256:
 			if userToken.longMessageWarning == True:
@@ -62,6 +66,9 @@ def handle(userToken, packetData):
 
 		# Console and file output
 		log.pm("{} -> {}: {}".format(username, packetData["to"], packetData["message"]))
+	except exceptions.userSilencedException:
+		userToken.enqueue(serverPackets.silenceEndTime(userToken.getSilenceSecondsLeft()))
+		log.warning("{} tried to send a message during silence".format(username))
 	except exceptions.tokenNotFoundException:
 		# Token not found, user disconnected
 		log.warning("{} tried to send a message to {}, but their token couldn't be found".format(username, packetData["to"]))

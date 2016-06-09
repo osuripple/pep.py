@@ -68,3 +68,6 @@ class messageTooLongWarnException(Exception):
 
 class messageTooLongException(Exception):
 	pass
+
+class userSilencedException(Exception):
+	pass

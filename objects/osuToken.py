@@ -32,34 +32,6 @@ class token:
 	latestTillerino -- beatmap ID of latest song from tillerino bot
 	"""
 
-	'''token = ""
-	userID = 0
-	username = ""
-	rank = 0
-	actionID = actions.idle
-	actionText = ""
-	actionMd5 = ""
-	actionMods = 0
-	gameMode = gameModes.std
-
-	country = 0
-	location = [0,0]
-
-	queue = bytes()
-	joinedChannels = []
-
-	spectating = 0
-	spectators = []
-
-	pingTime = 0
-	loginTime = 0
-
-	awayMessage = ""
-
-	matchID = -1
-
-	latestTillerino = 0'''
-
 
 	def __init__(self, __userID, __token = None):
 		"""
@@ -93,11 +65,11 @@ class token:
 		self.awayMessage = ""
 		self.matchID = -1
 		self.tillerino = [0,0,-1.0]	# beatmap, mods, acc
+		self.silenceEndTime = 0
 		self.queue = bytes()
 
-		self.longMessageWarning = False
-
 		# Spam protection
+		self.longMessageWarning = False
 		self.spamRate = 0
 		self.lastMessagetime = 0
 
@@ -244,13 +216,14 @@ class token:
 
 	def silence(self, seconds, reason, author = 999):
 		"""
-		Silences this user (both db and packet)
+		Silences this user (db, packet and token)
 
 		seconds -- silence length in seconds
 		reason -- silence reason
 		author -- userID of who has silenced the target. Optional. Default: 999 (fokabot)
 		"""
-		# Silence user in db
+		# Silence in db and token
+		self.silenceEndTime = int(time.time())+seconds
 		userHelper.silence(self.userID, seconds, reason, author)
 
 		# Send silence packet to target
@@ -277,3 +250,20 @@ class token:
 		# Silence the user if needed
 		if self.spamRate > 10:
 			self.silence(1800, "Spamming (auto spam protection)")
+
+	def isSilenced(self):
+		"""
+		Returns True if this user is silenced, otherwise False
+
+		return -- True/False
+		"""
+		return self.silenceEndTime-int(time.time()) > 0
+
+	def getSilenceSecondsLeft(self):
+		"""
+		Returns the seconds left for this user's silence
+		(0 if user is not silenced)
+
+		return -- silence seconds left
+		"""
+		return max(0, self.silenceEndTime-int(time.time()))

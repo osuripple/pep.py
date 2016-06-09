@@ -28,6 +28,10 @@ def handle(userToken, packetData):
 		# Receivers
 		who = []
 
+		# Make sure the user is not silenced
+		if userToken.isSilenced() == True:
+			raise exceptions.userSilencedException
+
 		# Check message length
 		if len(packetData["message"]) > 256:
 			if userToken.longMessageWarning == True:
@@ -116,6 +120,9 @@ def handle(userToken, packetData):
 
 		# Discord log
 		discordBotHelper.sendChatlog("**{fro} @ {to}:** {message}".format(fro=username, to=packetData["to"], message=str(packetData["message"].encode("utf-8"))[2:-1]))
+	except exceptions.userSilencedException:
+		userToken.enqueue(serverPackets.silenceEndTime(userToken.getSilenceSecondsLeft()))
+		log.warning("{} tried to send a message during silence".format(username))
 	except exceptions.channelModeratedException:
 		log.warning("{} tried to send a message to a channel that is in moderated mode ({})".format(username, packetData["to"]))
 	except exceptions.channelUnknownException:
