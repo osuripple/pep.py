@@ -72,6 +72,10 @@ def handle(tornadoRequest):
 		if glob.restarting == True:
 			raise exceptions.banchoRestartingException()
 
+		# Send login notification before maintenance message
+		if glob.banchoConf.config["loginNotification"] != "":
+			responseToken.enqueue(serverPackets.notification(glob.banchoConf.config["loginNotification"]))
+
 		# Maintenance check
 		if glob.banchoConf.config["banchoMaintenance"] == True:
 			if userGMT == False:
@@ -110,12 +114,9 @@ def handle(tornadoRequest):
 		# Send friends list
 		responseToken.enqueue(serverPackets.friendList(userID))
 
-		# Send main menu icon and login notification if needed
+		# Send main menu icon
 		if glob.banchoConf.config["menuIcon"] != "":
 			responseToken.enqueue(serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
-
-		if glob.banchoConf.config["loginNotification"] != "":
-			responseToken.enqueue(serverPackets.notification(glob.banchoConf.config["loginNotification"]))
 
 		# Get everyone else userpanel
 		# TODO: Better online users handling
