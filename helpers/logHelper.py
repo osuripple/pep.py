@@ -29,6 +29,8 @@ def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord
 		typeColor = bcolors.RED
 	elif alertType == "CHAT":
 		typeColor = bcolors.BLUE
+	elif alertType == "DEBUG":
+		typeColor = bcolors.PINK
 	else:
 		typeColor = bcolors.ENDC
 

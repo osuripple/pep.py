@@ -81,6 +81,11 @@ if __name__ == "__main__":
 		consoleHelper.printColored("[!] Error while loading bancho_settings. Please make sure the table in DB has all the required rows", bcolors.RED)
 		raise
 
+	# Delete old bancho sessions
+	consoleHelper.printNoNl("> Deleting cached bancho sessions from DB... ")
+	glob.tokens.deleteBanchoSessions()
+	consoleHelper.printDone()
+
 	# Create threads pool
 	try:
 		consoleHelper.printNoNl("> Creating threads pool... ")

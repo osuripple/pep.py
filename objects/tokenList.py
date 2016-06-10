@@ -1,8 +1,10 @@
 from objects import osuToken
+from objects import glob
 import time
 import threading
 from events import logoutEvent
 from helpers import logHelper as log
+from helpers import userHelper
 
 class tokenList:
 	"""
@@ -17,73 +19,77 @@ class tokenList:
 		"""
 		self.tokens = {}
 
-	def addToken(self, __userID):
+	def addToken(self, userID, ip = ""):
 		"""
 		Add a token object to tokens list
 
-		__userID -- user id associated to that token
+		userID -- user id associated to that token
 		return -- token object
 		"""
 
-		newToken = osuToken.token(__userID)
+		newToken = osuToken.token(userID, ip=ip)
 		self.tokens[newToken.token] = newToken
 		return newToken
 
-	def deleteToken(self, __token):
+	def deleteToken(self, token):
 		"""
 		Delete a token from token list if it exists
 
-		__token -- token string
+		token -- token string
 		"""
 
-		if __token in self.tokens:
-			self.tokens.pop(__token)
+		if token in self.tokens:
+			# Delete session from DB
+			userHelper.deleteBanchoSessions(self.tokens[token].userID, self.tokens[token].ip)
+
+			# Pop token from list
+			self.tokens.pop(token)
 
 
-	def getUserIDFromToken(self, __token):
+	def getUserIDFromToken(self, token):
 		"""
 		Get user ID from a token
 
-		__token -- token to find
+		token -- token to find
 
 		return: false if not found, userID if found
 		"""
 
 		# Make sure the token exists
-		if __token not in self.tokens:
+		if token not in self.tokens:
 			return False
 
 		# Get userID associated to that token
-		return self.tokens[__token].userID
+		return self.tokens[token].userID
 
 
-	def getTokenFromUserID(self, __userID):
+	def getTokenFromUserID(self, userID):
 		"""
 		Get token from a user ID
 
-		__userID -- user ID to find
+		userID -- user ID to find
 		return -- False if not found, token object if found
 		"""
 
 		# Make sure the token exists
 		for _, value in self.tokens.items():
-			if value.userID == __userID:
+			if value.userID == userID:
 				return value
 
 		# Return none if not found
 		return None
 
 
-	def getTokenFromUsername(self, __username):
+	def getTokenFromUsername(self, username):
 		"""
 		Get token from a username
 
-		__username -- username to find
+		username -- username to find
 		return -- False if not found, token object if found
 		"""
 
 		# lowercase
-		who  = __username.lower()
+		who  = username.lower()
 
 		# Make sure the token exists
 		for _, value in self.tokens.items():
@@ -94,16 +100,16 @@ class tokenList:
 		return None
 
 
-	def deleteOldTokens(self, __userID):
+	def deleteOldTokens(self, userID):
 		"""
 		Delete old userID's tokens if found
 
-		__userID -- tokens associated to this user will be deleted
+		userID -- tokens associated to this user will be deleted
 		"""
 
 		# Delete older tokens
 		for key, value in self.tokens.items():
-			if value.userID == __userID:
+			if value.userID == userID:
 				# Delete this token from the dictionary
 				self.tokens.pop(key)
 
@@ -111,36 +117,36 @@ class tokenList:
 				break
 
 
-	def multipleEnqueue(self, __packet, __who, __but = False):
+	def multipleEnqueue(self, packet, who, but = False):
 		"""
 		Enqueue a packet to multiple users
 
-		__packet -- packet bytes to enqueue
-		__who -- userIDs array
-		__but -- if True, enqueue to everyone but users in __who array
+		packet -- packet bytes to enqueue
+		who -- userIDs array
+		but -- if True, enqueue to everyone but users in who array
 		"""
 
 		for _, value in self.tokens.items():
 			shouldEnqueue = False
-			if value.userID in __who and not __but:
+			if value.userID in who and not but:
 				shouldEnqueue = True
-			elif value.userID not in __who and __but:
+			elif value.userID not in who and but:
 				shouldEnqueue = True
 
 			if shouldEnqueue:
-				value.enqueue(__packet)
+				value.enqueue(packet)
 
 
 
-	def enqueueAll(self, __packet):
+	def enqueueAll(self, packet):
 		"""
 		Enqueue packet(s) to every connected user
 
-		__packet -- packet bytes to enqueue
+		packet -- packet bytes to enqueue
 		"""
 
 		for _, value in self.tokens.items():
-			value.enqueue(__packet)
+			value.enqueue(packet)
 
 	def usersTimeoutCheckLoop(self, __timeoutTime = 100, __checkTime = 100):
 		"""
@@ -182,3 +188,10 @@ class tokenList:
 
 		# Schedule a new check (endless loop)
 		threading.Timer(10, self.spamProtectionResetLoop).start()
+
+	def deleteBanchoSessions(self):
+		"""
+		Truncate bancho_sessions table.
+		Call at bancho startup to delete old cached sessions
+		"""
+		glob.db.execute("TRUNCATE TABLE bancho_sessions")

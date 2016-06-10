@@ -46,13 +46,13 @@ def handle(tornadoRequest):
 			# Banned
 			raise exceptions.loginBannedException()
 
+		# No login errors!
 		# Log user IP
 		userHelper.IPLog(userID, requestIP)
 
-		# No login errors!
 		# Delete old tokens for that user and generate a new one
 		glob.tokens.deleteOldTokens(userID)
-		responseToken = glob.tokens.addToken(userID)
+		responseToken = glob.tokens.addToken(userID, requestIP)
 		responseTokenString = responseToken.token
 
 		# Set silence end UNIX time in token

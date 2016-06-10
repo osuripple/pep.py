@@ -317,3 +317,19 @@ def IPLog(userID, ip):
 	"""
 	glob.db.execute("""INSERT INTO ip_user (userid, ip, occurencies) VALUES (%s, %s, '1')
 						ON DUPLICATE KEY UPDATE occurencies = occurencies + 1""", [userID, ip])
+
+def saveBanchoSession(userID, ip):
+	"""
+	Save userid and ip of this token in bancho_sessions table.
+	Used to cache logins on LETS requests
+	"""
+	log.debug("Saving bancho session ({}::{}) in db".format(userID, ip))
+	glob.db.execute("INSERT INTO bancho_sessions (id, userid, ip) VALUES (NULL, %s, %s)", [userID, ip])
+
+def deleteBanchoSessions(userID, ip):
+	"""Delete this bancho session from DB"""
+	log.debug("Deleting bancho session ({}::{}) from db".format(userID, ip))
+	try:
+		glob.db.execute("DELETE FROM bancho_sessions WHERE userid = %s AND ip = %s", [userID, ip])
+	except:
+		log.warning("Token for user: {} ip: {} doesn't exist".format(userID, ip))

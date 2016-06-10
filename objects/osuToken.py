@@ -10,7 +10,8 @@ import time
 import threading
 
 class token:
-	"""Osu Token object
+	"""
+	Osu Token object
 
 	token -- token string
 	userID -- userID associated to that token
@@ -33,13 +34,14 @@ class token:
 	"""
 
 
-	def __init__(self, __userID, __token = None):
+	def __init__(self, __userID, token = None, ip = ""):
 		"""
 		Create a token object and set userID and token
 
 		__userID -- user associated to this token
-		__token -- 	if passed, set token to that value
+		token -- 	if passed, set token to that value
 					if not passed, token will be generated
+		ip		--	client ip. optional.
 		"""
 
 		# Set stuff
@@ -48,7 +50,7 @@ class token:
 		self.rank = userHelper.getRankPrivileges(self.userID)
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
-		self.lock = threading.Lock()	# <-- Sync primitive
+		self.lock = threading.Lock()	# Sync primitive
 
 		# Default variables
 		self.spectators = []
@@ -60,6 +62,7 @@ class token:
 		self.actionMd5 = ""
 		self.actionMods = 0
 		self.gameMode = gameModes.std
+		self.ip = ip
 		self.country = 0
 		self.location = [0,0]
 		self.awayMessage = ""
@@ -71,13 +74,17 @@ class token:
 		# Spam protection
 		self.longMessageWarning = False
 		self.spamRate = 0
-		self.lastMessagetime = 0
+		#self.lastMessagetime = 0
 
 		# Generate/set token
-		if __token != None:
-			self.token = __token
+		if token != None:
+			self.token = token
 		else:
 			self.token = str(uuid.uuid4())
+
+		# If we have a valid ip, save bancho session in DB so we can cache LETS logins
+		if ip != "":
+			userHelper.saveBanchoSession(self.userID, self.ip)
 
 
 	def enqueue(self, __bytes):
