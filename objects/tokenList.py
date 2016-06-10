@@ -3,8 +3,6 @@ import time
 import threading
 from events import logoutEvent
 from helpers import logHelper as log
-from constants import serverPackets
-from helpers import userHelper
 
 class tokenList:
 	"""
@@ -13,7 +11,11 @@ class tokenList:
 	tokens -- dictionary. key: token string, value: token object
 	"""
 
-	tokens = {}
+	def __init__(self):
+		"""
+		Initialize a tokens list
+		"""
+		self.tokens = {}
 
 	def addToken(self, __userID):
 		"""
@@ -166,3 +168,17 @@ class tokenList:
 
 		# Schedule a new check (endless loop)
 		threading.Timer(__checkTime, self.usersTimeoutCheckLoop, [__timeoutTime, __checkTime]).start()
+
+	def spamProtectionResetLoop(self):
+		"""
+		Reset spam rate every 10 seconds.
+		CALL THIS FUNCTION ONLY ONCE!
+		"""
+		log.debug("Resetting spam protection...")
+
+		# Reset spamRate for every token
+		for _, value in self.tokens.items():
+			value.spamRate = 0
+
+		# Schedule a new check (endless loop)
+		threading.Timer(10, self.spamProtectionResetLoop).start()

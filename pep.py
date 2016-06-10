@@ -113,6 +113,11 @@ if __name__ == "__main__":
 	glob.tokens.usersTimeoutCheckLoop()
 	consoleHelper.printDone()
 
+	# Initialize spam protection reset loop
+	consoleHelper.printNoNl("> Initializing spam protection reset loop... ")
+	glob.tokens.spamProtectionResetLoop()
+	consoleHelper.printDone()
+
 	# Localize warning
 	glob.localize = generalFunctions.stringToBool(glob.conf.config["server"]["localize"])
 	if glob.localize == False:

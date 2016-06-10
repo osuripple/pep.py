@@ -238,14 +238,9 @@ class token:
 
 		increaseSpamRate -- pass True if the user has sent a new message. Optional. Default: True
 		"""
+		# Increase the spam rate if needed
 		if increaseSpamRate == True:
-			# Reset spam rate every 10 seconds
-			if int(time.time())-self.lastMessagetime >= 10:
-				self.spamRate = 0
-			else:
-				self.spamRate += 1
-			# Update last message time
-			self.lastMessagetime = time.time()
+			self.spamRate += 1
 
 		# Silence the user if needed
 		if self.spamRate > 10:
