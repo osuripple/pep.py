@@ -333,3 +333,16 @@ def deleteBanchoSessions(userID, ip):
 		glob.db.execute("DELETE FROM bancho_sessions WHERE userid = %s AND ip = %s", [userID, ip])
 	except:
 		log.warning("Token for user: {} ip: {} doesn't exist".format(userID, ip))
+
+def is2FAEnabled(userID):
+	"""Returns True if 2FA is enable for this account"""
+	result = glob.db.fetch("SELECT id FROM 2fa_telegram WHERE userid = %s LIMIT 1", [userID])
+	return True if result is not None else False
+
+def check2FA(userID, ip):
+	"""Returns True if this IP is untrusted"""
+	if is2FAEnabled(userID) == False:
+		return False
+
+	result = glob.db.fetch("SELECT id FROM ip_user WHERE userid = %s AND ip = %s", [userID, ip])
+	return True if result is None else False

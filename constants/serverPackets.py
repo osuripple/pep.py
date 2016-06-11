@@ -29,6 +29,8 @@ def loginError():
 def needSupporter():
 	return packetHelper.buildPacket(packetIDs.server_userID, [[-6, dataTypes.sInt32]])
 
+def needVerification():
+	return packetHelper.buildPacket(packetIDs.server_userID, [[-8, dataTypes.sInt32]])
 
 """ Login packets """
 def userID(uid):

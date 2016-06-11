@@ -46,6 +46,11 @@ def handle(tornadoRequest):
 			# Banned
 			raise exceptions.loginBannedException()
 
+		# 2FA check
+		if userHelper.check2FA(userID, requestIP) == True:
+			log.warning("Need 2FA check for user {}".format(loginData[0]))
+			raise exceptions.need2FAException()
+
 		# No login errors!
 		# Log user IP
 		userHelper.IPLog(userID, requestIP)
@@ -167,11 +172,14 @@ def handle(tornadoRequest):
 	except exceptions.banchoMaintenanceException:
 		# Bancho is in maintenance mode
 		responseData += serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later.")
-		responseData += serverPackets.loginError()
+		responseData += serverPackets.loginFailed()
 	except exceptions.banchoRestartingException:
 		# Bancho is restarting
 		responseData += serverPackets.notification("Bancho is restarting. Try again in a few minutes.")
-		responseData += serverPackets.loginError()
+		responseData += serverPackets.loginFailed()
+	except exceptions.need2FAException:
+		# User tried to log in from unknown IP
+		responseData += serverPackets.needVerification()
 	finally:
 		# Console and discord log
 		msg = "Bancho login request from {} for user {} ({})".format(requestIP, loginData[0], "failed" if err == True else "success")
