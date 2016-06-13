@@ -497,7 +497,7 @@ def tillerinoLast(fro, chan, message):
 
 		msg = "{0:.2f}pp".format(data["pp"])
 		msg += " on " if chan == "FokaBot" else " | {0} on ".format(fro)
-		msg += "({0})[http://osu.ppy.sh/b/{1}]".format(data["sn"], data["bid"])
+		msg += "[http://osu.ppy.sh/b/{1} {0}]".format(data["sn"], data["bid"])
 
 		if data["mods"]:
 			msg += ' +' + generalFunctions.readableMods(data["mods"])
