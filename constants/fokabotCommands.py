@@ -378,7 +378,7 @@ def tillerinoNp(fro, chan, message):
 		# Get URL from message
 		if message[1] == "listening":
 			beatmapURL = str(message[3][1:])
-		elif message[1] == "playing":
+		elif message[1] == "playing" or message[1] == "watching":
 			beatmapURL = str(message[2][1:])
 		else:
 			return False
@@ -626,6 +626,9 @@ commands = [
 		"callback": tillerinoNp
 	}, {
 		"trigger": "\x01ACTION is playing",
+		"callback": tillerinoNp
+	}, {
+		"trigger": "\x01ACTION is watching",
 		"callback": tillerinoNp
 	}, {
 		"trigger": "!with",
