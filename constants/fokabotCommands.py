@@ -321,7 +321,7 @@ def systemStatus(fro, chan, message):
 	return msg
 
 
-def getPPMessage(userID):
+def getPPMessage(userID, just_data = False):
 	try:
 		# Get user token
 		token = glob.tokens.getTokenFromUserID(userID)
@@ -342,6 +342,9 @@ def getPPMessage(userID):
 				return "Error in LETS API call ({}). Please tell this to a dev.".format(data["message"])
 			else:
 				raise exceptions.apiException
+
+		if just_data:
+			return data
 
 		# Return response in chat
 		# Song name and mods
@@ -482,7 +485,7 @@ def tillerinoAcc(fro, chan, message):
 def tillerinoLast(fro, chan, message):
 	try:
 		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores.*,
-			beatmaps.beatmap_id as bid
+			beatmaps.beatmap_id as bid, beatmaps.difficulty
 		FROM scores
 		LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores.beatmap_md5
 		LEFT JOIN users ON users.id = scores.userid
@@ -499,9 +502,23 @@ def tillerinoLast(fro, chan, message):
 		msg += " on " if chan == "FokaBot" else " | {0} on ".format(fro)
 		msg += "[http://osu.ppy.sh/b/{1} {0}]".format(data["sn"], data["bid"])
 
+		stars = data["difficulty"]
 		if data["mods"]:
 			msg += ' +' + generalFunctions.readableMods(data["mods"])
+
+			token = glob.tokens.getTokenFromUsername(fro)
+			if token == None:
+				return False
+			userID = token.userID
+			token.tillerino[0] = data["bid"]
+			token.tillerino[1] = data["mods"]
+			token.tillerino[2] = data["accuracy"]
+			oppaiData = getPPMessage(userID, just_data=True)
+			if "stars" in oppaiData:
+				stars = oppaiData["stars"]
+
 		msg += " ({0:.2f}%, {1})".format(data["accuracy"], rank.upper())
+		msg += " | {0:.2f} stars".format(stars)
 
 		return msg
 	except Exception as a:
