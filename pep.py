@@ -9,6 +9,9 @@ import tornado.web
 import tornado.httpserver
 import tornado.gen
 
+# Raven
+from raven.contrib.tornado import AsyncSentryClient
+
 # pep.py files
 from constants import bcolors
 from helpers import configHelper
@@ -20,11 +23,13 @@ from helpers import databaseHelperNew
 from helpers import generalFunctions
 from helpers import logHelper as log
 
+
 from handlers import mainHandler
 from handlers import apiIsOnlineHandler
 from handlers import apiOnlineUsersHandler
 from handlers import apiServerStatusHandler
 from handlers import ciTriggerHandler
+
 
 def make_app():
 	return tornado.web.Application([
@@ -152,11 +157,24 @@ if __name__ == "__main__":
 	except:
 		consoleHelper.printColored("[!] Invalid server port! Please check your config.ini and run the server again", bcolors.RED)
 
+	# Make app
+	#application = tornado.httpserver.HTTPServer(make_app())
+	application = make_app()
+
+	# Set up sentry
+	try:
+		glob.sentry = generalFunctions.stringToBool(glob.conf.config["sentry"]["enable"])
+		if glob.sentry == True:
+			application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["dns"])
+		else:
+			consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
+	except:
+		consoleHelper.printColored("[!] Error while starting sentry client! Please check your config.ini and run the server again", bcolors.RED)
+
 	# Server start message and console output
 	log.logMessage("Server started!", discord=True, of="info.txt", stdout=False)
 	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 	# Start tornado
-	app = tornado.httpserver.HTTPServer(make_app())
-	app.listen(serverPort)
+	application.listen(serverPort)
 	tornado.ioloop.IOLoop.instance().start()

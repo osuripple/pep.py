@@ -3,6 +3,8 @@ import tornado.web
 import tornado.gen
 from tornado.ioloop import IOLoop
 from objects import glob
+from raven.contrib.tornado import SentryMixin
+from raven.contrib.tornado import AsyncSentryClient
 
 class asyncRequestHandler(tornado.web.RequestHandler):
 	"""
@@ -14,12 +16,18 @@ class asyncRequestHandler(tornado.web.RequestHandler):
 	@tornado.web.asynchronous
 	@tornado.gen.engine
 	def get(self, *args, **kwargs):
-		yield tornado.gen.Task(runBackground, (self.asyncGet, tuple(args), dict(kwargs)))
+		try:
+			yield tornado.gen.Task(runBackground, (self.asyncGet, tuple(args), dict(kwargs)))
+		except Exception as e:
+			yield tornado.gen.Task(self.captureException, exc_info=True)
 
 	@tornado.web.asynchronous
 	@tornado.gen.engine
 	def post(self, *args, **kwargs):
-		yield tornado.gen.Task(runBackground, (self.asyncPost, tuple(args), dict(kwargs)))
+		try:
+			yield tornado.gen.Task(runBackground, (self.asyncPost, tuple(args), dict(kwargs)))
+		except Exception as e:
+			yield tornado.gen.Task(self.captureException, exc_info=True)
 
 	def asyncGet(self, *args, **kwargs):
 		self.send_error(405)

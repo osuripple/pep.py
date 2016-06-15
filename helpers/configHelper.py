@@ -59,6 +59,9 @@ class config:
 			self.config.get("debug","packets")
 			self.config.get("debug","time")
 
+			self.config.get("sentry","enable")
+			self.config.get("sentry","dns")
+
 			self.config.get("discord","enable")
 			self.config.get("discord","boturl")
 			self.config.get("discord","devgroup")
@@ -94,6 +97,10 @@ class config:
 		self.config.set("debug", "enable", "0")
 		self.config.set("debug", "packets", "0")
 		self.config.set("debug", "time", "0")
+
+		self.config.add_section("sentry")
+		self.config.set("sentry", "enable", "0")
+		self.config.set("sentry", "dns", "")
 
 		self.config.add_section("discord")
 		self.config.set("discord", "enable", "0")

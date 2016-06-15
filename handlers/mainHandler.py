@@ -44,11 +44,18 @@ from events import matchTransferHostEvent
 from events import matchFailedEvent
 from events import matchInviteEvent
 from events import matchChangeTeamEvent
+
+# Exception tracking
+import tornado.web
+import tornado.gen
 import sys
 import traceback
+from raven.contrib.tornado import SentryMixin
 from helpers import logHelper as log
 
-class handler(requestHelper.asyncRequestHandler):
+class handler(SentryMixin, requestHelper.asyncRequestHandler):
+	@tornado.web.asynchronous
+	@tornado.gen.engine
 	def asyncPost(self):
 		try:
 			# Track time if needed
@@ -195,37 +202,35 @@ class handler(requestHelper.asyncRequestHandler):
 			else:
 				self.write(responseData)
 		except:
-			msg = "Unhandled exception in mainHandler:\n```\n{}\n{}\n```".format(sys.exc_info(), traceback.format_exc())
-			log.error("{}".format(msg), True)
-		finally:
-			try:
-				if not self._finished:
-					self.finish()
-			except:
-				pass
-
-	def asyncGet(self):
-		try:
-			html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
-			html += "           _                 __<br>"
-			html += "          (_)              /  /<br>"
-			html += "   ______ __ ____   ____  /  /____<br>"
-			html += "  /  ___/  /  _  \\/  _  \\/  /  _  \\<br>"
-			html += " /  /  /  /  /_) /  /_) /  /  ____/<br>"
-			html += "/__/  /__/  .___/  .___/__/ \\_____/<br>"
-			html += "        /  /   /  /<br>"
-			html += "       /__/   /__/<br>"
-			html += "<b>PYTHON > ALL VERSION</b><br><br>"
-			html += "<marquee style='white-space:pre;'><br>"
-			html += "                          .. o  .<br>"
-			html += "                         o.o o . o<br>"
-			html += "                        oo...<br>"
-			html += "                    __[]__<br>"
-			html += "    phwr-->  _\\:D/_/o_o_o_|__     <span style=\"font-family: 'Comic Sans MS'; font-size: 8pt;\">u wot m8</span><br>"
-			html += "             \\\"\"\"\"\"\"\"\"\"\"\"\"\"\"/<br>"
-			html += "              \\ . ..  .. . /<br>"
-			html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
-			html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.</pre></body></html>"
-			self.write(html)
+			log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
+			if glob.sentry:
+				yield tornado.gen.Task(self.captureException, exc_info=True)
 		finally:
 			self.finish()
+
+	@tornado.web.asynchronous
+	@tornado.gen.engine
+	def asyncGet(self):
+		html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
+		html += "           _                 __<br>"
+		html += "          (_)              /  /<br>"
+		html += "   ______ __ ____   ____  /  /____<br>"
+		html += "  /  ___/  /  _  \\/  _  \\/  /  _  \\<br>"
+		html += " /  /  /  /  /_) /  /_) /  /  ____/<br>"
+		html += "/__/  /__/  .___/  .___/__/ \\_____/<br>"
+		html += "        /  /   /  /<br>"
+		html += "       /__/   /__/<br>"
+		html += "<b>PYTHON > ALL VERSION</b><br><br>"
+		html += "<marquee style='white-space:pre;'><br>"
+		html += "                          .. o  .<br>"
+		html += "                         o.o o . o<br>"
+		html += "                        oo...<br>"
+		html += "                    __[]__<br>"
+		html += "    phwr-->  _\\:D/_/o_o_o_|__     <span style=\"font-family: 'Comic Sans MS'; font-size: 8pt;\">u wot m8</span><br>"
+		html += "             \\\"\"\"\"\"\"\"\"\"\"\"\"\"\"/<br>"
+		html += "              \\ . ..  .. . /<br>"
+		html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
+		html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.</pre></body></html>"
+		self.write(html)
+		#yield tornado.gen.Task(self.captureMessage, "test")
+		self.finish()
