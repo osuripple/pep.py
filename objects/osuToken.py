@@ -70,6 +70,7 @@ class token:
 		self.tillerino = [0,0,-1.0]	# beatmap, mods, acc
 		self.silenceEndTime = 0
 		self.queue = bytes()
+		self.osuDirectAlert = False	# NOTE: Remove this when osu!direct will be fixed
 
 		# Spam protection
 		self.longMessageWarning = False
