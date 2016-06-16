@@ -192,19 +192,24 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 
 			# Send server's response to client
 			# We don't use token object because we might not have a token (failed login)
+			if glob.gzip == True:
+				# First, write the gzipped response
+				self.write(gzip.compress(responseData, int(glob.conf.config["server"]["gziplevel"])))
+
+				# Then, add gzip headers
+				self.add_header("Vary", "Accept-Encoding")
+				self.add_header("Content-Encoding", "gzip")
+			else:
+				# First, write the response
+				self.write(responseData)
+
+			# Add all the headers AFTER the response has been written
 			self.set_status(200)
 			self.add_header("cho-token", responseTokenString)
 			self.add_header("cho-protocol", "19")
 			self.add_header("Keep-Alive", "timeout=5, max=100")
 			self.add_header("Connection", "keep-alive")
 			self.add_header("Content-Type", "text/html; charset=UTF-8")
-
-			if glob.gzip == True:
-				self.add_header("Vary", "Accept-Encoding")
-				self.add_header("Content-Encoding", "gzip")
-				self.write(gzip.compress(responseData, int(glob.conf.config["server"]["gziplevel"])))
-			else:
-				self.write(responseData)
 		except:
 			log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
 			if glob.sentry:
