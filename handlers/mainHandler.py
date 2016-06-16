@@ -242,4 +242,4 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 		html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.</pre></body></html>"
 		self.write(html)
 		#yield tornado.gen.Task(self.captureMessage, "test")
-		self.finish()
+		#self.finish()
