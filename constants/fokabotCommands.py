@@ -10,6 +10,7 @@ import json
 from constants import mods
 from helpers import generalFunctions
 from helpers import logHelper as log
+from constants import gameModes
 
 """
 Commands callbacks
@@ -485,7 +486,7 @@ def tillerinoAcc(fro, chan, message):
 def tillerinoLast(fro, chan, message):
 	try:
 		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores.*,
-			beatmaps.beatmap_id as bid, beatmaps.difficulty
+			beatmaps.beatmap_id as bid, beatmaps.difficulty, beatmaps.max_combo as fc
 		FROM scores
 		LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores.beatmap_md5
 		LEFT JOIN users ON users.id = scores.userid
@@ -498,14 +499,33 @@ def tillerinoLast(fro, chan, message):
 		rank = generalFunctions.getRank(data["play_mode"], data["mods"], data["accuracy"],\
 			data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
 
-		msg = "{0:.2f}pp".format(data["pp"])
-		msg += " on " if chan == "FokaBot" else " | {0} on ".format(fro)
-		msg += "[http://osu.ppy.sh/b/{1} {0}]".format(data["sn"], data["bid"])
+		ifPlayer = "{0} | ".format(fro) if chan != "FokaBot" else ""
+		beatmapLink = "[http://osu.ppy.sh/b/{1} {0}]".format(data["sn"], data["bid"])
+
+		ifFc = " (FC)" if data["max_combo"] == data["fc"] else " {0}x/{1}x".format(data["max_combo"], data["fc"])
+
+		if data["play_mode"] != gameModes.std:
+			msg = ifPlayer
+			msg += beatmapLink
+			if data["mods"]:
+				msg += ' +' + generalFunctions.readableMods(data["mods"])
+			msg += " | {0:,}".format(data["score"])
+			msg += ifFc
+			msg += " | {0:.2f}%, {1}".format(data["accuracy"], rank.upper())
+			msg += " {{ {0} / {1} / {2} / {3} }}".format(data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
+			msg += " | {0:.2f} stars".format(data["difficulty"])
+			return msg
+
+		msg = ifPlayer
+		msg += beatmapLink
+		if data["mods"]:
+			msg += ' +' + generalFunctions.readableMods(data["mods"])
+		msg += " ({0:.2f}%, {1})".format(data["accuracy"], rank.upper())
+		msg += ifFc
+		msg += " | {0:.2f}pp".format(data["pp"])
 
 		stars = data["difficulty"]
 		if data["mods"]:
-			msg += ' +' + generalFunctions.readableMods(data["mods"])
-
 			token = glob.tokens.getTokenFromUsername(fro)
 			if token == None:
 				return False
@@ -517,7 +537,6 @@ def tillerinoLast(fro, chan, message):
 			if "stars" in oppaiData:
 				stars = oppaiData["stars"]
 
-		msg += " ({0:.2f}%, {1})".format(data["accuracy"], rank.upper())
 		msg += " | {0:.2f} stars".format(stars)
 
 		return msg
