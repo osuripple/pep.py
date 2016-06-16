@@ -207,8 +207,8 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 			self.set_status(200)
 			self.add_header("cho-token", responseTokenString)
 			self.add_header("cho-protocol", "19")
-			self.add_header("Keep-Alive", "timeout=5, max=100")
-			self.add_header("Connection", "keep-alive")
+			#self.add_header("Keep-Alive", "timeout=5, max=100")
+			#self.add_header("Connection", "keep-alive")
 			self.add_header("Content-Type", "text/html; charset=UTF-8")
 		except:
 			log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
