@@ -42,11 +42,11 @@ def handle(userToken, packetData):
 			targetToken.enqueue(serverPackets.channelJoinSuccess(userID, "#spectator"))
 
 		# send fellowSpectatorJoined to all spectators
-		for c in targetToken.spectators:
-			if c is not userID:
-				targetToken.enqueue(serverPackets.fellowSpectatorJoined(c))
-				specToken = glob.tokens.getTokenFromUserID(c)
-				specToken.enqueue(serverPackets.fellowSpectatorJoined(userID))
+		for spec in targetToken.spectators:
+			if spec is not userID:
+				c = glob.tokens.getTokenFromUserID(spec)
+				userToken.enqueue(serverPackets.fellowSpectatorJoined(c.userID))
+				c.enqueue(serverPackets.fellowSpectatorJoined(userID))
 
 		# Console output
 		log.info("{} are spectating {}".format(username, userHelper.getUsername(packetData["userID"])))
