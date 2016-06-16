@@ -101,7 +101,6 @@ def handle(tornadoRequest):
 
 		# Channel info end (before starting!?! wtf bancho?)
 		responseToken.enqueue(serverPackets.channelInfoEnd())
-
 		# Default opened channels
 		# TODO: Configurable default channels
 		channelJoinEvent.joinChannel(responseToken, "#osu")
@@ -125,9 +124,9 @@ def handle(tornadoRequest):
 
 		# Get everyone else userpanel
 		# TODO: Better online users handling
-		for key, value in glob.tokens.tokens.items():
-			responseToken.enqueue(serverPackets.userPanel(value.userID))
-			responseToken.enqueue(serverPackets.userStats(value.userID))
+		#for key, value in glob.tokens.tokens.items():
+		#	responseToken.enqueue(serverPackets.userPanel(value.userID))
+		#	responseToken.enqueue(serverPackets.userStats(value.userID))
 
 		# Send online users IDs array
 		responseToken.enqueue(serverPackets.onlineUsers())

@@ -20,6 +20,8 @@ class asyncRequestHandler(tornado.web.RequestHandler):
 			yield tornado.gen.Task(runBackground, (self.asyncGet, tuple(args), dict(kwargs)))
 		except Exception as e:
 			yield tornado.gen.Task(self.captureException, exc_info=True)
+		finally:
+			self.finish()
 
 	@tornado.web.asynchronous
 	@tornado.gen.engine
@@ -28,6 +30,8 @@ class asyncRequestHandler(tornado.web.RequestHandler):
 			yield tornado.gen.Task(runBackground, (self.asyncPost, tuple(args), dict(kwargs)))
 		except Exception as e:
 			yield tornado.gen.Task(self.captureException, exc_info=True)
+		finally:
+			self.finish()
 
 	def asyncGet(self, *args, **kwargs):
 		self.send_error(405)

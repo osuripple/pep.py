@@ -44,6 +44,8 @@ from events import matchTransferHostEvent
 from events import matchFailedEvent
 from events import matchInviteEvent
 from events import matchChangeTeamEvent
+from events import userStatsRequestEvent
+from events import requestStatusUpdateEvent
 
 # Exception tracking
 import tornado.web
@@ -147,7 +149,9 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 							packetIDs.client_matchTransferHost: handleEvent(matchTransferHostEvent),
 							packetIDs.client_matchFailed: handleEvent(matchFailedEvent),
 							packetIDs.client_invite: handleEvent(matchInviteEvent),
-							packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent)
+							packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent),
+							packetIDs.client_userStatsRequest: handleEvent(userStatsRequestEvent),
+							packetIDs.client_requestStatusUpdate: handleEvent(requestStatusUpdateEvent),
 						}
 
 						if packetID != 4:
@@ -205,8 +209,9 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 			log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
 			if glob.sentry:
 				yield tornado.gen.Task(self.captureException, exc_info=True)
-		finally:
-			self.finish()
+		#finally:
+		#	self.finish()
+
 
 	@tornado.web.asynchronous
 	@tornado.gen.engine

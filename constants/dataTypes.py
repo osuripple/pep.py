@@ -10,3 +10,4 @@ sInt64 	= 6
 string 	= 7
 ffloat	= 8		# because float is a keyword
 bbytes 	= 9
+intList = 10	# TODO: Maybe there are some packets that still use uInt16 + uInt32 thing somewhere.

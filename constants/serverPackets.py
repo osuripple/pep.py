@@ -90,16 +90,17 @@ def userLogout(userID):
 def userPanel(userID):
 	# Get user data
 	userToken = glob.tokens.getTokenFromUserID(userID)
-	username = userHelper.getUsername(userID)
+	username = userToken.username
 	timezone = 24	# TODO: Timezone
-	country = userToken.getCountry()
-	gameRank = userHelper.getGameRank(userID, userToken.gameMode)
+	country = userToken.country
+	gameRank = userToken.gameRank
 	latitude = userToken.getLatitude()
 	longitude = userToken.getLongitude()
 
 	# Get username color according to rank
 	# Only admins and normal users are currently supported
-	rank = userHelper.getRankPrivileges(userID)
+	#rank = userHelper.getRankPrivileges(userID)
+	rank = userToken.rank
 	if username == "FokaBot":
 		userRank = userRanks.MOD
 	elif rank == 4:
@@ -110,7 +111,6 @@ def userPanel(userID):
 		userRank = userRanks.SUPPORTER
 	else:
 		userRank = userRanks.NORMAL
-
 
 	return packetHelper.buildPacket(packetIDs.server_userPanel,
 	[
@@ -128,16 +128,15 @@ def userPanel(userID):
 def userStats(userID):
 	# Get userID's token from tokens list
 	userToken = glob.tokens.getTokenFromUserID(userID)
-
-	# Get stats from DB
-	# TODO: Caching system
-	rankedScore = 	userHelper.getRankedScore(userID, userToken.gameMode)
-	accuracy = 		userHelper.getAccuracy(userID, userToken.gameMode)/100
-	playcount = 	userHelper.getPlaycount(userID, userToken.gameMode)
-	totalScore = 	userHelper.getTotalScore(userID, userToken.gameMode)
-	gameRank = 		userHelper.getGameRank(userID, userToken.gameMode)
-	pp = 			int(userHelper.getPP(userID, userToken.gameMode))
-
+	if userToken == None:
+		return bytes()	# NOTE: ???
+	# Stats are cached in token object
+	#rankedScore = 	userHelper.getRankedScore(userID, userToken.gameMode)
+	#accuracy = 		userHelper.getAccuracy(userID, userToken.gameMode)/100
+	#playcount = 	userHelper.getPlaycount(userID, userToken.gameMode)
+	#totalScore = 	userHelper.getTotalScore(userID, userToken.gameMode)
+	#gameRank = 		userHelper.getGameRank(userID, userToken.gameMode)
+	#pp = 			int(userHelper.getPP(userID, userToken.gameMode))
 	return packetHelper.buildPacket(packetIDs.server_userStats,
 	[
 		[userID, 				dataTypes.uInt32],
@@ -147,12 +146,12 @@ def userStats(userID):
 		[userToken.actionMods,	dataTypes.sInt32],
 		[userToken.gameMode, 	dataTypes.byte],
 		[0, 					dataTypes.sInt32],
-		[rankedScore, 			dataTypes.uInt64],
-		[accuracy, 				dataTypes.ffloat],
-		[playcount, 			dataTypes.uInt32],
-		[totalScore, 			dataTypes.uInt64],
-		[gameRank,	 			dataTypes.uInt32],
-		[pp, 					dataTypes.uInt16]
+		[userToken.rankedScore,	dataTypes.uInt64],
+		[userToken.accuracy, 	dataTypes.ffloat],
+		[userToken.playcount, 	dataTypes.uInt32],
+		[userToken.totalScore, 	dataTypes.uInt64],
+		[userToken.gameRank,	dataTypes.uInt32],
+		[userToken.pp, 			dataTypes.uInt16]
 	])
 
 

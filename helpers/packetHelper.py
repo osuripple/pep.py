@@ -167,36 +167,36 @@ def buildPacket(__packet, __packetData = []):
 	return packetBytes
 
 
-def readPacketID(__stream):
+def readPacketID(stream):
 	"""
-	Read packetID from __stream (0-1 bytes)
+	Read packetID from stream (0-1 bytes)
 
-	__stream -- data stream
+	stream -- data stream
 	return -- packet ID (int)
 	"""
 
-	return unpackData(__stream[0:2], dataTypes.uInt16)
+	return unpackData(stream[0:2], dataTypes.uInt16)
 
 
-def readPacketLength(__stream):
+def readPacketLength(stream):
 	"""
-	Read packet length from __stream (3-4-5-6 bytes)
+	Read packet length from stream (3-4-5-6 bytes)
 
-	__stream -- data stream
+	stream -- data stream
 	return -- packet length (int)
 	"""
 
-	return unpackData(__stream[3:7], dataTypes.uInt32)
+	return unpackData(stream[3:7], dataTypes.uInt32)
 
 
-def readPacketData(__stream, __structure = [], __hasFirstBytes = True):
+def readPacketData(stream, structure = [], hasFirstBytes = True):
 	"""
-	Read packet data from __stream according to __structure
+	Read packet data from stream according to structure
 
-	__stream -- data stream
-	__structure -- [[name, dataType], [name, dataType], ...]
-	__hasFirstBytes -- 	if True, __stream has packetID and length bytes.
-						if False, __stream has only packetData.
+	stream -- data stream
+	structure -- [[name, dataType], [name, dataType], ...]
+	hasFirstBytes -- 	if True, stream has packetID and length bytes.
+						if False, stream has only packetData.
 						Optional. Default: True
 	return -- dictionary. key: name, value: read data
 	"""
@@ -205,7 +205,7 @@ def readPacketData(__stream, __structure = [], __hasFirstBytes = True):
 	data = {}
 
 	# Skip packet ID and packet length if needed
-	if __hasFirstBytes == True:
+	if hasFirstBytes == True:
 		end = 7
 		start = 7
 	else:
@@ -213,26 +213,41 @@ def readPacketData(__stream, __structure = [], __hasFirstBytes = True):
 		start = 0
 
 	# Read packet
-	for i in __structure:
+	for i in structure:
 		start = end
 		unpack = True
-		if i[1] == dataTypes.string:
+		if i[1] == dataTypes.intList:
+			# sInt32 list.
+			# Unpack manually with for loop
+			unpack = False
+
+			# Read length (uInt16)
+			length = unpackData(stream[start:start+2], dataTypes.uInt16)
+
+			# Read all int inside list
+			data[i[0]] = []
+			for j in range(0,length):
+				data[i[0]].append(unpackData(stream[start+2+(4*j):start+2+(4*(j+1))], dataTypes.sInt32))
+
+			# Update end
+			end = start+2+(4*length)
+		elif i[1] == dataTypes.string:
 			# String, don't unpack
 			unpack = False
 
 			# Check empty string
-			if __stream[start] == 0:
+			if stream[start] == 0:
 				# Empty string
 				data[i[0]] = ""
 				end = start+1
 			else:
 				# Non empty string
 				# Read length and calculate end
-				length = uleb128Decode(__stream[start+1:])
+				length = uleb128Decode(stream[start+1:])
 				end = start+length[0]+length[1]+1
 
 				# Read bytes
-				data[i[0]] = ''.join(chr(j) for j in __stream[start+1+length[1]:end])
+				data[i[0]] = ''.join(chr(j) for j in stream[start+1+length[1]:end])
 		elif i[1] == dataTypes.byte:
 			end = start+1
 		elif i[1] == dataTypes.uInt16 or i[1] == dataTypes.sInt16:
@@ -244,6 +259,6 @@ def readPacketData(__stream, __structure = [], __hasFirstBytes = True):
 
 		# Unpack if needed
 		if unpack == True:
-			data[i[0]] = unpackData(__stream[start:end], i[1])
+			data[i[0]] = unpackData(stream[start:end], i[1])
 
 	return data

@@ -1,5 +1,6 @@
 import MySQLdb
 import threading
+from helpers import logHelper as log
 
 class mysqlWorker:
 	"""
@@ -66,6 +67,7 @@ class db:
 		query -- Query to execute. You can bind parameters with %s
 		params -- Parameters list. First element replaces first %s and so on. Optional.
 		"""
+		log.debug(query)
 		# Get a worker and acquire its lock
 		worker = self.getWorker()
 		worker.lock.acquire()
@@ -89,6 +91,7 @@ class db:
 		params -- Parameters list. First element replaces first %s and so on. Optional.
 		all -- Fetch one or all values. Used internally. Use fetchAll if you want to fetch all values.
 		"""
+		log.debug(query)
 		# Get a worker and acquire its lock
 		worker = self.getWorker()
 		worker.lock.acquire()

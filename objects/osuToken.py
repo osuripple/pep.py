@@ -57,11 +57,6 @@ class token:
 		self.spectating = 0
 		self.location = [0,0]
 		self.joinedChannels = []
-		self.actionID = actions.idle
-		self.actionText = ""
-		self.actionMd5 = ""
-		self.actionMods = 0
-		self.gameMode = gameModes.std
 		self.ip = ip
 		self.country = 0
 		self.location = [0,0]
@@ -77,11 +72,28 @@ class token:
 		self.spamRate = 0
 		#self.lastMessagetime = 0
 
+		# Stats cache
+		self.actionID = actions.idle
+		self.actionText = ""
+		self.actionMd5 = ""
+		self.actionMods = 0
+		self.gameMode = gameModes.std
+
+		self.rankedScore = 0
+		self.accuracy = 0.0
+		self.playcount = 0
+		self.totalScore = 0
+		self.gameRank = 0
+		self.pp = 0
+
 		# Generate/set token
 		if token != None:
 			self.token = token
 		else:
 			self.token = str(uuid.uuid4())
+
+		# Set stats
+		self.updateCachedStats()
 
 		# If we have a valid ip, save bancho session in DB so we can cache LETS logins
 		if ip != "":
@@ -270,3 +282,17 @@ class token:
 		return -- silence seconds left
 		"""
 		return max(0, self.silenceEndTime-int(time.time()))
+
+	def updateCachedStats(self):
+		"""Update all cached stats for this token"""
+		stats = userHelper.getUserStats(self.userID, self.gameMode)
+		log.debug(str(stats))
+		if stats == None:
+			log.warning("Stats query returned None")
+			return
+		self.rankedScore = stats["rankedScore"]
+		self.accuracy = stats["accuracy"]/100
+		self.playcount = stats["playcount"]
+		self.totalScore = stats["totalScore"]
+		self.gameRank = stats["gameRank"]
+		self.pp = stats["pp"]

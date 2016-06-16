@@ -180,7 +180,7 @@ class tokenList:
 		Reset spam rate every 10 seconds.
 		CALL THIS FUNCTION ONLY ONCE!
 		"""
-		log.debug("Resetting spam protection...")
+		#log.debug("Resetting spam protection...")
 
 		# Reset spamRate for every token
 		for _, value in self.tokens.items():

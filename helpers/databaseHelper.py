@@ -52,7 +52,7 @@ class db:
 		__params -- array with params. Optional
 		"""
 
-
+		log.debug(query)
 		with self.connection.cursor() as cursor:
 			try:
 				# Bind params if needed
@@ -77,7 +77,7 @@ class db:
 		return -- dictionary with result data or False if failed
 		"""
 
-
+		log.debug(query)
 		with self.connection.cursor() as cursor:
 			try:
 				# Bind params if needed

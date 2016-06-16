@@ -4,7 +4,7 @@ from helpers import packetHelper
 from constants import slotStatuses
 
 
-""" General packets """
+""" Users listing packets """
 def userActionChange(stream):
 	return packetHelper.readPacketData(stream,
 	[
@@ -14,6 +14,9 @@ def userActionChange(stream):
 		["actionMods",	dataTypes.uInt32],
 		["gameMode",	dataTypes.byte]
 	])
+
+def userStatsRequest(stream):
+	return packetHelper.readPacketData(stream, [["users", dataTypes.intList]])
 
 
 
