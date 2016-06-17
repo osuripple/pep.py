@@ -6,7 +6,11 @@ from objects import matchList
 from objects import fileLocks
 from raven import Client
 
-VERSION = "1.2"
+try:
+	with open("version") as f:
+		VERSION = f.read()
+except:
+	VERSION = "¯\_(xd)_/¯"
 
 db = None
 conf = None
