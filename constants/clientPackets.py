@@ -18,6 +18,8 @@ def userActionChange(stream):
 def userStatsRequest(stream):
 	return packetHelper.readPacketData(stream, [["users", dataTypes.intList]])
 
+def userPanelRequest(stream):
+	return packetHelper.readPacketData(stream, [["users", dataTypes.intList]])
 
 
 """ Client chat packets """

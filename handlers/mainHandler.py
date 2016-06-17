@@ -46,6 +46,7 @@ from events import matchInviteEvent
 from events import matchChangeTeamEvent
 from events import userStatsRequestEvent
 from events import requestStatusUpdateEvent
+from events import userPanelRequestEvent
 
 # Exception tracking
 import tornado.web
@@ -152,6 +153,7 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 							packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent),
 							packetIDs.client_userStatsRequest: handleEvent(userStatsRequestEvent),
 							packetIDs.client_requestStatusUpdate: handleEvent(requestStatusUpdateEvent),
+							packetIDs.client_userPanelRequest: handleEvent(userPanelRequestEvent),
 						}
 
 						if packetID != 4:

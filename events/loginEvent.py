@@ -152,9 +152,9 @@ def handle(tornadoRequest):
 		if userHelper.getCountry(userID) == "XX":
 			userHelper.setCountry(userID, countryLetters)
 
-		# Send to everyone our userpanel and userStats (so they now we have logged in)
+		# Send to everyone our userpanel
 		glob.tokens.enqueueAll(serverPackets.userPanel(userID))
-		glob.tokens.enqueueAll(serverPackets.userStats(userID))
+		#glob.tokens.enqueueAll(serverPackets.userStats(userID))
 
 		# Set reponse data to right value and reset our queue
 		responseData = responseToken.queue

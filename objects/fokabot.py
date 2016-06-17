@@ -16,7 +16,13 @@ def connect():
 	token = glob.tokens.addToken(999)
 	token.actionID = actions.idle
 	glob.tokens.enqueueAll(serverPackets.userPanel(999))
-	glob.tokens.enqueueAll(serverPackets.userStats(999))
+	####glob.tokens.enqueueAll(serverPackets.userStats(999))
+
+	# NOTE: Debug thing to set all users as connected
+	#users = glob.db.fetchAll("SELECT id FROM users")
+	#for i in users:
+	#	t = glob.tokens.addToken(i["id"])
+	#	t.actionID = actions.idle
 
 def disconnect():
 	"""Remove FokaBot from connected users"""
