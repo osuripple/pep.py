@@ -70,47 +70,43 @@ def getRank(gameMode, __mods, acc, c300, c100, c50, cmiss):
 	total = c300 + c100 + c50 + cmiss
 	hdfl = (__mods & mods.Hidden > 0) or (__mods & mods.Flashlight > 0)
 
-	def ss():
-		return "sshd" if hdfl else "ss"
+	ss = "sshd" if hdfl else "ss"
+	s = "shd" if hdfl else "s"
 
-	def s():
-		return "shd" if hdfl else "s"
-
-	if gameMode == 0:
-		# osu!std
+	if gameMode == 0 or gameMode == 1:
+		# osu!std / taiko
+		ratio300 = c300 / total
+		ratio50 = c50 / total
 		if acc == 100:
-			return ss()
-		if c300 / total > 0.90 and c50 / total < 0.1 and cmiss == 0:
-			return s()
-		if (c300 / total > 0.80 and cmiss == 0) or (c300 / total > 0.90):
+			return ss
+		if ratio300 > 0.90 and ratio50 < 0.1 and cmiss == 0:
+			return s
+		if (ratio300 > 0.80 and cmiss == 0) or (ratio300 > 0.90):
 			return "a"
-		if (c300 / total > 0.70 and cmiss == 0) or (c300 / total > 0.80):
+		if (ratio300 > 0.70 and cmiss == 0) or (ratio300 > 0.80):
 			return "b"
-		if c300 / total > 0.60:
+		if ratio300 > 0.60:
 			return "c"
 		return "d"
-	elif gameMode == 1:
-		# taiko not implemented as of yet.
-		return "a"
 	elif gameMode == 2:
 		# CtB
 		if acc == 100:
-			return ss()
-		if acc >= 98.01 and acc <= 99.99:
-			return s()
-		if acc >= 94.01 and acc <= 98.00:
+			return ss
+		if acc > 98:
+			return s
+		if acc > 94:
 			return "a"
-		if acc >= 90.01 and acc <= 94.00:
+		if acc > 90:
 			return "b"
-		if acc >= 98.01 and acc <= 90.00:
+		if acc > 85:
 			return "c"
 		return "d"
 	elif gameMode == 3:
 		# osu!mania
 		if acc == 100:
-			return ss()
+			return ss
 		if acc > 95:
-			return s()
+			return s
 		if acc > 90:
 			return "a"
 		if acc > 80:
