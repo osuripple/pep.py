@@ -19,6 +19,6 @@ class handler(requestHelper.asyncRequestHandler):
 
 			# Send response
 			#self.clear()
-			self.write(json.dump(data))
+			self.write(json.dumps(data))
 			self.set_status(statusCode)
 			#self.finish(json.dumps(data))
