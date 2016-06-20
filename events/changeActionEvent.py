@@ -55,7 +55,7 @@ def handle(userToken, packetData):
 	# NOTE: Remove this when osu!direct will be fixed
 	if userToken.actionID == actions.osuDirect and userToken.osuDirectAlert == False:
 		userToken.osuDirectAlert = True
-		userToken.enqueue(serverPackets.sendMessage("FokaBot", userToken.username, "Sup! osu!direct works, kinda. To download a beatmap, you have to click the \"View listing\" button (the last one) instead of \"Download\". However, if you are on the stable (fallback) branch, it should work also with the \"Download\" button. We'll fix that bug as soon as possibleTM."))
+		userToken.enqueue(serverPackets.sendMessage("FokaBot", userToken.username, "Sup! osu!direct works, but you'll need to update the switcher to have the Download button working. If you didn't update the switcher yet, please do!"))
 
 
 	# Console output
