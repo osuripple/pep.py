@@ -171,6 +171,9 @@ if __name__ == "__main__":
 	except:
 		consoleHelper.printColored("[!] Error while starting sentry client! Please check your config.ini and run the server again", bcolors.RED)
 
+	# Cloudflare memes
+	glob.cloudflare = generalFunctions.stringToBool(glob.conf.config["server"]["cloudflare"])
+
 	# Server start message and console output
 	log.logMessage("Server started!", discord=True, of="info.txt", stdout=False)
 	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)

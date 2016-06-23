@@ -21,6 +21,7 @@ matches = matchList.matchList()
 restarting = False
 pool = None
 fLocks = fileLocks.fileLocks()
+cloudflare = False
 
 debug = False
 outputRequestTime = False

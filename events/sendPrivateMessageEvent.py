@@ -32,11 +32,7 @@ def handle(userToken, packetData):
 			raise exceptions.userSilencedException
 
 		# Check message length
-		if len(packetData["message"]) > 256:
-			if userToken.longMessageWarning == True:
-				raise exceptions.messageTooLongException
-			else:
-				raise exceptions.messageTooLongWarnException
+		packetData["message"] = packetData["message"][:2048]+"..." if len(packetData["message"]) > 2048 else packetData["message"]
 
 		if packetData["to"] == "FokaBot":
 			# FokaBot command check
@@ -72,10 +68,6 @@ def handle(userToken, packetData):
 	except exceptions.tokenNotFoundException:
 		# Token not found, user disconnected
 		log.warning("{} tried to send a message to {}, but their token couldn't be found".format(username, packetData["to"]))
-	except exceptions.messageTooLongWarnException:
-		# Message > 256 warn
-		userToken.longMessageWarning = True
-		userToken.enqueue(serverPackets.sendMessage("FokaBot", username, "Your message was too long and has not been sent. Please keep your messages under 256 characters. This is your last warning."))
 	except exceptions.messageTooLongException:
 		# Message > 256 silence
 		userToken.silence(2*3600, "Sending messages longer than 256 characters")

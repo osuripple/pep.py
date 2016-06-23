@@ -68,7 +68,6 @@ class token:
 		self.osuDirectAlert = False	# NOTE: Remove this when osu!direct will be fixed
 
 		# Spam protection
-		self.longMessageWarning = False
 		self.spamRate = 0
 		#self.lastMessagetime = 0
 

@@ -33,11 +33,7 @@ def handle(userToken, packetData):
 			raise exceptions.userSilencedException
 
 		# Check message length
-		if len(packetData["message"]) > 256:
-			if userToken.longMessageWarning == True:
-				raise exceptions.messageTooLongException
-			else:
-				raise exceptions.messageTooLongWarnException
+		packetData["message"] = packetData["message"][:2048]+"..." if len(packetData["message"]) > 2048 else packetData["message"]
 
 		# Get receivers list
 		# Check #spectator
@@ -129,10 +125,6 @@ def handle(userToken, packetData):
 		log.warning("{} tried to send a message to an unknown channel ({})".format(username, packetData["to"]))
 	except exceptions.channelNoPermissionsException:
 		log.warning("{} tried to send a message to channel {}, but they have no write permissions".format(username, packetData["to"]))
-	except exceptions.messageTooLongWarnException:
-		# Message > 256 warn
-		userToken.longMessageWarning = True
-		userToken.enqueue(serverPackets.sendMessage("FokaBot", username, "Your message was too long and has not been sent. Please keep your messages under 256 characters. This is your last warning."))
 	except exceptions.messageTooLongException:
 		# Message > 256 silence
 		userToken.silence(2*3600, "Sending messages longer than 256 characters")

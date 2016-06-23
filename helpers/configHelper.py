@@ -54,6 +54,7 @@ class config:
 			self.config.get("server","gziplevel")
 			self.config.get("server","localize")
 			self.config.get("server","cikey")
+			self.config.get("server","cloudflare")
 
 			self.config.get("debug","enable")
 			self.config.get("debug","packets")
@@ -92,6 +93,7 @@ class config:
 		self.config.set("server", "gziplevel", "6")
 		self.config.set("server", "localize", "1")
 		self.config.set("server", "cikey", "changeme")
+		self.config.set("server", "cloudflare", "0")
 
 		self.config.add_section("debug")
 		self.config.set("debug", "enable", "0")
