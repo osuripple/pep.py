@@ -47,16 +47,10 @@ def fokabotResponse(fro, chan, message):
 			# message has triggered a command
 
 			# Make sure the user has right permissions
-			if i["rank"] != None:
+			if i["privileges"] != None:
 				# Rank = x
-				if userHelper.getRankPrivileges(userHelper.getID(fro)) != i["rank"]:
+				if userHelper.getPrivileges(userHelper.getID(fro)) & i["privileges"] == 0:
 					return False
-			else:
-				# Rank > x
-				if i["minRank"] > 1:
-					# Get rank from db only if minrank > 1, so we save some CPU
-					if userHelper.getRankPrivileges(userHelper.getID(fro)) < i["minRank"]:
-						return False
 
 			# Check argument number
 			message = message.split(" ")

@@ -74,3 +74,6 @@ class userSilencedException(Exception):
 
 class need2FAException(Exception):
 	pass
+
+class userRestrictedException(Exception):
+	pass

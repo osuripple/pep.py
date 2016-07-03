@@ -4,6 +4,7 @@ from helpers import generalFunctions
 from objects import glob
 from helpers import logHelper as log
 import time
+from constants import privileges
 
 def getID(username):
 	"""
@@ -66,27 +67,6 @@ def exists(userID):
 		return False
 	else:
 		return True
-
-def getAllowed(userID):
-	"""
-	Get allowed status for userID
-
-	db -- database connection
-	userID -- user ID
-	return -- allowed int
-	"""
-
-	return glob.db.fetch("SELECT allowed FROM users WHERE id = %s", [userID])["allowed"]
-
-
-def getRankPrivileges(userID):
-	"""
-	This returns rank **(PRIVILEGES)**, not game rank (like #1337)
-	If you want to get that rank, user getUserGameRank instead
-	"""
-
-	return glob.db.fetch("SELECT rank FROM users WHERE id = %s", [userID])["rank"]
-
 
 def getSilenceEnd(userID):
 	"""
@@ -279,16 +259,6 @@ def getPP(userID, gameMode):
 	modeForDB = gameModes.getGameModeForDB(gameMode)
 	return glob.db.fetch("SELECT pp_{} FROM users_stats WHERE id = %s".format(modeForDB), [userID])["pp_{}".format(modeForDB)]
 
-def setAllowed(userID, allowed):
-	"""
-	Set userID's allowed status
-
-	userID -- user
-	allowed -- allowed status. 1: normal, 0: banned
-	"""
-	banDateTime = int(time.time()) if allowed == 0 else 0
-	glob.db.execute("UPDATE users SET allowed = %s, ban_datetime = %s WHERE id = %s", [allowed, banDateTime, userID])
-
 def setCountry(userID, country):
 	"""
 	Set userID's country (two letters)
@@ -375,3 +345,102 @@ def getUserStats(userID, gameMode):
 
 	# Return stats + game rank
 	return stats
+
+def isAllowed(userID):
+	"""
+	Check if userID is not banned or restricted
+
+	userID -- id of the user
+	return -- True if not banned or restricted, otherwise false.
+	"""
+	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s", [userID])
+	if result != None:
+		return (result["privileges"] & privileges.USER_NORMAL) and (result["privileges"] & privileges.USER_PUBLIC)
+	else:
+		return False
+
+def isRestricted(userID):
+	"""
+	Check if userID is restricted
+
+	userID -- id of the user
+	return -- True if not restricted, otherwise false.
+	"""
+	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s", [userID])
+	if result != None:
+		return (result["privileges"] & privileges.USER_NORMAL) and not (result["privileges"] & privileges.USER_PUBLIC)
+	else:
+		return False
+
+def isBanned(userID):
+	"""
+	Check if userID is banned
+
+	userID -- id of the user
+	return -- True if not banned, otherwise false.
+	"""
+	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s", [userID])
+	if result != None:
+		return not (result["privileges"] & privileges.USER_NORMAL) and not (result["privileges"] & privileges.USER_PUBLIC)
+	else:
+		return True
+
+def ban(userID):
+	"""
+	Ban userID
+
+	userID -- id of user
+	"""
+	banDateTime = int(time.time())
+	glob.db.execute("UPDATE users SET privileges = privileges & %s, ban_datetime = %s WHERE id = %s", [ ~(privileges.USER_NORMAL | privileges.USER_PUBLIC) , banDateTime, userID])
+
+def unban(userID):
+	"""
+	Unban userID
+
+	userID -- id of user
+	"""
+	glob.db.execute("UPDATE users SET privileges = privileges | %s, ban_datetime = 0 WHERE id = %s", [ (privileges.USER_NORMAL | privileges.USER_PUBLIC) , userID])
+
+def restrict(userID):
+	"""
+	Put userID in restricted mode
+
+	userID -- id of user
+	"""
+	banDateTime = int(time.time())
+	glob.db.execute("UPDATE users SET privileges = privileges & %s, ban_datetime = %s WHERE id = %s", [~privileges.USER_PUBLIC, banDateTime, userID])
+
+def unrestrict(userID):
+	"""
+	Remove restricted mode from userID.
+	Same as unban().
+
+	userID -- id of user
+	"""
+	unban(userID)
+
+def getPrivileges(userID):
+	"""
+	Return privileges for userID
+
+	userID -- id of user
+	return -- privileges number
+	"""
+	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s", [userID])
+	if result != None:
+		return result["privileges"]
+	else:
+		return 0
+
+def isInPrivilegeGroup(userID, groupName):
+	groupPrivileges = glob.db.fetch("SELECT privileges FROM privileges_groups WHERE name = %s", [groupName])
+	if groupPrivileges == None:
+		return False
+	groupPrivileges = groupPrivileges["privileges"]
+	userToken = glob.tokens.getTokenFromUserID(userID)
+	if userToken != None:
+		userPrivileges = userToken.privileges
+	else:
+		userPrivileges = getPrivileges(userID)
+	return (userPrivileges == groupPrivileges) or (userPrivileges == (groupPrivileges | privileges.USER_DONOR))

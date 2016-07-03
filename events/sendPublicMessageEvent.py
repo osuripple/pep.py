@@ -20,7 +20,10 @@ def handle(userToken, packetData):
 		# Get userToken data
 		userID = userToken.userID
 		username = userToken.username
-		userRank = userToken.rank
+		
+		# Make sure the user is not in restricted mode
+		if userToken.restricted == True:
+			raise exceptions.userRestrictedException
 
 		# Public chat packet
 		packetData = clientPackets.sendPublicMessage(packetData)
@@ -85,11 +88,11 @@ def handle(userToken, packetData):
 				raise exceptions.channelUnknownException
 
 			# Make sure the channel is not in moderated mode
-			if glob.channels.channels[packetData["to"]].moderated == True and userRank <= 2:
+			if glob.channels.channels[packetData["to"]].moderated == True and userToken.admin == False:
 				raise exceptions.channelModeratedException
 
 			# Make sure we have write permissions
-			if glob.channels.channels[packetData["to"]].publicWrite == False and userRank <= 2:
+			if glob.channels.channels[packetData["to"]].publicWrite == False and userToken.admin == False:
 				raise exceptions.channelNoPermissionsException
 
 			# Send this packet to everyone in that channel except us
@@ -128,3 +131,5 @@ def handle(userToken, packetData):
 	except exceptions.messageTooLongException:
 		# Message > 256 silence
 		userToken.silence(2*3600, "Sending messages longer than 256 characters")
+	except exceptions.userRestrictedException:
+		pass

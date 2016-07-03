@@ -31,7 +31,8 @@ def handle(tornadoRequest):
 		err = False
 
 		# Try to get the ID from username
-		userID = userHelper.getID(str(loginData[0]))
+		username = str(loginData[0])
+		userID = userHelper.getID(username)
 
 		if userID == False:
 			# Invalid username
@@ -41,9 +42,7 @@ def handle(tornadoRequest):
 			raise exceptions.loginFailedException()
 
 		# Make sure we are not banned
-		userAllowed = userHelper.getAllowed(userID)
-		if userAllowed == 0:
-			# Banned
+		if userHelper.isBanned(userID) == True:
 			raise exceptions.loginBannedException()
 
 		# 2FA check
@@ -67,10 +66,9 @@ def handle(tornadoRequest):
 		silenceSeconds = responseToken.getSilenceSecondsLeft()
 
 		# Get supporter/GMT
-		userRank = userHelper.getRankPrivileges(userID)
 		userGMT = False
 		userSupporter = True
-		if userRank >= 3:
+		if responseToken.admin == True:
 			userGMT = True
 
 		# Server restarting check
@@ -105,9 +103,9 @@ def handle(tornadoRequest):
 		# TODO: Configurable default channels
 		channelJoinEvent.joinChannel(responseToken, "#osu")
 		channelJoinEvent.joinChannel(responseToken, "#announce")
-		if userRank >= 3:
-			# Join admin chanenl if we are mod/admin
-			# TODO: Separate channels for mods and admins
+
+		# Join admin channel if we are an admin
+		if responseToken.admin == True:
 			channelJoinEvent.joinChannel(responseToken, "#admin")
 
 		# Output channels info
@@ -121,12 +119,6 @@ def handle(tornadoRequest):
 		# Send main menu icon
 		if glob.banchoConf.config["menuIcon"] != "":
 			responseToken.enqueue(serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
-
-		# Get everyone else userpanel
-		# TODO: Better online users handling
-		#for key, value in glob.tokens.tokens.items():
-		#	responseToken.enqueue(serverPackets.userPanel(value.userID))
-		#	responseToken.enqueue(serverPackets.userStats(value.userID))
 
 		# Send online users IDs array
 		responseToken.enqueue(serverPackets.onlineUsers())
@@ -151,10 +143,10 @@ def handle(tornadoRequest):
 		# Set country in db if user has no country (first bancho login)
 		if userHelper.getCountry(userID) == "XX":
 			userHelper.setCountry(userID, countryLetters)
-
-		# Send to everyone our userpanel
-		glob.tokens.enqueueAll(serverPackets.userPanel(userID))
-		#glob.tokens.enqueueAll(serverPackets.userStats(userID))
+			
+		# Send to everyone our userpanel if we are not restricted
+		if responseToken.restricted == False:
+			glob.tokens.enqueueAll(serverPackets.userPanel(userID))
 
 		# Set reponse data to right value and reset our queue
 		responseData = responseToken.queue

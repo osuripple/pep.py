@@ -8,6 +8,7 @@ from objects import glob
 import uuid
 import time
 import threading
+from helpers import logHelper as log
 
 class token:
 	"""
@@ -16,7 +17,6 @@ class token:
 	token -- token string
 	userID -- userID associated to that token
 	username -- username relative to userID (cache)
-	rank -- rank (permissions) relative to userID (cache)
 	actionID -- current user action (see actions.py)
 	actionText -- current user action text
 	actionMd5 -- md5 relative to user action
@@ -47,7 +47,11 @@ class token:
 		# Set stuff
 		self.userID = __userID
 		self.username = userHelper.getUsername(self.userID)
-		self.rank = userHelper.getRankPrivileges(self.userID)
+		self.privileges = userHelper.getPrivileges(self.userID)
+		self.admin = userHelper.isInPrivilegeGroup(self.userID, "developer") or userHelper.isInPrivilegeGroup(self.userID, "community manager")
+		self.restricted = userHelper.isRestricted(self.userID)
+		if self.restricted == True:
+			self.setRestricted()
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
 		self.lock = threading.Lock()	# Sync primitive
@@ -69,7 +73,6 @@ class token:
 
 		# Spam protection
 		self.spamRate = 0
-		#self.lastMessagetime = 0
 
 		# Stats cache
 		self.actionID = actions.idle
@@ -295,3 +298,11 @@ class token:
 		self.totalScore = stats["totalScore"]
 		self.gameRank = stats["gameRank"]
 		self.pp = stats["pp"]
+
+	def setRestricted(self):
+		"""
+		Set this token as restricted, send FokaBot message to user
+		and send offline packet to everyone
+		"""
+		self.restricted = True
+		self.enqueue(serverPackets.sendMessage("FokaBot", self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information."))

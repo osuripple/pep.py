@@ -24,6 +24,10 @@ def handle(userToken, packetData):
 		username = userToken.username
 		userID = userToken.userID
 
+		# Make sure the user is not in restricted mode
+		if userToken.restricted == True:
+			raise exceptions.userRestrictedException
+
 		# Private message packet
 		packetData = clientPackets.sendPrivateMessage(packetData)
 
@@ -47,7 +51,7 @@ def handle(userToken, packetData):
 				raise exceptions.tokenNotFoundException()
 
 			# Check message templates (mods/admins only)
-			if packetData["message"] in messageTemplates.templates and userToken.rank >= 3:
+			if packetData["message"] in messageTemplates.templates and userToken.admin == True:
 				packetData["message"] = messageTemplates.templates[packetData["message"]]
 
 			# Send message to target
@@ -71,3 +75,5 @@ def handle(userToken, packetData):
 	except exceptions.messageTooLongException:
 		# Message > 256 silence
 		userToken.silence(2*3600, "Sending messages longer than 256 characters")
+	except exceptions.userRestrictedException:
+		pass

@@ -100,6 +100,14 @@ def packData(__data, __dataType):
 		# Bytes, do not use pack, do manually
 		pack = False
 		data = __data
+	elif __dataType == dataTypes.intList:
+		# Pack manually
+		pack = False
+		# Add length
+		data = packData(len(__data), dataTypes.uInt16)
+		# Add all elements
+		for i in __data:
+			data += packData(i, dataTypes.sInt32)
 	elif __dataType == dataTypes.string:
 		# String, do not use pack, do manually
 		pack = False

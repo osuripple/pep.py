@@ -69,18 +69,15 @@ def friendList(userID):
 	return packetHelper.buildPacket(packetIDs.server_friendsList, friendsData)
 
 def onlineUsers():
-	onlineUsersData = []
-
+	userIDs = []
 	users = glob.tokens.tokens
 
-	# Users number
-	onlineUsersData.append([len(users), dataTypes.uInt16])
+	# Create list with all connected (and not restricted) users
+	for _, value in users.items():
+		if value.restricted == False:
+			userIDs.append(value.userID)
 
-	# Add all users user IDs to onlineUsersData
-	for _,value in users.items():
-		onlineUsersData.append([value.userID, dataTypes.sInt32])
-
-	return packetHelper.buildPacket(packetIDs.server_userPresenceBundle, onlineUsersData)
+	return packetHelper.buildPacket(packetIDs.server_userPresenceBundle, [[userIDs, dataTypes.intList]])
 
 
 """ Users packets """
@@ -88,8 +85,14 @@ def userLogout(userID):
 	return packetHelper.buildPacket(packetIDs.server_userLogout, [[userID, dataTypes.sInt32], [0, dataTypes.byte]])
 
 def userPanel(userID):
-	# Get user data
+	# Connected and restricted check
 	userToken = glob.tokens.getTokenFromUserID(userID)
+	if userToken == None:
+		return bytes()
+	if userToken.restricted == True:
+		return bytes()
+
+	# Get user data
 	username = userToken.username
 	timezone = 24	# TODO: Timezone
 	country = userToken.country
@@ -99,15 +102,13 @@ def userPanel(userID):
 
 	# Get username color according to rank
 	# Only admins and normal users are currently supported
-	#rank = userHelper.getRankPrivileges(userID)
-	rank = userToken.rank
 	if username == "FokaBot":
 		userRank = userRanks.MOD
-	elif rank == 4:
+	elif userHelper.isInPrivilegeGroup(userID, "community manager") == True:
 		userRank = userRanks.MOD
-	elif rank == 3:
+	elif userHelper.isInPrivilegeGroup(userID, "developer") == True:
 		userRank = userRanks.ADMIN
-	elif rank == 2:
+	elif userHelper.isInPrivilegeGroup(userID, "donator") == True:
 		userRank = userRanks.SUPPORTER
 	else:
 		userRank = userRanks.NORMAL
@@ -130,6 +131,8 @@ def userStats(userID):
 	userToken = glob.tokens.getTokenFromUserID(userID)
 	if userToken == None:
 		return bytes()	# NOTE: ???
+	if userToken.restricted == True:
+		return bytes()
 	# Stats are cached in token object
 	#rankedScore = 	userHelper.getRankedScore(userID, userToken.gameMode)
 	#accuracy = 		userHelper.getAccuracy(userID, userToken.gameMode)/100

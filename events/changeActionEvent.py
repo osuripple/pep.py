@@ -11,9 +11,14 @@ def handle(userToken, packetData):
 	username = userToken.username
 
 	# Make sure we are not banned
-	if userHelper.getAllowed(userID) == 0:
+	if userHelper.isBanned(userID) == True:
 		userToken.enqueue(serverPackets.loginBanned())
 		return
+
+	# Send restricted message if needed
+	if userToken.restricted == False:
+		if userHelper.isRestricted(userID) == True:
+			userToken.setRestricted()
 
 	# Change action packet
 	packetData = clientPackets.userActionChange(packetData)

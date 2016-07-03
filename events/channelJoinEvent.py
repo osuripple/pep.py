@@ -26,7 +26,6 @@ def joinChannel(userToken, channelName):
 		# Get usertoken data
 		username = userToken.username
 		userID = userToken.userID
-		userRank = userToken.rank
 
 		# Check spectator channel
 		# If it's spectator channel, skip checks and list stuff
@@ -37,7 +36,7 @@ def joinChannel(userToken, channelName):
 				raise exceptions.channelUnknownException
 
 			# Check channel permissions
-			if glob.channels.channels[channelName].publicRead == False and userRank <= 2:
+			if glob.channels.channels[channelName].publicRead == False and userToken.admin == False:
 				raise exceptions.channelNoPermissionsException
 
 			# Add our userID to users in that channel

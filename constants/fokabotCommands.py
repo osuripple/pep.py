@@ -11,6 +11,7 @@ from constants import mods
 from helpers import generalFunctions
 from helpers import logHelper as log
 from constants import gameModes
+from constants import privileges
 
 """
 Commands callbacks
@@ -98,7 +99,7 @@ def kickAll(fro, chan, message):
 	# Kick everyone but mods/admins
 	toKick = []
 	for key, value in glob.tokens.tokens.items():
-		if value.rank < 3:
+		if value.admin == False:
 			toKick.append(key)
 
 	# Loop though users to kick (we can't change dictionary size while iterating)
@@ -213,7 +214,7 @@ def ban(fro, chan, message):
 		return "{}: user not found".format(target)
 
 	# Set allowed to 0
-	userHelper.setAllowed(targetUserID, 0)
+	userHelper.ban(targetUserID)
 
 	# Send ban packet to the user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(target)
@@ -236,9 +237,50 @@ def unban(fro, chan, message):
 		return "{}: user not found".format(target)
 
 	# Set allowed to 1
-	userHelper.setAllowed(targetUserID, 1)
+	userHelper.unban(targetUserID)
 
 	log.rap(userID, "has unbanned {}".format(target), True)
+	return "Welcome back {}!".format(target)
+
+def restrict(fro, chan, message):
+	# Get parameters
+	for i in message:
+		i = i.lower()
+	target = message[0].replace("_", " ")
+
+	# Make sure the user exists
+	targetUserID = userHelper.getID(target)
+	userID = userHelper.getID(fro)
+	if targetUserID == False:
+		return "{}: user not found".format(target)
+
+	# Put this user in restricted mode
+	userHelper.restrict(targetUserID)
+
+	# Send restricted mode packet to this user if he's online
+	targetToken = glob.tokens.getTokenFromUsername(target)
+	if targetToken != None:
+		targetToken.setRestricted()
+
+	log.rap(userID, "has put {} in restricted mode".format(target), True)
+	return "Bye bye {}. See you later, maybe.".format(target)
+
+def unrestrict(fro, chan, message):
+	# Get parameters
+	for i in message:
+		i = i.lower()
+	target = message[0].replace("_", " ")
+
+	# Make sure the user exists
+	targetUserID = userHelper.getID(target)
+	userID = userHelper.getID(fro)
+	if targetUserID == False:
+		return "{}: user not found".format(target)
+
+	# Set allowed to 1
+	userHelper.unrestrict(targetUserID)
+
+	log.rap(userID, "has removed restricted mode from {}".format(target), True)
 	return "Welcome back {}!".format(target)
 
 def restartShutdown(restart):
@@ -287,7 +329,7 @@ def systemMaintenance(fro, chan, message):
 
 		# Disconnect everyone but mod/admins
 		for _, value in glob.tokens.tokens.items():
-			if value.rank < 3:
+			if value.admin == False:
 				who.append(value.userID)
 
 		glob.tokens.enqueueAll(serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later."))
@@ -306,7 +348,7 @@ def systemStatus(fro, chan, message):
 	data = systemHelper.getSystemInfo()
 
 	# Final message
-	msg = "pep.py bancho server v{}\n".format(glob.VERSION)
+	msg = "pep.py bancho server v{}".format(glob.VERSION)
 	msg += "made by the Ripple team\n"
 	msg += "\n"
 	msg += "=== BANCHO STATS ===\n"
@@ -555,14 +597,7 @@ trigger: message that triggers the command
 callback: function to call when the command is triggered. Optional.
 response: text to return when the command is triggered. Optional.
 syntax: command syntax. Arguments must be separated by spaces (eg: <arg1> <arg2>)
-minRank: minimum rank to execute that command. Optional (default = 1)
-rank: EXACT rank used to execute that command. Optional.
-
-RANKS:
-1: Normal user
-2: Supporter
-3: Developer
-4: Community manager
+privileges: privileges needed to execute the command. Optional.
 
 NOTES:
 - You CAN'T use both rank and minRank at the same time.
@@ -593,70 +628,80 @@ commands = [
 	}, {
 		"trigger": "!alert",
 		"syntax": "<message>",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_SEND_ALERTS,
 		"callback": alert
 	}, {
 		"trigger": "!alertuser",
 		"syntax": "<username> <message>",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_SEND_ALERTS,
 		"callback": alertUser,
 	}, {
 		"trigger": "!moderated",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_CHAT_MOD,
 		"callback": moderated
 	}, {
 		"trigger": "!kickall",
-		"rank": 3,
+		"privileges": privileges.ADMIN_KICK_USERS,
 		"callback": kickAll
 	}, {
 		"trigger": "!kick",
 		"syntax": "<target>",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_KICK_USERS,
 		"callback": kick
 	}, {
 		"trigger": "!fokabot reconnect",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": fokabotReconnect
 	}, {
 		"trigger": "!silence",
 		"syntax": "<target> <amount> <unit(s/m/h/d)> <reason>",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_SILENCE_USERS,
 		"callback": silence
 	}, {
 		"trigger": "!removesilence",
 		"syntax": "<target>",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_SILENCE_USERS,
 		"callback": removeSilence
 	}, {
 		"trigger": "!system restart",
-		"rank": 3,
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": systemRestart
 	}, {
 		"trigger": "!system shutdown",
-		"rank": 3,
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": systemShutdown
 	}, {
 		"trigger": "!system reload",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_MANAGE_SETTINGS,
 		"callback": systemReload
 	}, {
 		"trigger": "!system maintenance",
-		"rank": 3,
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": systemMaintenance
 	}, {
 		"trigger": "!system status",
-		"rank": 3,
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": systemStatus
 	}, {
 		"trigger": "!ban",
 		"syntax": "<target>",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_BAN_USERS,
 		"callback": ban
 	}, {
 		"trigger": "!unban",
 		"syntax": "<target>",
-		"minRank": 3,
+		"privileges": privileges.ADMIN_BAN_USERS,
 		"callback": unban
+	}, {
+		"trigger": "!restrict",
+		"syntax": "<target>",
+		"privileges": privileges.ADMIN_BAN_USERS,
+		"callback": restrict
+	}, {
+		"trigger": "!unrestrict",
+		"syntax": "<target>",
+		"privileges": privileges.ADMIN_BAN_USERS,
+		"callback": unrestrict
 	}, {
 		"trigger": "\x01ACTION is listening to",
 		"callback": tillerinoNp
@@ -684,7 +729,6 @@ commands = [
 # Commands list default values
 for cmd in commands:
 	cmd.setdefault("syntax", "")
-	cmd.setdefault("minRank", 1)
-	cmd.setdefault("rank", None)
+	cmd.setdefault("privileges", None)
 	cmd.setdefault("callback", None)
 	cmd.setdefault("response", "u w0t m8?")

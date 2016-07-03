@@ -156,9 +156,25 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 							packetIDs.client_userPanelRequest: handleEvent(userPanelRequestEvent),
 						}
 
+						# Packets processed if in restricted mode.
+						# All other packets will be ignored if the user is in restricted mode
+						packetsRestricted = [
+							packetIDs.client_logout,
+							packetIDs.client_userStatsRequest,
+							packetIDs.client_requestStatusUpdate,
+							packetIDs.client_userPanelRequest,
+							packetIDs.client_changeAction,
+							packetIDs.client_channelJoin,
+							packetIDs.client_channelPart,
+						]
+
+						# Process/ignore packet
 						if packetID != 4:
 							if packetID in eventHandler:
-								eventHandler[packetID]()
+								if userToken.restricted == False or (userToken.restricted == True and packetID in packetsRestricted):
+									eventHandler[packetID]()
+								else:
+									log.warning("Ignored packet id from {} ({}) (user is restricted)".format(requestTokenString, packetID))
 							else:
 								log.warning("Unknown packet id from {} ({})".format(requestTokenString, packetID))
 
