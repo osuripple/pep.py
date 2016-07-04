@@ -50,8 +50,6 @@ class token:
 		self.privileges = userHelper.getPrivileges(self.userID)
 		self.admin = userHelper.isInPrivilegeGroup(self.userID, "developer") or userHelper.isInPrivilegeGroup(self.userID, "community manager")
 		self.restricted = userHelper.isRestricted(self.userID)
-		if self.restricted == True:
-			self.setRestricted()
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
 		self.lock = threading.Lock()	# Sync primitive
@@ -100,6 +98,10 @@ class token:
 		# If we have a valid ip, save bancho session in DB so we can cache LETS logins
 		if ip != "":
 			userHelper.saveBanchoSession(self.userID, self.ip)
+
+		# If we are restricted, send message from FokaBot to user
+		if self.restricted == True:
+			self.setRestricted()
 
 
 	def enqueue(self, __bytes):
