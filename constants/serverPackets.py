@@ -84,12 +84,12 @@ def onlineUsers():
 def userLogout(userID):
 	return packetHelper.buildPacket(packetIDs.server_userLogout, [[userID, dataTypes.sInt32], [0, dataTypes.byte]])
 
-def userPanel(userID):
+def userPanel(userID, force = False):
 	# Connected and restricted check
 	userToken = glob.tokens.getTokenFromUserID(userID)
 	if userToken == None:
 		return bytes()
-	if userToken.restricted == True:
+	if userToken.restricted == True and force == False:
 		return bytes()
 
 	# Get user data
@@ -126,12 +126,12 @@ def userPanel(userID):
 	])
 
 
-def userStats(userID):
+def userStats(userID, force = False):
 	# Get userID's token from tokens list
 	userToken = glob.tokens.getTokenFromUserID(userID)
 	if userToken == None:
 		return bytes()	# NOTE: ???
-	if userToken.restricted == True:
+	if userToken.restricted == True and force == False:
 		return bytes()
 	# Stats are cached in token object
 	#rankedScore = 	userHelper.getRankedScore(userID, userToken.gameMode)

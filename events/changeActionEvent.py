@@ -49,12 +49,10 @@ def handle(userToken, packetData):
 			token = glob.tokens.getTokenFromUserID(i)
 
 		if token != None:
-			token.enqueue(serverPackets.userPanel(userID))
-			token.enqueue(serverPackets.userStats(userID))
-
-	# TODO: Enqueue all if we've changed game mode, (maybe not needed because it's cached)
-	#glob.tokens.enqueueAll(serverPackets.userPanel(userID))
-	#glob.tokens.enqueueAll(serverPackets.userStats(userID))
+			# Force our own packet
+			force = True if token.userID == userID else False
+			token.enqueue(serverPackets.userPanel(userID, force))
+			token.enqueue(serverPackets.userStats(userID, force))
 
 	# Send osu!direct alert if needed
 	# NOTE: Remove this when osu!direct will be fixed
