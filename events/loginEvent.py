@@ -94,8 +94,8 @@ def handle(tornadoRequest):
 		responseToken.enqueue(serverPackets.userID(userID))
 		responseToken.enqueue(serverPackets.protocolVersion())
 		responseToken.enqueue(serverPackets.userSupporterGMT(userSupporter, userGMT))
-		responseToken.enqueue(serverPackets.userPanel(userID))
-		responseToken.enqueue(serverPackets.userStats(userID))
+		responseToken.enqueue(serverPackets.userPanel(userID, True))
+		responseToken.enqueue(serverPackets.userStats(userID, True))
 
 		# Channel info end (before starting!?! wtf bancho?)
 		responseToken.enqueue(serverPackets.channelInfoEnd())
@@ -143,7 +143,7 @@ def handle(tornadoRequest):
 		# Set country in db if user has no country (first bancho login)
 		if userHelper.getCountry(userID) == "XX":
 			userHelper.setCountry(userID, countryLetters)
-			
+
 		# Send to everyone our userpanel if we are not restricted
 		if responseToken.restricted == False:
 			glob.tokens.enqueueAll(serverPackets.userPanel(userID))
@@ -162,6 +162,7 @@ def handle(tornadoRequest):
 		responseData += serverPackets.loginBanned()
 	except exceptions.banchoMaintenanceException:
 		# Bancho is in maintenance mode
+		responseData = responseToken.queue
 		responseData += serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later.")
 		responseData += serverPackets.loginFailed()
 	except exceptions.banchoRestartingException:
