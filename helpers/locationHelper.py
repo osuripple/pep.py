@@ -4,7 +4,7 @@ import json
 from helpers import logHelper as log
 
 # API URL
-URL = "http://ipinfo.io/"
+URL = "http://ip.zxq.co/"
 
 
 def getCountry(ip):
