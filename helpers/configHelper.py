@@ -52,7 +52,6 @@ class config:
 			self.config.get("server","threads")
 			self.config.get("server","gzip")
 			self.config.get("server","gziplevel")
-			self.config.get("server","localize")
 			self.config.get("server","cikey")
 			self.config.get("server","cloudflare")
 
@@ -66,6 +65,12 @@ class config:
 			self.config.get("discord","enable")
 			self.config.get("discord","boturl")
 			self.config.get("discord","devgroup")
+
+			self.config.get("irc","enable")
+			self.config.get("irc","port")
+
+			self.config.get("localize","enable")
+			self.config.get("localize","ipapiurl")
 			return True
 		except:
 			return False
@@ -91,7 +96,6 @@ class config:
 		self.config.set("server", "threads", "16")
 		self.config.set("server", "gzip", "1")
 		self.config.set("server", "gziplevel", "6")
-		self.config.set("server", "localize", "1")
 		self.config.set("server", "cikey", "changeme")
 		self.config.set("server", "cloudflare", "0")
 
@@ -108,6 +112,14 @@ class config:
 		self.config.set("discord", "enable", "0")
 		self.config.set("discord", "boturl", "")
 		self.config.set("discord", "devgroup", "")
+
+		self.config.add_section("irc")
+		self.config.set("irc", "enable", "1")
+		self.config.set("irc", "port", "6667")
+
+		self.config.add_section("localize")
+		self.config.set("localize", "enable", "1")
+		self.config.set("localize", "ipapiurl", "http://ip.zxq.co")
 
 		# Write ini to file and close
 		self.config.write(f)

@@ -1,11 +1,8 @@
 import urllib.request
 import json
+from objects import glob
 
 from helpers import logHelper as log
-
-# API URL
-URL = "http://ip.zxq.co/"
-
 
 def getCountry(ip):
 	"""
@@ -17,7 +14,7 @@ def getCountry(ip):
 
 	try:
 		# Try to get country from Pikolo Aul's Go-Sanic ip API
-		result = json.loads(urllib.request.urlopen("{}/{}".format(URL, ip), timeout=3).read().decode())["country"]
+		result = json.loads(urllib.request.urlopen("{}/{}".format(glob.conf.config["localize"]["ipapiurl"], ip), timeout=3).read().decode())["country"]
 		return result.upper()
 	except:
 		log.error("Error in get country")
@@ -34,7 +31,7 @@ def getLocation(ip):
 
 	try:
 		# Try to get position from Pikolo Aul's Go-Sanic ip API
-		result = json.loads(urllib.request.urlopen("{}/{}".format(URL, ip), timeout=3).read().decode())["loc"].split(",")
+		result = json.loads(urllib.request.urlopen("{}/{}".format(glob.conf.config["localize"]["ipapiurl"], ip), timeout=3).read().decode())["loc"].split(",")
 		return [float(result[0]), float(result[1])]
 	except:
 		log.error("Error in get position")

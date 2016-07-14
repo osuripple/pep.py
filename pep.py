@@ -2,6 +2,7 @@
 import sys
 import os
 from multiprocessing.pool import ThreadPool
+import threading
 
 # Tornado
 import tornado.ioloop
@@ -30,6 +31,7 @@ from handlers import apiOnlineUsersHandler
 from handlers import apiServerStatusHandler
 from handlers import ciTriggerHandler
 
+from irc import ircserver
 
 def make_app():
 	return tornado.web.Application([
@@ -67,8 +69,9 @@ if __name__ == "__main__":
 
 	# Connect to db
 	try:
-		print("> Connecting to MySQL db... ")
+		consoleHelper.printNoNl("> Connecting to MySQL db")
 		glob.db = databaseHelperNew.db(glob.conf.config["db"]["host"], glob.conf.config["db"]["username"], glob.conf.config["db"]["password"], glob.conf.config["db"]["database"], int(glob.conf.config["db"]["workers"]))
+		consoleHelper.printNoNl(" ")
 		consoleHelper.printDone()
 	except:
 		# Exception while connecting to db
@@ -109,7 +112,7 @@ if __name__ == "__main__":
 	consoleHelper.printDone()
 
 	# Initialize chat channels
-	consoleHelper.printNoNl("> Initializing chat channels... ")
+	print("> Initializing chat channels... ")
 	glob.channels.loadChannels()
 	consoleHelper.printDone()
 
@@ -129,7 +132,7 @@ if __name__ == "__main__":
 	consoleHelper.printDone()
 
 	# Localize warning
-	glob.localize = generalFunctions.stringToBool(glob.conf.config["server"]["localize"])
+	glob.localize = generalFunctions.stringToBool(glob.conf.config["localize"]["enable"])
 	if glob.localize == False:
 		consoleHelper.printColored("[!] Warning! Users localization is disabled!", bcolors.YELLOW)
 
@@ -151,6 +154,20 @@ if __name__ == "__main__":
 	if glob.debug == True:
 		consoleHelper.printColored("[!] Warning! Server running in debug mode!", bcolors.YELLOW)
 
+	# IRC start message and console output
+	glob.irc = generalFunctions.stringToBool(glob.conf.config["irc"]["enable"])
+	if glob.irc == True:
+		# IRC port
+		try:
+			ircPort = int(glob.conf.config["irc"]["port"])
+		except:
+			consoleHelper.printColored("[!] Invalid IRC port! Please check your config.ini and run the server again", bcolors.RED)
+		log.logMessage("IRC server started!", discord=True, of="info.txt", stdout=False)
+		consoleHelper.printColored("> IRC server listening on 127.0.0.1:{}...".format(ircPort), bcolors.GREEN)
+		threading.Thread(target=lambda: ircserver.main(port=ircPort)).start()
+	else:
+		consoleHelper.printColored("[!] Warning! IRC server is disabled!", bcolors.YELLOW)
+
 	# Server port
 	try:
 		serverPort = int(glob.conf.config["server"]["port"])
@@ -158,7 +175,6 @@ if __name__ == "__main__":
 		consoleHelper.printColored("[!] Invalid server port! Please check your config.ini and run the server again", bcolors.RED)
 
 	# Make app
-	#application = tornado.httpserver.HTTPServer(make_app())
 	application = make_app()
 
 	# Set up sentry
@@ -176,7 +192,7 @@ if __name__ == "__main__":
 
 	# Server start message and console output
 	log.logMessage("Server started!", discord=True, of="info.txt", stdout=False)
-	consoleHelper.printColored("> Tornado listening for clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
+	consoleHelper.printColored("> Tornado listening for HTTP(s) clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 	# Start tornado
 	application.listen(serverPort)

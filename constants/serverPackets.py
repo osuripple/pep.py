@@ -130,16 +130,9 @@ def userStats(userID, force = False):
 	# Get userID's token from tokens list
 	userToken = glob.tokens.getTokenFromUserID(userID)
 	if userToken == None:
-		return bytes()	# NOTE: ???
-	if userToken.restricted == True and force == False:
 		return bytes()
-	# Stats are cached in token object
-	#rankedScore = 	userHelper.getRankedScore(userID, userToken.gameMode)
-	#accuracy = 		userHelper.getAccuracy(userID, userToken.gameMode)/100
-	#playcount = 	userHelper.getPlaycount(userID, userToken.gameMode)
-	#totalScore = 	userHelper.getTotalScore(userID, userToken.gameMode)
-	#gameRank = 		userHelper.getGameRank(userID, userToken.gameMode)
-	#pp = 			int(userHelper.getPP(userID, userToken.gameMode))
+	if (userToken.restricted == True or userToken.irc == True) and force == False:
+		return bytes()
 	return packetHelper.buildPacket(packetIDs.server_userStats,
 	[
 		[userID, 				dataTypes.uInt32],

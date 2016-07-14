@@ -8,13 +8,14 @@ from objects import glob
 from constants import clientPackets
 from constants import serverPackets
 from helpers import logHelper as log
+from helpers import chatHelper as chat
 
 def handle(userToken, packetData):
-	# Channel part packet
+	# Channel join packet
 	packetData = clientPackets.channelPart(packetData)
-	partChannel(userToken, packetData["channel"])
+	chat.partChannel(token=userToken, channel=packetData["channel"])
 
-def partChannel(userToken, channelName, kick = False):
+"""def partChannel(userToken, channelName, kick = False):
 	# Get usertoken data
 	username = userToken.username
 	userID = userToken.userID
@@ -34,4 +35,4 @@ def partChannel(userToken, channelName, kick = False):
 			userToken.enqueue(serverPackets.channelKicked(channelName))
 
 		# Console output
-		log.info("{} parted channel {}".format(username, channelName))
+		log.info("{} parted channel {}".format(username, channelName))"""

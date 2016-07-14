@@ -4,6 +4,7 @@ from constants import exceptions
 from objects import glob
 from helpers import userHelper
 from helpers import logHelper as log
+from helpers import chatHelper as chat
 
 def handle(userToken, packetData):
 	try:
@@ -34,12 +35,12 @@ def handle(userToken, packetData):
 		# Send spectator join packet to host
 		targetToken.enqueue(serverPackets.addSpectator(userID))
 
-		# Join #spectator channel
-		userToken.enqueue(serverPackets.channelJoinSuccess(userID, "#spectator"))
-
+		# Create and join #spectator (#spect_userid) channel
+		glob.channels.addTempChannel("#spect_{}".format(targetToken.userID))
+		chat.joinChannel(token=userToken, channel="#spect_{}".format(targetToken.userID))
 		if len(targetToken.spectators) == 1:
 			# First spectator, send #spectator join to host too
-			targetToken.enqueue(serverPackets.channelJoinSuccess(userID, "#spectator"))
+			chat.joinChannel(token=targetToken, channel="#spect_{}".format(targetToken.userID))
 
 		# send fellowSpectatorJoined to all spectators
 		for spec in targetToken.spectators:

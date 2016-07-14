@@ -19,15 +19,16 @@ class tokenList:
 		"""
 		self.tokens = {}
 
-	def addToken(self, userID, ip = ""):
+	def addToken(self, userID, ip = "", irc = False):
 		"""
 		Add a token object to tokens list
 
 		userID -- user id associated to that token
+		irc -- if True, set this token as IRC client
 		return -- token object
 		"""
 
-		newToken = osuToken.token(userID, ip=ip)
+		newToken = osuToken.token(userID, ip=ip, irc=irc)
 		self.tokens[newToken.token] = newToken
 		return newToken
 
@@ -40,7 +41,8 @@ class tokenList:
 
 		if token in self.tokens:
 			# Delete session from DB
-			userHelper.deleteBanchoSessions(self.tokens[token].userID, self.tokens[token].ip)
+			if self.tokens[token].ip != "":
+				userHelper.deleteBanchoSessions(self.tokens[token].userID, self.tokens[token].ip)
 
 			# Pop token from list
 			self.tokens.pop(token)
@@ -108,13 +110,14 @@ class tokenList:
 		"""
 
 		# Delete older tokens
-		for key, value in self.tokens.items():
+		for key, value in list(self.tokens.items()):
 			if value.userID == userID:
 				# Delete this token from the dictionary
-				self.tokens.pop(key)
+				self.tokens[key].kick("You have logged in from somewhere else. You can't connect to Bancho/IRC from more than one device at the same time.")
+				#self.tokens.pop(key)
 
 				# break or items() function throws errors
-				break
+				#break
 
 
 	def multipleEnqueue(self, packet, who, but = False):
@@ -135,8 +138,6 @@ class tokenList:
 
 			if shouldEnqueue:
 				value.enqueue(packet)
-
-
 
 	def enqueueAll(self, packet):
 		"""
@@ -162,7 +163,7 @@ class tokenList:
 		timeoutLimit = time.time()-__timeoutTime
 		for key, value in self.tokens.items():
 			# Check timeout (fokabot is ignored)
-			if value.pingTime < timeoutLimit and value.userID != 999:
+			if value.pingTime < timeoutLimit and value.userID != 999 and value.irc == False:
 				# That user has timed out, add to disconnected tokens
 				# We can't delete it while iterating or items() throws an error
 				timedOutTokens.append(key)
@@ -195,3 +196,18 @@ class tokenList:
 		Call at bancho startup to delete old cached sessions
 		"""
 		glob.db.execute("TRUNCATE TABLE bancho_sessions")
+
+	def tokenExists(self, username = "", userID = -1):
+		"""
+		Check if a token exists (aka check if someone is connected)
+
+		username -- Optional.
+		userID -- Optional.
+		return -- True if it exists, otherwise False
+
+		Use username or userid, not both at the same time.
+		"""
+		if userID > -1:
+			return True if self.getTokenFromUserID(userID) is not None else False
+		else:
+			return True if self.getTokenFromUsername(username) is not None else False

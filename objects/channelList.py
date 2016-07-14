@@ -1,5 +1,6 @@
 from objects import glob
 from objects import channel
+from helpers import logHelper as log
 
 class channelList:
 	"""
@@ -27,14 +28,40 @@ class channelList:
 				self.addChannel(i["name"], i["description"], publicRead, publicWrite)
 
 
-	def addChannel(self, __name, __description, __publicRead, __publicWrite):
+	def addChannel(self, name, description, publicRead, publicWrite, temp = False):
 		"""
 		Add a channel object to channels dictionary
 
-		__name -- channel name
-		__description -- channel description
-		__publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
-		__publicWrite -- bool, same as public read but relative to write permissions
+		name -- channel name
+		description -- channel description
+		publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
+		publicWrite -- bool, same as public read but relative to write permissions
+		temp -- if True, channel will be deleted when there's no one in the channel. Optional. Default = False.
 		"""
+		self.channels[name] = channel.channel(name, description, publicRead, publicWrite, temp)
+		log.info("Created channel {}".format(name))
 
-		self.channels[__name] = channel.channel(__name, __description, __publicRead, __publicWrite)
+
+	def addTempChannel(self, name):
+		"""
+		Add a temporary channel (like #spectator or #multiplayer), gets deleted when there's no one in the channel
+
+		name -- channel name
+		return -- True if channel was created, False if failed
+		"""
+		if name in self.channels:
+			return False
+		self.channels[name] = channel.channel(name, "Chat", True, True, True)
+		log.info("Created temp channel {}".format(name))
+
+	def removeChannel(self, name):
+		"""
+		Removes a channel from channels list
+
+		name -- channel name
+		"""
+		if name not in self.channels:
+			log.debug("{} is not in channels list".format(name))
+			return
+		self.channels.pop(name)
+		log.info("Removed channel {}".format(name))

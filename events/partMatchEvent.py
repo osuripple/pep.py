@@ -1,4 +1,5 @@
 from objects import glob
+from helpers import chatHelper as chat
 from constants import serverPackets
 
 def handle(userToken, _):
@@ -22,6 +23,8 @@ def handle(userToken, _):
 	# Set slot to free
 	match.userLeft(userID)
 
+	# Part #multiplayer channel
+	chat.partChannel(token=userToken, channel="#multi_{}".format(matchID))
+
 	# Set usertoken match to -1
 	userToken.partMatch()
-	userToken.enqueue(serverPackets.channelKicked("#multiplayer"))

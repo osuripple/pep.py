@@ -9,6 +9,8 @@ from raven import Client
 try:
 	with open("version") as f:
 		VERSION = f.read()
+	if VERSION == "":
+		raise
 except:
 	VERSION = "¯\_(xd)_/¯"
 

@@ -4,6 +4,7 @@ from constants import serverPackets
 from helpers import userHelper
 from helpers import logHelper as log
 from constants import actions
+from helpers import chatHelper as chat
 
 def handle(userToken, packetData):
 	# Get usertoken data
@@ -58,7 +59,7 @@ def handle(userToken, packetData):
 	# NOTE: Remove this when osu!direct will be fixed
 	if userToken.actionID == actions.osuDirect and userToken.osuDirectAlert == False:
 		userToken.osuDirectAlert = True
-		userToken.enqueue(serverPackets.sendMessage("FokaBot", userToken.username, "Sup! osu!direct works, but you'll need to update the switcher to have the Download button working. If you didn't update the switcher yet, please do!"))
+		chat.sendMessage("FokaBot", userToken.username, "Sup! osu!direct works, but you'll need to update the switcher to have the Download button working. If you didn't update the switcher yet, please do!")
 
 
 	# Console output

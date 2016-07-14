@@ -21,7 +21,7 @@ def hexString(s):
 	return -- string with hex value
 	"""
 
-	return ":".join("{:02x}".format(ord(c)) for c in s)
+	return ":".join("{:02x}".format(ord(str(c))) for c in s)
 
 def readableMods(__mods):
 	"""

@@ -8,12 +8,12 @@ from helpers import locationHelper
 from helpers import countryHelper
 import time
 from helpers import generalFunctions
-from events import channelJoinEvent
 import sys
 import traceback
 from helpers import requestHelper
 from helpers import discordBotHelper
 from helpers import logHelper as log
+from helpers import chatHelper as chat
 
 def handle(tornadoRequest):
 	# Data to return
@@ -29,6 +29,10 @@ def handle(tornadoRequest):
 	try:
 		# If true, print error to console
 		err = False
+
+		# Make sure loginData is valid
+		if len(loginData) < 3:
+			raise exceptions.haxException()
 
 		# Try to get the ID from username
 		username = str(loginData[0])
@@ -58,6 +62,9 @@ def handle(tornadoRequest):
 		glob.tokens.deleteOldTokens(userID)
 		responseToken = glob.tokens.addToken(userID, requestIP)
 		responseTokenString = responseToken.token
+
+		# Check restricted mode (and eventually send message)
+		responseToken.checkRestricted()
 
 		# Set silence end UNIX time in token
 		responseToken.silenceEndTime = userHelper.getSilenceEnd(userID)
@@ -101,12 +108,12 @@ def handle(tornadoRequest):
 		responseToken.enqueue(serverPackets.channelInfoEnd())
 		# Default opened channels
 		# TODO: Configurable default channels
-		channelJoinEvent.joinChannel(responseToken, "#osu")
-		channelJoinEvent.joinChannel(responseToken, "#announce")
+		chat.joinChannel(token=responseToken, channel="#osu")
+		chat.joinChannel(token=responseToken, channel="#announce")
 
 		# Join admin channel if we are an admin
 		if responseToken.admin == True:
-			channelJoinEvent.joinChannel(responseToken, "#admin")
+			chat.joinChannel(token=responseToken, channel="#admin")
 
 		# Output channels info
 		for key, value in glob.channels.channels.items():
@@ -156,6 +163,12 @@ def handle(tornadoRequest):
 		# (we don't use enqueue because we don't have a token since login has failed)
 		err = True
 		responseData += serverPackets.loginFailed()
+	except exceptions.haxException:
+		# Invalid POST data
+		# (we don't use enqueue because we don't have a token since login has failed)
+		err = True
+		responseData += serverPackets.loginFailed()
+		responseData += serverPackets.notification("I see what you're doing...")
 	except exceptions.loginBannedException:
 		# Login banned error packet
 		err = True
@@ -172,9 +185,14 @@ def handle(tornadoRequest):
 	except exceptions.need2FAException:
 		# User tried to log in from unknown IP
 		responseData += serverPackets.needVerification()
+	except:
+		log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
 	finally:
 		# Console and discord log
-		msg = "Bancho login request from {} for user {} ({})".format(requestIP, loginData[0], "failed" if err == True else "success")
+		if len(loginData) < 3:
+			msg = "Invalid bancho login request from **{}** (insufficient POST data)".format(requestIP)
+		else:
+			msg = "Bancho login request from **{}** for user **{}** ({}) **({})**".format(requestIP, loginData[0], loginData[2], "failed" if err == True else "success")
 		log.info(msg, True)
 
 		# Return token string and data

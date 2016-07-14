@@ -77,3 +77,6 @@ class need2FAException(Exception):
 
 class userRestrictedException(Exception):
 	pass
+
+class haxException(Exception):
+	pass

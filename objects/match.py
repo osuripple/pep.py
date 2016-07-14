@@ -9,6 +9,7 @@ from constants import serverPackets
 from constants import dataTypes
 from constants import matchTeams
 from helpers import logHelper as log
+from helpers import chatHelper as chat
 
 class match:
 	"""Multiplayer match object"""
@@ -60,6 +61,9 @@ class match:
 		self.slots = []
 		for _ in range(0,16):
 			self.slots.append({"status": slotStatuses.free, "team": 0, "userID": -1, "mods": 0, "loaded": False, "skip": False, "complete": False})
+
+		# Create #multiplayer channel
+		glob.channels.addTempChannel("#multi_{}".format(self.matchID))
 
 
 	def getMatchData(self):
@@ -577,11 +581,11 @@ class match:
 
 		# FokaBot is too busy
 		if to == 999:
-			froToken.enqueue(serverPackets.sendMessage("FokaBot", froToken.username, "I would love to join your match, but I'm busy keeping ripple up and running. Sorry. Beep Boop."))
+			chat.sendMessage("FokaBot", froToken.username, "I would love to join your match, but I'm busy keeping ripple up and running. Sorry. Beep Boop.")
 
 		# Send message
 		message = "Come join my multiplayer match: \"[osump://{}/{} {}]\"".format(self.matchID, self.matchPassword.replace(" ", "_"), self.matchName)
-		toToken.enqueue(serverPackets.sendMessage(froToken.username, toToken.username, message))
+		chat.sendMessage(token=froToken, to=toToken.username, message=message)
 
 
 	def countUsers(self):

@@ -2,6 +2,7 @@ from objects import glob
 from constants import serverPackets
 from constants import exceptions
 from helpers import logHelper as log
+from helpers import chatHelper as chat
 
 def handle(userToken, _):
 	try:
@@ -16,6 +17,9 @@ def handle(userToken, _):
 			raise exceptions.tokenNotFoundException
 		targetToken.removeSpectator(userID)
 
+		# Part #spectator channel
+		chat.partChannel(token=userToken, channel="#spect_{}".format(target))
+
 		# Send the spectator left packet to host
 		targetToken.enqueue(serverPackets.removeSpectator(userID))
 		for c in targetToken.spectators:
@@ -25,8 +29,7 @@ def handle(userToken, _):
 		#targetToken.enqueue(serverPackets.fellowSpectatorLeft(userID))
 
 		# Console output
-		# TODO: Move messages in stop spectating
-		log.info("{} are no longer spectating whoever they were spectating".format(username))
+		log.info("{} are no longer spectating {}".format(username, target))
 	except exceptions.tokenNotFoundException:
 		log.warning("Spectator stop: token not found")
 	finally:

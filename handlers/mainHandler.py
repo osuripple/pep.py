@@ -1,5 +1,7 @@
 import datetime
 import gzip
+import time
+from helpers import generalFunctions
 from helpers import requestHelper
 from objects import glob
 from helpers import consoleHelper
@@ -257,7 +259,7 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 		html += "             \\\"\"\"\"\"\"\"\"\"\"\"\"\"\"/<br>"
 		html += "              \\ . ..  .. . /<br>"
 		html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
-		html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.</pre></body></html>"
+		html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.<br><br><i>&copy; Ripple team, 2016</i></pre></body></html>"
 		self.write(html)
 		#yield tornado.gen.Task(self.captureMessage, "test")
 		#self.finish()

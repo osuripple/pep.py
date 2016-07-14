@@ -44,7 +44,7 @@ class db:
 		self.lastWorker = 0
 		self.workersNumber = workers
 		for i in range(0,self.workersNumber):
-			print("> Spawning MySQL pettirosso meme {}".format(i))
+			print(".", end="")
 			self.workers.append(mysqlWorker(i, host, username, password, database))
 
 	def getWorker(self):

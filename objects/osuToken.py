@@ -9,6 +9,7 @@ import uuid
 import time
 import threading
 from helpers import logHelper as log
+from helpers import chatHelper as chat
 
 class token:
 	"""
@@ -34,7 +35,7 @@ class token:
 	"""
 
 
-	def __init__(self, __userID, token = None, ip = ""):
+	def __init__(self, __userID, token = None, ip = "", irc = False):
 		"""
 		Create a token object and set userID and token
 
@@ -42,6 +43,7 @@ class token:
 		token -- 	if passed, set token to that value
 					if not passed, token will be generated
 		ip		--	client ip. optional.
+		irc 	--	if True, set this token as IRC client. optional.
 		"""
 
 		# Set stuff
@@ -49,6 +51,7 @@ class token:
 		self.username = userHelper.getUsername(self.userID)
 		self.privileges = userHelper.getPrivileges(self.userID)
 		self.admin = userHelper.isInPrivilegeGroup(self.userID, "developer") or userHelper.isInPrivilegeGroup(self.userID, "community manager")
+		self.irc = irc
 		self.restricted = userHelper.isRestricted(self.userID)
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
@@ -78,7 +81,6 @@ class token:
 		self.actionMd5 = ""
 		self.actionMods = 0
 		self.gameMode = gameModes.std
-
 		self.rankedScore = 0
 		self.accuracy = 0.0
 		self.playcount = 0
@@ -100,8 +102,9 @@ class token:
 			userHelper.saveBanchoSession(self.userID, self.ip)
 
 		# If we are restricted, send message from FokaBot to user
-		if self.restricted == True:
-			self.setRestricted()
+		# NOTE: Sent later
+		#if self.restricted == True:
+		#	self.setRestricted()
 
 
 	def enqueue(self, __bytes):
@@ -110,8 +113,8 @@ class token:
 
 		__bytes -- (packet) bytes to enqueue
 		"""
-
-		self.queue += __bytes
+		if self.irc == False:
+			self.queue += __bytes
 
 
 	def resetQueue(self):
@@ -228,11 +231,11 @@ class token:
 		"""Set match to -1"""
 		self.matchID = -1
 
-	def kick(self):
+	def kick(self, message="You have been kicked from the server. Please login again."):
 		"""Kick this user from the server"""
 		# Send packet to target
 		log.info("{} has been disconnected. (kick)".format(self.username))
-		self.enqueue(serverPackets.notification("You have been kicked from the server. Please login again."))
+		self.enqueue(serverPackets.notification(message))
 		self.enqueue(serverPackets.loginFailed())
 
 		# Logout event
@@ -301,10 +304,22 @@ class token:
 		self.gameRank = stats["gameRank"]
 		self.pp = stats["pp"]
 
+	def checkRestricted(self, force=False):
+		"""
+		Check if this token is restricted. If so, send fokabot message
+
+		force --	If True, get restricted value from db.
+					If false, get the cached one. Optional. Default: False
+		"""
+		if force == True:
+			self.restricted = userHelper.isRestricted(self.userID)
+		if self.restricted == True:
+			self.setRestricted()
+
 	def setRestricted(self):
 		"""
 		Set this token as restricted, send FokaBot message to user
 		and send offline packet to everyone
 		"""
 		self.restricted = True
-		self.enqueue(serverPackets.sendMessage("FokaBot", self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information."))
+		chat.sendMessage("FokaBot",self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information.")

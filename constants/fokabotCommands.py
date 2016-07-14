@@ -127,7 +127,7 @@ def kick(fro, chan, message):
 def fokabotReconnect(fro, chan, message):
 	# Check if fokabot is already connected
 	if glob.tokens.getTokenFromUserID(999) != None:
-		return"Fokabot is already connected to Bancho"
+		return "Fokabot is already connected to Bancho"
 
 	# Fokabot is not connected, connect it
 	fokabot.connect()

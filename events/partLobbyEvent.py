@@ -1,6 +1,7 @@
 from objects import glob
 from events import channelPartEvent
 from helpers import logHelper as log
+from helpers import chatHelper as chat
 
 def handle(userToken, _):
 	# Get usertoken data
@@ -11,7 +12,7 @@ def handle(userToken, _):
 	glob.matches.lobbyUserPart(userID)
 
 	# Part lobby channel
-	channelPartEvent.partChannel(userToken, "#lobby", True)
+	chat.partChannel(channel="#lobby", token=userToken, kick=True)
 
 	# Console output
 	log.info("{} has left multiplayer lobby".format(username))
