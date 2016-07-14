@@ -154,6 +154,22 @@ if __name__ == "__main__":
 	if glob.debug == True:
 		consoleHelper.printColored("[!] Warning! Server running in debug mode!", bcolors.YELLOW)
 
+	# Make app
+	application = make_app()
+
+	# Set up sentry
+	try:
+		glob.sentry = generalFunctions.stringToBool(glob.conf.config["sentry"]["enable"])
+		if glob.sentry == True:
+			application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
+		else:
+			consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
+	except:
+		consoleHelper.printColored("[!] Error while starting sentry client! Please check your config.ini and run the server again", bcolors.RED)
+
+	# Cloudflare memes
+	glob.cloudflare = generalFunctions.stringToBool(glob.conf.config["server"]["cloudflare"])
+
 	# IRC start message and console output
 	glob.irc = generalFunctions.stringToBool(glob.conf.config["irc"]["enable"])
 	if glob.irc == True:
@@ -173,22 +189,6 @@ if __name__ == "__main__":
 		serverPort = int(glob.conf.config["server"]["port"])
 	except:
 		consoleHelper.printColored("[!] Invalid server port! Please check your config.ini and run the server again", bcolors.RED)
-
-	# Make app
-	application = make_app()
-
-	# Set up sentry
-	try:
-		glob.sentry = generalFunctions.stringToBool(glob.conf.config["sentry"]["enable"])
-		if glob.sentry == True:
-			application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["dns"], release=glob.VERSION)
-		else:
-			consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
-	except:
-		consoleHelper.printColored("[!] Error while starting sentry client! Please check your config.ini and run the server again", bcolors.RED)
-
-	# Cloudflare memes
-	glob.cloudflare = generalFunctions.stringToBool(glob.conf.config["server"]["cloudflare"])
 
 	# Server start message and console output
 	log.logMessage("Server started!", discord=True, of="info.txt", stdout=False)

@@ -60,7 +60,8 @@ class config:
 			self.config.get("debug","time")
 
 			self.config.get("sentry","enable")
-			self.config.get("sentry","dns")
+			self.config.get("sentry","banchodns")
+			self.config.get("sentry","ircdns")
 
 			self.config.get("discord","enable")
 			self.config.get("discord","boturl")
@@ -106,7 +107,8 @@ class config:
 
 		self.config.add_section("sentry")
 		self.config.set("sentry", "enable", "0")
-		self.config.set("sentry", "dns", "")
+		self.config.set("sentry", "banchodns", "")
+		self.config.set("sentry", "ircdns", "")
 
 		self.config.add_section("discord")
 		self.config.set("discord", "enable", "0")

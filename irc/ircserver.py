@@ -1,4 +1,5 @@
 import sys
+import traceback
 import socket
 import select
 import time
@@ -8,6 +9,7 @@ from helpers import logHelper as log
 
 from objects import glob
 from helpers import chatHelper as chat
+import raven
 
 class Client:
 	"""
@@ -575,6 +577,10 @@ class Server:
 
 	def start(self):
 		"""Start IRC server main loop"""
+		# Sentry
+		if glob.sentry == True:
+			sentryClient = raven.Client(glob.conf.config["sentry"]["ircdns"])
+
 		serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		try:
@@ -586,41 +592,45 @@ class Server:
 		lastAliveCheck = time.time()
 
 		# Main server loop
-		while True:
-			(iwtd, owtd, ewtd) = select.select(
-				[serversocket] + [x.socket for x in self.clients.values()],
-				[x.socket for x in self.clients.values()
-				 if x.writeBufferSize() > 0],
-				[],
-				2)
+		try:
+			while True:
+				(iwtd, owtd, ewtd) = select.select(
+					[serversocket] + [x.socket for x in self.clients.values()],
+					[x.socket for x in self.clients.values()
+					 if x.writeBufferSize() > 0],
+					[],
+					2)
 
-			# Handle incoming connections
-			for x in iwtd:
-				if x in self.clients:
-					self.clients[x].readSocket()
-				else:
-					(conn, addr) = x.accept()
-					try:
-						self.clients[conn] = Client(self, conn)
-						log.info("[IRC] Accepted connection from {}:{}".format(addr[0], addr[1]))
-					except socket.error as e:
+				# Handle incoming connections
+				for x in iwtd:
+					if x in self.clients:
+						self.clients[x].readSocket()
+					else:
+						(conn, addr) = x.accept()
 						try:
-							conn.close()
-						except:
-							pass
+							self.clients[conn] = Client(self, conn)
+							log.info("[IRC] Accepted connection from {}:{}".format(addr[0], addr[1]))
+						except socket.error as e:
+							try:
+								conn.close()
+							except:
+								pass
 
-			# Handle outgoing connections
-			for x in owtd:
-				if x in self.clients:  # client may have been disconnected
-					self.clients[x].writeSocket()
+				# Handle outgoing connections
+				for x in owtd:
+					if x in self.clients:  # client may have been disconnected
+						self.clients[x].writeSocket()
 
-			# Make sure all IRC clients are still connected
-			now = time.time()
-			if lastAliveCheck + 10 < now:
-				for client in list(self.clients.values()):
-					client.checkAlive()
-				lastAliveCheck = now
-
+				# Make sure all IRC clients are still connected
+				now = time.time()
+				if lastAliveCheck + 10 < now:
+					for client in list(self.clients.values()):
+						client.checkAlive()
+					lastAliveCheck = now
+		except:
+			log.error("[IRC] Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
+			if glob.sentry == True:
+				sentryClient.captureException()
 
 def main(port=6667):
 	glob.ircServer = Server(port)

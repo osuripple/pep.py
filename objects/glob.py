@@ -4,7 +4,6 @@ from objects import tokenList
 from objects import channelList
 from objects import matchList
 from objects import fileLocks
-from raven import Client
 
 try:
 	with open("version") as f:
