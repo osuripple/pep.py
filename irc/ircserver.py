@@ -584,7 +584,7 @@ class Server:
 		serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		try:
-			serversocket.bind(("127.0.0.1", self.port))
+			serversocket.bind(("0.0.0.0", self.port))
 		except socket.error as e:
 			log.error("[IRC] Could not bind port {}:{}".format(self.port, e))
 			sys.exit(1)
