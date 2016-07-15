@@ -117,7 +117,7 @@ def handle(tornadoRequest):
 
 		# Output channels info
 		for key, value in glob.channels.channels.items():
-			if value.publicRead == True:
+			if value.publicRead == True and value.hidden == False:
 				responseToken.enqueue(serverPackets.channelInfo(key))
 
 		# Send friends list

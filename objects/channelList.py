@@ -28,7 +28,7 @@ class channelList:
 				self.addChannel(i["name"], i["description"], publicRead, publicWrite)
 
 
-	def addChannel(self, name, description, publicRead, publicWrite, temp = False):
+	def addChannel(self, name, description, publicRead, publicWrite, temp = False, hidden = False):
 		"""
 		Add a channel object to channels dictionary
 
@@ -37,21 +37,23 @@ class channelList:
 		publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
 		publicWrite -- bool, same as public read but relative to write permissions
 		temp -- if True, channel will be deleted when there's no one in the channel. Optional. Default = False.
+		hidden -- if True, channel will be hidden in channels list. Optional. Default = False.
 		"""
-		self.channels[name] = channel.channel(name, description, publicRead, publicWrite, temp)
+		self.channels[name] = channel.channel(name, description, publicRead, publicWrite, temp, hidden)
 		log.info("Created channel {}".format(name))
 
 
 	def addTempChannel(self, name):
 		"""
 		Add a temporary channel (like #spectator or #multiplayer), gets deleted when there's no one in the channel
+		and it's hidden in channels list
 
 		name -- channel name
 		return -- True if channel was created, False if failed
 		"""
 		if name in self.channels:
 			return False
-		self.channels[name] = channel.channel(name, "Chat", True, True, True)
+		self.channels[name] = channel.channel(name, "Chat", True, True, True, True)
 		log.info("Created temp channel {}".format(name))
 
 	def removeChannel(self, name):

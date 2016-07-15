@@ -3,16 +3,9 @@ from objects import glob
 class channel:
 	"""
 	A chat channel
-
-	name -- channel name
-	description -- channel description
-	connectedUsers -- connected users IDs list
-	publicRead -- bool
-	publicWrite -- bool
-	moderated -- bool
 	"""
 
-	def __init__(self, __name, __description, __publicRead, __publicWrite, temp):
+	def __init__(self, __name, __description, __publicRead, __publicWrite, temp, hidden):
 		"""
 		Create a new chat channel object
 
@@ -20,7 +13,8 @@ class channel:
 		__description -- channel description
 		__publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
 		__publicWrite -- bool, same as public read but relative to write permissions
-		temp -- if True, channel will be deleted when there's no one in the channel. Optional. Default = False.
+		temp -- if True, channel will be deleted when there's no one in the channel
+		hidden -- if True, channel won't be shown in channels list
 		"""
 
 		self.name = __name
@@ -30,6 +24,7 @@ class channel:
 		self.moderated = False
 		self.temp = temp
 		self.connectedUsers = [999]	# Fokabot is always connected to every channels (otherwise it doesn't show up in IRC users list)
+		self.hidden = hidden
 
 		# Client name (#spectator/#multiplayer)
 		self.clientName = self.name
