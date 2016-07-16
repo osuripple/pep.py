@@ -108,7 +108,7 @@ def userPanel(userID, force = False):
 		userRank = userRanks.MOD
 	elif userHelper.isInPrivilegeGroup(userID, "developer") == True:
 		userRank = userRanks.ADMIN
-	elif userHelper.isInPrivilegeGroup(userID, "donator") == True:
+	elif userHelper.isInPrivilegeGroup(userID, "donor") == True:
 		userRank = userRanks.SUPPORTER
 	else:
 		userRank = userRanks.NORMAL
