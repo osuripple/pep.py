@@ -414,6 +414,7 @@ class Client:
 
 	def noticePrivmsgHandler(self, command, arguments):
 		"""NOTICE and PRIVMSG commands handler (same syntax)"""
+		meme()
 		# Syntax check
 		if len(arguments) == 0:
 			self.replyCode(411, "No recipient given ({})".format(command))
@@ -592,8 +593,8 @@ class Server:
 		lastAliveCheck = time.time()
 
 		# Main server loop
-		try:
-			while True:
+		while True:
+			try:
 				(iwtd, owtd, ewtd) = select.select(
 					[serversocket] + [x.socket for x in self.clients.values()],
 					[x.socket for x in self.clients.values()
@@ -627,10 +628,10 @@ class Server:
 					for client in list(self.clients.values()):
 						client.checkAlive()
 					lastAliveCheck = now
-		except:
-			log.error("[IRC] Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
-			if glob.sentry == True:
-				sentryClient.captureException()
+			except:
+				log.error("[IRC] Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
+				if glob.sentry == True:
+					sentryClient.captureException()
 
 def main(port=6667):
 	glob.ircServer = Server(port)
