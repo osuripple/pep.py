@@ -414,7 +414,6 @@ class Client:
 
 	def noticePrivmsgHandler(self, command, arguments):
 		"""NOTICE and PRIVMSG commands handler (same syntax)"""
-		meme()
 		# Syntax check
 		if len(arguments) == 0:
 			self.replyCode(411, "No recipient given ({})".format(command))
