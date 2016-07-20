@@ -68,7 +68,7 @@ def getRank(gameMode, __mods, acc, c300, c100, c50, cmiss):
 	return -- rank/grade string
 	"""
 	total = c300 + c100 + c50 + cmiss
-	hdfl = (__mods & mods.Hidden > 0) or (__mods & mods.Flashlight > 0)
+	hdfl = (__mods & (mods.Hidden | mods.Flashlight | mods.FadeIn)) > 0
 
 	ss = "sshd" if hdfl else "ss"
 	s = "shd" if hdfl else "s"
@@ -77,15 +77,15 @@ def getRank(gameMode, __mods, acc, c300, c100, c50, cmiss):
 		# osu!std / taiko
 		ratio300 = c300 / total
 		ratio50 = c50 / total
-		if acc == 100:
+		if ratio300 == 1:
 			return ss
-		if ratio300 > 0.90 and ratio50 < 0.1 and cmiss == 0:
+		if ratio300 > 0.9 and ratio50 <= 0.01 and cmiss == 0:
 			return s
-		if (ratio300 > 0.80 and cmiss == 0) or (ratio300 > 0.90):
+		if (ratio300 > 0.8 and cmiss == 0) or (ratio300 > 0.9):
 			return "a"
-		if (ratio300 > 0.70 and cmiss == 0) or (ratio300 > 0.80):
+		if (ratio300 > 0.7 and cmiss == 0) or (ratio300 > 0.8):
 			return "b"
-		if ratio300 > 0.60:
+		if ratio300 > 0.6:
 			return "c"
 		return "d"
 	elif gameMode == 2:
