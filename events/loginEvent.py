@@ -14,6 +14,7 @@ from helpers import requestHelper
 from helpers import discordBotHelper
 from helpers import logHelper as log
 from helpers import chatHelper as chat
+from constants import privileges
 
 def handle(tornadoRequest):
 	# Data to return
@@ -22,6 +23,10 @@ def handle(tornadoRequest):
 
 	# Get IP from tornado request
 	requestIP = tornadoRequest.getRequestIP()
+
+	# Avoid exceptions
+	clientData = ["unknown", "unknown", "unknown", "unknown", "unknown"]
+	osuVersion = "unknown"
 
 	# Split POST body so we can get username/password/hardware data
 	# 2:-3 thing is because requestData has some escape stuff that we don't need
@@ -33,6 +38,19 @@ def handle(tornadoRequest):
 		# Make sure loginData is valid
 		if len(loginData) < 3:
 			raise exceptions.haxException()
+
+		# Get HWID, MAC address and more
+		# Structure (new line = "|", already split)
+		# [0] osu! version
+		# [1] plain mac addressed, separated by "."
+		# [2] mac addresses hash set
+		# [3] unique ID
+		# [4] disk ID
+		splitData = loginData[2].split("|")
+		osuVersion = splitData[0]
+		clientData = splitData[3].split(":")[:5]
+		if len(clientData) < 4:
+			raise exceptions.forceUpdateException()
 
 		# Try to get the ID from username
 		username = str(loginData[0])
@@ -46,7 +64,8 @@ def handle(tornadoRequest):
 			raise exceptions.loginFailedException()
 
 		# Make sure we are not banned
-		if userHelper.isBanned(userID) == True:
+		priv = userHelper.getPrivileges(userID)
+		if userHelper.isBanned(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
 			raise exceptions.loginBannedException()
 
 		# 2FA check
@@ -55,6 +74,29 @@ def handle(tornadoRequest):
 			raise exceptions.need2FAException()
 
 		# No login errors!
+
+		# Verify this user (if pending activation)
+		firstLogin = False
+		if priv & privileges.USER_PENDING_VERIFICATION > 0 or userHelper.hasVerifiedHardware(userID) == False:
+			if userHelper.verifyUser(userID, clientData) == True:
+				# Valid account
+				log.info("Account {} verified successfully!".format(userID))
+				glob.verifiedCache[str(userID)] = 1
+				firstLogin = True
+			else:
+				# Multiaccount detected
+				log.info("Account {} NOT verified!".format(userID))
+				glob.verifiedCache[str(userID)] = 0
+				raise exceptions.loginBannedException()
+
+		# Save HWID in db
+		hwAllowed = userHelper.logHardware(userID, clientData, firstLogin)
+		# This is false only if HWID is empty
+		# if HWID is banned, we get restricted so there's no
+		# need to deny bancho access
+		if hwAllowed == False:
+			raise exceptions.haxException()
+
 		# Log user IP
 		userHelper.IPLog(userID, requestIP)
 
@@ -185,6 +227,12 @@ def handle(tornadoRequest):
 	except exceptions.need2FAException:
 		# User tried to log in from unknown IP
 		responseData += serverPackets.needVerification()
+	except exceptions.haxException:
+		# Using oldoldold client, we can't check hw. Force update.
+		# (we don't use enqueue because we don't have a token since login has failed)
+		err = True
+		responseData += serverPackets.forceUpdate()
+		responseData += serverPackets.notification("Hory shitto, your client is TOO old! Nice preistoria! Please turn off the switcher and update it.")
 	except:
 		log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
 	finally:
@@ -192,8 +240,8 @@ def handle(tornadoRequest):
 		if len(loginData) < 3:
 			msg = "Invalid bancho login request from **{}** (insufficient POST data)".format(requestIP)
 		else:
-			msg = "Bancho login request from **{}** for user **{}** ({}) **({})**".format(requestIP, loginData[0], loginData[2], "failed" if err == True else "success")
-		log.info(msg, True)
+			msg = "Bancho login request from **{}** for user **{}** _({})_\n_Version: {}\nosu!.exe hash: {}\nMAC: {}\nUID: {}\nHWID: {}_\n".format(requestIP, loginData[0], "failed" if err == True else "success", osuVersion, clientData[0], clientData[2], clientData[3], clientData[4])
+		log.info(msg, "bunker")
 
 		# Return token string and data
 		return (responseTokenString, responseData)

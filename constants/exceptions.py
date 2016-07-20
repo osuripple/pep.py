@@ -80,3 +80,6 @@ class userRestrictedException(Exception):
 
 class haxException(Exception):
 	pass
+
+class forceUpdateException(Exception):
+	pass

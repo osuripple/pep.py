@@ -392,7 +392,7 @@ def ban(userID):
 	userID -- id of user
 	"""
 	banDateTime = int(time.time())
-	glob.db.execute("UPDATE users SET privileges = privileges & %s, ban_datetime = %s WHERE id = %s", [ ~(privileges.USER_NORMAL | privileges.USER_PUBLIC) , banDateTime, userID])
+	glob.db.execute("UPDATE users SET privileges = privileges & %s, ban_datetime = %s WHERE id = %s", [ ~(privileges.USER_NORMAL | privileges.USER_PUBLIC | privileges.USER_PENDING_VERIFICATION) , banDateTime, userID])
 
 def unban(userID):
 	"""
@@ -433,6 +433,15 @@ def getPrivileges(userID):
 	else:
 		return 0
 
+def setPrivileges(userID, priv):
+	"""
+	Set userID's privileges in db
+
+	userID -- id of user
+	priv -- privileges number
+	"""
+	glob.db.execute("UPDATE users SET privileges = %s WHERE id = %s", [priv, userID])
+
 def isInPrivilegeGroup(userID, groupName):
 	groupPrivileges = glob.db.fetch("SELECT privileges FROM privileges_groups WHERE name = %s", [groupName])
 	if groupPrivileges == None:
@@ -444,3 +453,168 @@ def isInPrivilegeGroup(userID, groupName):
 	else:
 		userPrivileges = getPrivileges(userID)
 	return (userPrivileges == groupPrivileges) or (userPrivileges == (groupPrivileges | privileges.USER_DONOR))
+
+
+def appendNotes(userID, notes, addNl = True):
+	"""
+	Append "notes" to current userID's "notes for CM"
+
+	userID -- id of user
+	notes -- text to append
+	addNl -- if True, prepend \n to notes. Optional. Default: True.
+	"""
+	if addNl == True:
+		notes = "\n"+notes
+	glob.db.execute("UPDATE users SET notes=CONCAT(COALESCE(notes, ''),%s) WHERE id = %s", [notes, userID])
+
+
+def logHardware(userID, hashes, activation = False):
+	"""
+	Hardware log
+
+	Peppy's botnet structure (new line = "|", already split)
+	[0] osu! version
+	[1] plain mac addressed, separated by "."
+	[2] mac addresses hash set
+	[3] unique ID
+	[4] disk ID
+
+	return -- True if hw is not banned, otherwise false
+	"""
+	# Make sure the strings are not empty
+	for i in hashes:
+		if i == "":
+			log.warning("Invalid hash set ({}) for user {} in HWID check".format(hashes, userID), "bunk")
+			return False
+
+	# Run some HWID checks on that user if he is not restricted
+	if isRestricted(userID) == False:
+		# Get username
+		username = getUsername(userID)
+
+		# Get the list of banned or restricted users that have logged in from this or similar HWID hash set
+		banned = glob.db.fetchAll("""SELECT users.id as userid, hw_user.occurencies, users.username FROM hw_user
+						LEFT JOIN users ON users.id = hw_user.userid
+						WHERE hw_user.userid != %(userid)s
+						AND (IF(%(mac)s!='b4ec3c4334a0249dae95c284ec5983df', hw_user.mac = %(mac)s, 0) OR hw_user.unique_id = %(uid)s OR hw_user.disk_id = %(diskid)s)
+						AND (users.privileges & 3 != 3)""", {
+							"userid": userID,
+							"mac": hashes[2],
+							"uid": hashes[3],
+							"diskid": hashes[4],
+						})
+
+		for i in banned:
+			# Get the total numbers of logins
+			total = glob.db.fetch("SELECT COUNT(*) AS count FROM hw_user WHERE userid = %s LIMIT 1", [userID])
+			# and make sure it is valid
+			if total == None:
+				continue
+			total = total["count"]
+
+			# Calculate 10% of total
+			perc = (total*10)/100
+
+			if i["occurencies"] >= perc:
+				# If the banned user has logged in more than 10% of the times from this user, restrict this user
+				restrict(userID)
+				appendNotes(userID, "-- Logged in from HWID ({hwid}) used more than 10% from user {banned} ({bannedUserID}), who is banned/restricted.".format(
+					hwid=hashes[2:5],
+					banned=i["username"],
+					bannedUserID=i["userid"]
+				))
+				log.warning("**{user}** ({userID}) has been restricted because he has logged in from HWID _({hwid})_ used more than 10% from banned/restricted user **{banned}** ({bannedUserID}), **possible multiaccount**.".format(
+					user=username,
+					userID=userID,
+					hwid=hashes[2:5],
+					banned=i["username"],
+					bannedUserID=i["userid"]
+				), "cm")
+
+	# Update hash set occurencies
+	glob.db.execute("""
+				INSERT INTO hw_user (id, userid, mac, unique_id, disk_id, occurencies) VALUES (NULL, %s, %s, %s, %s, 1)
+				ON DUPLICATE KEY UPDATE occurencies = occurencies + 1
+				""", [userID, hashes[2], hashes[3], hashes[4]])
+
+	# Optionally, set this hash as 'used for activation'
+	if activation == True:
+		glob.db.execute("UPDATE hw_user SET activated = 1 WHERE userid = %s AND mac = %s AND unique_id = %s AND disk_id = %s", [userID, hashes[2], hashes[3], hashes[4]])
+
+	# Access granted, abbiamo impiegato 3 giorni
+	# We grant access even in case of login from banned HWID
+	# because we call restrict() above so there's no need to deny the access.
+	return True
+
+
+def resetPendingFlag(userID, success=True):
+	"""
+	Remove pending flag from an user.
+
+	userID -- ID of the user
+	success -- if True, set USER_PUBLIC and USER_NORMAL flags too
+	"""
+	glob.db.execute("UPDATE users SET privileges = privileges & %s WHERE id = %s LIMIT 1", [~privileges.USER_PENDING_VERIFICATION, userID])
+	if success == True:
+		glob.db.execute("UPDATE users SET privileges = privileges | %s WHERE id = %s LIMIT 1", [(privileges.USER_PUBLIC | privileges.USER_NORMAL), userID])
+
+def verifyUser(userID, hashes):
+	# Check for valid hash set
+	for i in hashes:
+		if i == "":
+			log.warning("Invalid hash set ({}) for user {} while verifying the account".format(str(hashes), userID), "bunk")
+			return False
+
+	# Get username
+	username = getUsername(userID)
+
+	# Make sure there are no other accounts activated with this exact mac/unique id/hwid
+	match = glob.db.fetchAll("SELECT userid FROM hw_user WHERE (IF(%(mac)s != 'b4ec3c4334a0249dae95c284ec5983df', mac = %(mac)s, 0) OR unique_id = %(uid)s OR disk_id = %(diskid)s) AND userid != %(userid)s AND activated = 1 LIMIT 1", {
+		"mac": hashes[2],
+		"uid": hashes[3],
+		"diskid": hashes[4],
+		"userid": userID
+	})
+
+	if match:
+		# This is a multiaccount, restrict other account and ban this account
+
+		# Get original userID and username (lowest ID)
+		originalUserID = match[0]["userid"]
+		originalUsername = getUsername(originalUserID)
+
+		# Ban this user and append notes
+		ban(userID)	# this removes the USER_PENDING_VERIFICATION flag too
+		appendNotes(userID, "-- {}'s multiaccount ({}), found HWID match while verifying account ({})".format(originalUsername, originalUserID, hashes[2:5]))
+		appendNotes(originalUserID, "-- Has created multiaccount {} ({})".format(username, userID))
+
+		# Restrict the original
+		restrict(originalUserID)
+
+		# Discord message
+		log.warning("User **{originalUsername}** ({originalUserID}) has been restricted because he has created multiaccount **{username}** ({userID}). The multiaccount has been banned.".format(
+			originalUsername=originalUsername,
+			originalUserID=originalUserID,
+			username=username,
+			userID=userID
+		), "cm")
+
+		# Disallow login
+		return False
+	else:
+		# No matches found, set USER_PUBLIC and USER_NORMAL flags and reset USER_PENDING_VERIFICATION flag
+		resetPendingFlag(userID)
+		log.info("User **{}** ({}) has verified his account with hash set _{}_".format(username, userID, hashes[2:5]), "cm")
+
+		# Allow login
+		return True
+
+def hasVerifiedHardware(userID):
+	"""
+	userID -- id of the user
+	return -- True if hwid activation data is in db, otherwise false
+	"""
+	data = glob.db.fetch("SELECT id FROM hw_user WHERE userid = %s AND activated = 1 LIMIT 1", [userID])
+	if data != None:
+		return True
+	return False

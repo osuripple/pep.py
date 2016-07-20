@@ -22,6 +22,7 @@ matches = matchList.matchList()
 restarting = False
 pool = None
 fLocks = fileLocks.fileLocks()
+verifiedCache = {}
 cloudflare = False
 
 debug = False

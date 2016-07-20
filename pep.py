@@ -30,6 +30,7 @@ from handlers import apiIsOnlineHandler
 from handlers import apiOnlineUsersHandler
 from handlers import apiServerStatusHandler
 from handlers import ciTriggerHandler
+from handlers import apiVerifiedStatusHandler
 
 from irc import ircserver
 
@@ -40,6 +41,7 @@ def make_app():
 		(r"/api/v1/onlineUsers", apiOnlineUsersHandler.handler),
 		(r"/api/v1/serverStatus", apiServerStatusHandler.handler),
 		(r"/api/v1/ciTrigger", ciTriggerHandler.handler),
+		(r"/api/v1/verifiedStatus", apiVerifiedStatusHandler.handler),
 	])
 
 if __name__ == "__main__":

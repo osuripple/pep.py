@@ -528,7 +528,7 @@ def tillerinoAcc(fro, chan, message):
 def tillerinoLast(fro, chan, message):
 	try:
 		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores.*,
-			beatmaps.beatmap_id as bid, beatmaps.difficulty, beatmaps.max_combo as fc
+			beatmaps.beatmap_id as bid, beatmaps.difficulty_std, beatmaps.difficulty_taiko, beatmaps.difficulty_ctb, beatmaps.difficulty_mania, beatmaps.max_combo as fc
 		FROM scores
 		LEFT JOIN beatmaps ON beatmaps.beatmap_md5=scores.beatmap_md5
 		LEFT JOIN users ON users.id = scores.userid
@@ -538,6 +538,7 @@ def tillerinoLast(fro, chan, message):
 		if data == None:
 			return False
 
+		diffString = "difficulty_{}".format(gameModes.getGameModeForDB(data["play_mode"]))
 		rank = generalFunctions.getRank(data["play_mode"], data["mods"], data["accuracy"],\
 			data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
 
@@ -555,7 +556,7 @@ def tillerinoLast(fro, chan, message):
 			msg += ifFc
 			msg += " | {0:.2f}%, {1}".format(data["accuracy"], rank.upper())
 			msg += " {{ {0} / {1} / {2} / {3} }}".format(data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
-			msg += " | {0:.2f} stars".format(data["difficulty"])
+			msg += " | {0:.2f} stars".format(data[diffString])
 			return msg
 
 		msg = ifPlayer
@@ -566,8 +567,8 @@ def tillerinoLast(fro, chan, message):
 		msg += ifFc
 		msg += " | {0:.2f}pp".format(data["pp"])
 
-		stars = data["difficulty"]
-		if data["mods"]:
+		stars = data[diffString]
+		if data["mods"] and data["play_mode"] == gameModes.std:
 			token = glob.tokens.getTokenFromUsername(fro)
 			if token == None:
 				return False

@@ -1,21 +1,20 @@
 from constants import bcolors
 from helpers import discordBotHelper
 from helpers import generalFunctions
-from helpers.systemHelper import runningUnderUnix
 from objects import glob
 from helpers import userHelper
 import time
+import os
+ENDL = "\n" if os.name == "posix" else "\r\n"
 
-ENDL = "\n" if runningUnderUnix() else "\r\n"
-
-def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord = False, alertDev = False, of = None, stdout = True):
+def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord = None, alertDev = False, of = None, stdout = True):
 	"""
 	Logs a message to stdout/discord/file
 
 	message -- message to log
 	alertType -- can be any string. Standard types: INFO, WARNING and ERRORS. Defalt: INFO
 	messageColor -- message color (see constants.bcolors). Default = bcolots.ENDC (no color)
-	discord -- if True, the message will be logged on #bunker channel on discord. Default: False
+	discord -- discord channel (bunker/cm/staff/general). Optional. Default = None
 	alertDev -- if True, devs will receive an hl on discord. Default: False
 	of -- if not None but a string, log the message to that file (inside .data folder). Eg: "warnings.txt" Default: None (don't log to file)
 	stdout -- if True, print the message to stdout. Default: True
@@ -52,8 +51,15 @@ def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord
 		print(finalMessageConsole)
 
 	# Log to discord if needed
-	if discord == True:
-		discordBotHelper.sendConfidential(message, alertDev)
+	if discord != None:
+		if discord == "bunker":
+			discordBotHelper.sendConfidential(message, alertDev)
+		elif discord == "cm":
+			discordBotHelper.sendCM(message)
+		elif discord == "staff":
+			discordBotHelper.sendStaff(message)
+		elif discord == "general":
+			discordBotHelper.sendGeneral(message)
 
 	# Log to file if needed
 	if of != None:
@@ -64,32 +70,32 @@ def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord
 		finally:
 			glob.fLocks.unlockFile(of)
 
-def warning(message, discord = False, alertDev = False):
+def warning(message, discord = None, alertDev = False):
 	"""
 	Log a warning to stdout, warnings.log (always) and discord (optional)
 
 	message -- warning message
-	discord -- if True, send warning to #bunker. Optional. Default = False.
+	discord -- if not None, send message to that discord channel through schiavo. Optional. Default = None
 	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
 	"""
 	logMessage(message, "WARNING", bcolors.YELLOW, discord, alertDev, "warnings.txt")
 
-def error(message, discord = False, alertDev = True):
+def error(message, discord = None, alertDev = True):
 	"""
 	Log an error to stdout, errors.log (always) and discord (optional)
 
 	message -- error message
-	discord -- if True, send error to #bunker. Optional. Default = False.
+	discord -- if not None, send message to that discord channel through schiavo. Optional. Default = None
 	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
 	"""
 	logMessage(message, "ERROR", bcolors.RED, discord, alertDev, "errors.txt")
 
-def info(message, discord = False, alertDev = False):
+def info(message, discord = None, alertDev = False):
 	"""
 	Log an error to stdout (and info.log)
 
 	message -- info message
-	discord -- if True, send error to #bunker. Optional. Default = False.
+	discord -- if not None, send message to that discord channel through schiavo. Optional. Default = None
 	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
 	"""
 	logMessage(message, "INFO", bcolors.ENDC, discord, alertDev, "info.txt")

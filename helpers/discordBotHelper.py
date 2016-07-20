@@ -59,3 +59,11 @@ def sendChatlog(message):
 	message -- message to send
 	"""
 	sendDiscordMessage("chatlog", message, prefix="")
+
+def sendCM(message):
+	"""
+	Send a message to #communitymanagers
+
+	message -- message to send
+	"""
+	sendDiscordMessage("cm", message)
