@@ -543,15 +543,20 @@ def tillerinoLast(fro, chan, message):
 			data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
 
 		ifPlayer = "{0} | ".format(fro) if chan != "FokaBot" else ""
+		ifFc = " (FC)" if data["max_combo"] == data["fc"] else " {0}x/{1}x".format(data["max_combo"], data["fc"])
 		beatmapLink = "[http://osu.ppy.sh/b/{1} {0}]".format(data["sn"], data["bid"])
 
-		ifFc = " (FC)" if data["max_combo"] == data["fc"] else " {0}x/{1}x".format(data["max_combo"], data["fc"])
+		hasPP = data["play_mode"] == gameModes.std or data["play_mode"] == gameModes.mania
 
+		msg = ifPlayer
+		msg += beatmapLink
 		if data["play_mode"] != gameModes.std:
-			msg = ifPlayer
-			msg += beatmapLink
-			if data["mods"]:
-				msg += ' +' + generalFunctions.readableMods(data["mods"])
+			msg += " <{0}>".format(gameModes.getGameModeForPrinting(data["play_mode"]))
+
+		if data["mods"]:
+			msg += ' +' + generalFunctions.readableMods(data["mods"])
+
+		if not hasPP:
 			msg += " | {0:,}".format(data["score"])
 			msg += ifFc
 			msg += " | {0:.2f}%, {1}".format(data["accuracy"], rank.upper())
@@ -559,16 +564,12 @@ def tillerinoLast(fro, chan, message):
 			msg += " | {0:.2f} stars".format(data[diffString])
 			return msg
 
-		msg = ifPlayer
-		msg += beatmapLink
-		if data["mods"]:
-			msg += ' +' + generalFunctions.readableMods(data["mods"])
 		msg += " ({0:.2f}%, {1})".format(data["accuracy"], rank.upper())
 		msg += ifFc
 		msg += " | {0:.2f}pp".format(data["pp"])
 
 		stars = data[diffString]
-		if data["mods"] and data["play_mode"] == gameModes.std:
+		if data["mods"]:
 			token = glob.tokens.getTokenFromUsername(fro)
 			if token == None:
 				return False
