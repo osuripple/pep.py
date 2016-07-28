@@ -89,8 +89,10 @@ def handle(tornadoRequest):
 				glob.verifiedCache[str(userID)] = 0
 				raise exceptions.loginBannedException()
 
-		# Save HWID in db
+
+		# Save HWID in db for multiaccount detection
 		hwAllowed = userHelper.logHardware(userID, clientData, firstLogin)
+
 		# This is false only if HWID is empty
 		# if HWID is banned, we get restricted so there's no
 		# need to deny bancho access
@@ -98,7 +100,7 @@ def handle(tornadoRequest):
 			raise exceptions.haxException()
 
 		# Log user IP
-		userHelper.IPLog(userID, requestIP)
+		userHelper.logIP(userID, requestIP)
 
 		# Delete old tokens for that user and generate a new one
 		glob.tokens.deleteOldTokens(userID)
@@ -228,7 +230,7 @@ def handle(tornadoRequest):
 		# User tried to log in from unknown IP
 		responseData += serverPackets.needVerification()
 	except exceptions.haxException:
-		# Using oldoldold client, we can't check hw. Force update.
+		# Using oldoldold client, we don't have client data. Force update.
 		# (we don't use enqueue because we don't have a token since login has failed)
 		err = True
 		responseData += serverPackets.forceUpdate()

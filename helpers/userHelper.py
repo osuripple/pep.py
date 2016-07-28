@@ -280,10 +280,10 @@ def getShowCountry(userID):
 		return False
 	return generalFunctions.stringToBool(country)
 
-def IPLog(userID, ip):
+def logIP(userID, ip):
 	"""
-	Botnet the user
-	(log his ip for multiaccount detection)
+	User IP log
+	USED FOR MULTIACCOUNT DETECTION
 	"""
 	glob.db.execute("""INSERT INTO ip_user (userid, ip, occurencies) VALUES (%s, %s, '1')
 						ON DUPLICATE KEY UPDATE occurencies = occurencies + 1""", [userID, ip])
@@ -471,8 +471,9 @@ def appendNotes(userID, notes, addNl = True):
 def logHardware(userID, hashes, activation = False):
 	"""
 	Hardware log
+	USED FOR MULTIACCOUNT DETECTION
 
-	Peppy's botnet structure (new line = "|", already split)
+	Peppy's botnet (client data) structure (new line = "|", already split)
 	[0] osu! version
 	[1] plain mac addressed, separated by "."
 	[2] mac addresses hash set
@@ -496,7 +497,7 @@ def logHardware(userID, hashes, activation = False):
 		banned = glob.db.fetchAll("""SELECT users.id as userid, hw_user.occurencies, users.username FROM hw_user
 						LEFT JOIN users ON users.id = hw_user.userid
 						WHERE hw_user.userid != %(userid)s
-						AND (IF(%(mac)s!='b4ec3c4334a0249dae95c284ec5983df', hw_user.mac = %(mac)s, 0) OR hw_user.unique_id = %(uid)s OR hw_user.disk_id = %(diskid)s)
+						AND (IF(%(mac)s!='b4ec3c4334a0249dae95c284ec5983df', hw_user.mac = %(mac)s, 1) AND hw_user.unique_id = %(uid)s AND hw_user.disk_id = %(diskid)s)
 						AND (users.privileges & 3 != 3)""", {
 							"userid": userID,
 							"mac": hashes[2],
@@ -569,7 +570,7 @@ def verifyUser(userID, hashes):
 	username = getUsername(userID)
 
 	# Make sure there are no other accounts activated with this exact mac/unique id/hwid
-	match = glob.db.fetchAll("SELECT userid FROM hw_user WHERE (IF(%(mac)s != 'b4ec3c4334a0249dae95c284ec5983df', mac = %(mac)s, 0) OR unique_id = %(uid)s OR disk_id = %(diskid)s) AND userid != %(userid)s AND activated = 1 LIMIT 1", {
+	match = glob.db.fetchAll("SELECT userid FROM hw_user WHERE (IF(%(mac)s != 'b4ec3c4334a0249dae95c284ec5983df', mac = %(mac)s, 1) AND unique_id = %(uid)s AND disk_id = %(diskid)s) AND userid != %(userid)s AND activated = 1 LIMIT 1", {
 		"mac": hashes[2],
 		"uid": hashes[3],
 		"diskid": hashes[4],
