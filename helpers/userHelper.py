@@ -381,7 +381,7 @@ def isBanned(userID):
 	"""
 	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s", [userID])
 	if result != None:
-		return not (result["privileges"] & privileges.USER_NORMAL) and not (result["privileges"] & privileges.USER_PUBLIC)
+		return not (result["privileges"] & 3 > 0)
 	else:
 		return True
 
@@ -482,7 +482,7 @@ def logHardware(userID, hashes, activation = False):
 	return -- True if hw is not banned, otherwise false
 	"""
 	# Make sure the strings are not empty
-	for i in hashes:
+	for i in hashes[2:5]:
 		if i == "":
 			log.warning("Invalid hash set ({}) for user {} in HWID check".format(hashes, userID), "bunk")
 			return False
@@ -560,7 +560,7 @@ def resetPendingFlag(userID, success=True):
 
 def verifyUser(userID, hashes):
 	# Check for valid hash set
-	for i in hashes:
+	for i in hashes[2:5]:
 		if i == "":
 			log.warning("Invalid hash set ({}) for user {} while verifying the account".format(str(hashes), userID), "bunk")
 			return False
