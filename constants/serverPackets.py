@@ -267,16 +267,5 @@ def matchTransferHost():
 def notification(message):
 	return packetHelper.buildPacket(packetIDs.server_notification, [[message, dataTypes.string]])
 
-def jumpscare(message):
-	return packetHelper.buildPacket(packetIDs.server_jumpscare, [[message, dataTypes.string]])
-
 def banchoRestart(msUntilReconnection):
 	return packetHelper.buildPacket(packetIDs.server_restart, [[msUntilReconnection, dataTypes.uInt32]])
-
-
-""" WIP Packets """
-def getAttention():
-	return packetHelper.buildPacket(packetIDs.server_getAttention)
-
-def packet80():
-	return packetHelper.buildPacket(packetIDs.server_topBotnet)
