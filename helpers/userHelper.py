@@ -285,7 +285,7 @@ def logIP(userID, ip):
 	User IP log
 	USED FOR MULTIACCOUNT DETECTION
 	"""
-	glob.db.execute("""INSERT INTO ip_user (userid, ip, occurencies) VALUES (%s, %s, '1')
+	glob.db.execute("""INSERT INTO ip_user (userid, ip, occurencies) VALUES (%s, %s, 1)
 						ON DUPLICATE KEY UPDATE occurencies = occurencies + 1""", [userID, ip])
 
 def saveBanchoSession(userID, ip):
