@@ -60,8 +60,8 @@ def roll(fro, chan, message):
 	points = random.randrange(0,maxPoints)
 	return "{} rolls {} points!".format(fro, str(points))
 
-def ask(fro, chan, message):
-	return random.choice(["yes", "no", "maybe"])
+#def ask(fro, chan, message):
+#	return random.choice(["yes", "no", "maybe"])
 
 def alert(fro, chan, message):
 	glob.tokens.enqueueAll(serverPackets.notification(' '.join(message[:])))
@@ -620,11 +620,12 @@ commands = [
 	}, {
 		"trigger": "!help",
 		"response": "Click (here)[https://ripple.moe/index.php?p=16&id=4] for FokaBot's full command list"
-	}, {
-		"trigger": "!ask",
-		"syntax": "<question>",
-		"callback": ask
-	}, {
+	}, #{
+		#"trigger": "!ask",
+		#"syntax": "<question>",
+		#"callback": ask
+	#}, {
+    {
 		"trigger": "!mm00",
 		"callback": mm00
 	}, {
