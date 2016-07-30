@@ -625,7 +625,7 @@ commands = [
 		#"syntax": "<question>",
 		#"callback": ask
 	#}, {
-    {
+	{
 		"trigger": "!mm00",
 		"callback": mm00
 	}, {
