@@ -242,7 +242,7 @@ def handle(tornadoRequest):
 		if len(loginData) < 3:
 			msg = "Invalid bancho login request from **{}** (insufficient POST data)".format(requestIP)
 		else:
-			msg = "Bancho login request from **{}** for user **{}** _({})_\n_Version: {}\nosu!.exe hash: {}\nMAC: {}\nUID: {}\nHWID: {}_\n".format(requestIP, loginData[0], "failed" if err == True else "success", osuVersion, clientData[0], clientData[2], clientData[3], clientData[4])
+			msg = "Bancho login request from **{}** for user **{}** ({})".format(requestIP, loginData[0], "failed" if err == True else "success")
 		log.info(msg, "bunker")
 
 		# Return token string and data
