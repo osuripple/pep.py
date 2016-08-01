@@ -1,5 +1,4 @@
-# pep.py
-## Ripple's bancho server
+## pep.py
 This is Ripple's bancho server. It handles:
 - Client login
 - Online users listing and statuses
@@ -10,16 +9,14 @@ This is Ripple's bancho server. It handles:
 
 ## Requirements
 - Python 3.5
-- MySQLdb (`pip install mysqlclient` or `pip install mysql-python`)
-- Tornado (`pip install tornado`)
-- Bcrypt (`pip install bcrypt`)
+- MySQLdb (`mysqlclient` or `mysql-python`)
+- Tornado (`tornado`)
+- Bcrypt (`bcrypt`)
 
 ## How to set up pep.py
 First of all, install all the dependencies
 ```
-$ pip install mysqlclient
-$ pip install tornado
-$ pip install bcrypt
+$ pip install mysqlclient tornado bcrypt
 ```
 then, run pep.py once to create the default config file and edit it
 ```
@@ -32,9 +29,5 @@ $ python3 pep.py
 ```
 
 ## License
-
-```
-Copyright (C) The Ripple Developers - All Rights Reserved
-Unauthorized copying of this file, via any medium is strictly prohibited
-Proprietary and confidential
-```
+All code in this repository is licensed under the GNU AGPL 3 License.  
+See the "LICENSE" file for more information
