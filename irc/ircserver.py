@@ -1,3 +1,11 @@
+"""
+This file has been _rewritten_ taking by reference code from
+miniircd (https://github.com/jrosdahl/miniircd)
+by Joel Rosdahl, licensed under the GNU GPL 2 License.
+
+Most of the reference code from miniircd was used for the low-level logic.
+The high-level code has been rewritten to make it compatible with pep.py.
+"""
 import sys
 import traceback
 import socket
