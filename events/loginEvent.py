@@ -48,6 +48,8 @@ def handle(tornadoRequest):
 		# [4] disk ID
 		splitData = loginData[2].split("|")
 		osuVersion = splitData[0]
+		timeOffset = int(splitData[1])
+		print(str(timeOffset))
 		clientData = splitData[3].split(":")[:5]
 		if len(clientData) < 4:
 			raise exceptions.forceUpdateException()
@@ -104,7 +106,7 @@ def handle(tornadoRequest):
 
 		# Delete old tokens for that user and generate a new one
 		glob.tokens.deleteOldTokens(userID)
-		responseToken = glob.tokens.addToken(userID, requestIP)
+		responseToken = glob.tokens.addToken(userID, requestIP, timeOffset=timeOffset)
 		responseTokenString = responseToken.token
 
 		# Check restricted mode (and eventually send message)

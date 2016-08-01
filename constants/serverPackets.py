@@ -94,7 +94,7 @@ def userPanel(userID, force = False):
 
 	# Get user data
 	username = userToken.username
-	timezone = 24	# TODO: Timezone
+	timezone = 24+userToken.timeOffset	# TODO: Timezone
 	country = userToken.country
 	gameRank = userToken.gameRank
 	latitude = userToken.getLatitude()

@@ -19,7 +19,7 @@ class tokenList:
 		"""
 		self.tokens = {}
 
-	def addToken(self, userID, ip = "", irc = False):
+	def addToken(self, userID, ip = "", irc = False, timeOffset=0):
 		"""
 		Add a token object to tokens list
 
@@ -28,7 +28,7 @@ class tokenList:
 		return -- token object
 		"""
 
-		newToken = osuToken.token(userID, ip=ip, irc=irc)
+		newToken = osuToken.token(userID, ip=ip, irc=irc, timeOffset=timeOffset)
 		self.tokens[newToken.token] = newToken
 		return newToken
 

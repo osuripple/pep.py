@@ -35,7 +35,7 @@ class token:
 	"""
 
 
-	def __init__(self, __userID, token = None, ip = "", irc = False):
+	def __init__(self, __userID, token = None, ip = "", irc = False, timeOffset = 0):
 		"""
 		Create a token object and set userID and token
 
@@ -55,6 +55,7 @@ class token:
 		self.restricted = userHelper.isRestricted(self.userID)
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
+		self.timeOffset = timeOffset
 		self.lock = threading.Lock()	# Sync primitive
 
 		# Default variables
