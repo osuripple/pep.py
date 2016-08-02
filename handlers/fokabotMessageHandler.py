@@ -11,13 +11,7 @@ class handler(requestHelper.asyncRequestHandler):
 		data = {"message": "unknown error"}
 		try:
 			# Check arguments
-			if requestHelper.checkArguments(self.request.arguments, ["k"]) == False:
-				raise exceptions.invalidArgumentsException()
-
-			if requestHelper.checkArguments(self.request.arguments, ["to"]) == False:
-				raise exceptions.invalidArgumentsException()
-
-			if requestHelper.checkArguments(self.request.arguments, ["msg"]) == False:
+			if requestHelper.checkArguments(self.request.arguments, ["k", "to", "msg"]) == False:
 				raise exceptions.invalidArgumentsException()
 
 			# Check ci key
