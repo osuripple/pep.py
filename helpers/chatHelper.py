@@ -8,6 +8,7 @@ from helpers import userHelper
 from events import logoutEvent
 from events import channelJoinEvent
 from constants import messageTemplates
+from helpers import filterHelper
 
 def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 	"""
@@ -208,6 +209,10 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 		# Truncate message if > 2048 characters
 		message = message[:2048]+"..." if len(message) > 2048 else message
+
+		# check for word filters
+		filters = filterHelper.chatFilters()
+		message = filters.checkFilters(message)
 
 		# Build packet bytes
 		packet = serverPackets.sendMessage(username, toClient, message)

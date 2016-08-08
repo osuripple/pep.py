@@ -23,7 +23,7 @@ from helpers import consoleHelper
 from helpers import databaseHelperNew
 from helpers import generalFunctions
 from helpers import logHelper as log
-
+from helpers import filterHelper
 
 from handlers import mainHandler
 from handlers import apiIsOnlineHandler
@@ -106,6 +106,15 @@ if __name__ == "__main__":
 	except:
 		consoleHelper.printError()
 		consoleHelper.printColored("[!] Error while creating threads pool. Please check your config.ini and run the server again", bcolors.RED)
+
+	try:
+		consoleHelper.printNoNl("> Loading chat filters... ")
+		filters = filterHelper.chatFilters()
+		filters.loadFilters()
+		consoleHelper.printDone()
+	except:
+		consoleHelper.printError()
+		consoleHelper.printColored("[!] Error while loading chat filters. Make sure there is a filters.txt file present", bcolors.RED)
 
 	# Create data folder if needed
 	consoleHelper.printNoNl("> Checking folders... ")
