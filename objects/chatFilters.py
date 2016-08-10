@@ -1,5 +1,3 @@
-import os
-
 class chatFilters:
 	def __init__(self, fileName="filters.txt"):
 		self.filters = {}
@@ -9,9 +7,8 @@ class chatFilters:
 		# Reset chat filters
 		self.filters = {}
 
-		# Open filters.txt
-		#with open(os.path.dirname(os.path.realpath(__file__)) + "/../"+fileName+".txt", "r") as f:
-		with open("filters.txt", "r") as f:
+		# Open filters file
+		with open(fileName, "r") as f:
 			# Read all lines
 			data = f.readlines()
 

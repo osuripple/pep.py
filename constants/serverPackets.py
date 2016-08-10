@@ -5,9 +5,6 @@ from helpers import userHelper
 from objects import glob
 from constants import userRanks
 from constants import packetIDs
-from constants import slotStatuses
-from constants import matchModModes
-import random
 
 """ Login errors packets
 (userID packets derivates) """

@@ -1,11 +1,7 @@
 import datetime
 import gzip
-import time
-from helpers import generalFunctions
 from helpers import requestHelper
 from objects import glob
-from helpers import consoleHelper
-from constants import bcolors
 from constants import exceptions
 from constants import packetIDs
 from helpers import packetHelper
@@ -117,19 +113,25 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 						eventHandler = {
 							# TODO: Rename packets and events
 							# TODO: Host check for multi
+							packetIDs.client_changeAction: handleEvent(changeActionEvent),
+							packetIDs.client_logout: handleEvent(logoutEvent),
+							packetIDs.client_friendAdd: handleEvent(friendAddEvent),
+							packetIDs.client_friendRemove: handleEvent(friendRemoveEvent),
+							packetIDs.client_userStatsRequest: handleEvent(userStatsRequestEvent),
+							packetIDs.client_requestStatusUpdate: handleEvent(requestStatusUpdateEvent),
+							packetIDs.client_userPanelRequest: handleEvent(userPanelRequestEvent),
+							
+							packetIDs.client_channelJoin: handleEvent(channelJoinEvent),
+							packetIDs.client_channelPart: handleEvent(channelPartEvent),
 							packetIDs.client_sendPublicMessage: handleEvent(sendPublicMessageEvent),
 							packetIDs.client_sendPrivateMessage: handleEvent(sendPrivateMessageEvent),
 							packetIDs.client_setAwayMessage: handleEvent(setAwayMessageEvent),
-							packetIDs.client_channelJoin: handleEvent(channelJoinEvent),
-							packetIDs.client_channelPart: handleEvent(channelPartEvent),
-							packetIDs.client_changeAction: handleEvent(changeActionEvent),
+
 							packetIDs.client_startSpectating: handleEvent(startSpectatingEvent),
 							packetIDs.client_stopSpectating: handleEvent(stopSpectatingEvent),
 							packetIDs.client_cantSpectate: handleEvent(cantSpectateEvent),
 							packetIDs.client_spectateFrames: handleEvent(spectateFramesEvent),
-							packetIDs.client_friendAdd: handleEvent(friendAddEvent),
-							packetIDs.client_friendRemove: handleEvent(friendRemoveEvent),
-							packetIDs.client_logout: handleEvent(logoutEvent),
+
 							packetIDs.client_joinLobby: handleEvent(joinLobbyEvent),
 							packetIDs.client_partLobby: handleEvent(partLobbyEvent),
 							packetIDs.client_createMatch: handleEvent(createMatchEvent),
@@ -151,11 +153,8 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 							packetIDs.client_matchHasBeatmap: handleEvent(matchHasBeatmapEvent),
 							packetIDs.client_matchTransferHost: handleEvent(matchTransferHostEvent),
 							packetIDs.client_matchFailed: handleEvent(matchFailedEvent),
-							packetIDs.client_invite: handleEvent(matchInviteEvent),
 							packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent),
-							packetIDs.client_userStatsRequest: handleEvent(userStatsRequestEvent),
-							packetIDs.client_requestStatusUpdate: handleEvent(requestStatusUpdateEvent),
-							packetIDs.client_userPanelRequest: handleEvent(userPanelRequestEvent),
+							packetIDs.client_invite: handleEvent(matchInviteEvent),
 						}
 
 						# Packets processed if in restricted mode.

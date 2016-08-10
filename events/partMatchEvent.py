@@ -1,6 +1,5 @@
 from objects import glob
 from helpers import chatHelper as chat
-from constants import serverPackets
 
 def handle(userToken, _):
 	# get data from usertoken
@@ -24,7 +23,7 @@ def handle(userToken, _):
 	match.userLeft(userID)
 
 	# Part #multiplayer channel
-	chat.partChannel(token=userToken, channel="#multi_{}".format(matchID))
+	#chat.partChannel(token=userToken, channel="#multi_{}".format(matchID), kick=True)
 
 	# Set usertoken match to -1
 	userToken.partMatch()

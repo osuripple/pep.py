@@ -129,14 +129,14 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 		# Force close tab if needed
 		# NOTE: Maybe always needed, will check later
 		if kick == True:
-			token.enqueue(serverPackets.channelKicked(channelObject.clientName))
+			token.enqueue(serverPackets.channelKicked(channelClient))
 
 		# IRC part
 		if glob.irc == True and toIRC == True:
 			glob.ircServer.banchoPartChannel(username, channel)
 
 		# Console output
-		log.info("{} parted channel {}".format(username, channel))
+		log.info("{} parted channel {} ({})".format(username, channel, channelClient))
 
 		# Return IRC code
 		return 0
