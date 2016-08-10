@@ -296,11 +296,14 @@ def systemShutdown(fro, chan, message):
 	return restartShutdown(False)
 
 def systemReload(fro, chan, message):
-	#Reload settings from bancho_settings
+	# Reload settings from bancho_settings
 	glob.banchoConf.loadSettings()
 
 	# Reload channels too
 	glob.channels.loadChannels()
+
+	# And chat filters
+	glob.chatFilters.loadFilters()
 
 	# Send new channels and new bottom icon to everyone
 	glob.tokens.enqueueAll(serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))

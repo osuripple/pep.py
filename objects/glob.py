@@ -24,6 +24,7 @@ pool = None
 fLocks = fileLocks.fileLocks()
 verifiedCache = {}
 cloudflare = False
+chatFilters = None
 
 debug = False
 outputRequestTime = False
