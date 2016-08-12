@@ -308,8 +308,9 @@ def systemReload(fro, chan, message):
 	# Send new channels and new bottom icon to everyone
 	glob.tokens.enqueueAll(serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
 	glob.tokens.enqueueAll(serverPackets.channelInfoEnd())
-	for key, _ in glob.channels.channels.items():
-		glob.tokens.enqueueAll(serverPackets.channelInfo(key))
+	for key, value in glob.channels.channels.items():
+		if value.publicRead == True and value.hidden == False:
+			glob.tokens.enqueueAll(serverPackets.channelInfo(key))
 
 	return "Bancho settings reloaded!"
 
