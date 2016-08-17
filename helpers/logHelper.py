@@ -72,42 +72,42 @@ def logMessage(message, alertType = "INFO", messageColor = bcolors.ENDC, discord
 
 def warning(message, discord = None, alertDev = False):
 	"""
-	Log a warning to stdout, warnings.log (always) and discord (optional)
+	Log a warning to stdout (always) and discord (optional)
 
 	message -- warning message
 	discord -- if not None, send message to that discord channel through schiavo. Optional. Default = None
 	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
 	"""
-	logMessage(message, "WARNING", bcolors.YELLOW, discord, alertDev, "warnings.txt")
+	logMessage(message, "WARNING", bcolors.YELLOW, discord, alertDev)
 
 def error(message, discord = None, alertDev = True):
 	"""
-	Log an error to stdout, errors.log (always) and discord (optional)
+	Log an error to stdout (always) and discord (optional)
 
 	message -- error message
 	discord -- if not None, send message to that discord channel through schiavo. Optional. Default = None
 	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
 	"""
-	logMessage(message, "ERROR", bcolors.RED, discord, alertDev, "errors.txt")
+	logMessage(message, "ERROR", bcolors.RED, discord, alertDev)
 
 def info(message, discord = None, alertDev = False):
 	"""
-	Log an error to stdout (and info.log)
+	Log an info message to stdout
 
 	message -- info message
 	discord -- if not None, send message to that discord channel through schiavo. Optional. Default = None
 	alertDev -- if True, send al hl to devs on discord. Optional. Default = False.
 	"""
-	logMessage(message, "INFO", bcolors.ENDC, discord, alertDev, "info.txt")
+	logMessage(message, "INFO", bcolors.ENDC, discord, alertDev)
 
 def debug(message):
 	"""
-	Log a debug message to stdout and debug.log if server is running in debug mode
+	Log a debug message to stdout if server is running in debug mode
 
 	message -- debug message
 	"""
 	if glob.debug == True:
-		logMessage(message, "DEBUG", bcolors.PINK, of="debug.txt")
+		logMessage(message, "DEBUG", bcolors.PINK)
 
 def chat(message):
 	"""

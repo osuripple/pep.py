@@ -5,22 +5,22 @@ class channel:
 	A chat channel
 	"""
 
-	def __init__(self, __name, __description, __publicRead, __publicWrite, temp, hidden):
+	def __init__(self, name, description, publicRead, publicWrite, temp, hidden):
 		"""
 		Create a new chat channel object
 
-		__name -- channel name
-		__description -- channel description
-		__publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
-		__publicWrite -- bool, same as public read but relative to write permissions
+		name -- channel name
+		description -- channel description
+		publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
+		publicWrite -- bool, same as public read but relative to write permissions
 		temp -- if True, channel will be deleted when there's no one in the channel
 		hidden -- if True, channel won't be shown in channels list
 		"""
 
-		self.name = __name
-		self.description = __description
-		self.publicRead = __publicRead
-		self.publicWrite = __publicWrite
+		self.name = name
+		self.description = description
+		self.publicRead = publicRead
+		self.publicWrite = publicWrite
 		self.moderated = False
 		self.temp = temp
 		self.connectedUsers = [999]	# Fokabot is always connected to every channels (otherwise it doesn't show up in IRC users list)
@@ -34,26 +34,26 @@ class channel:
 			self.clientName = "#multiplayer"
 
 
-	def userJoin(self, __userID):
+	def userJoin(self, userID):
 		"""
 		Add a user to connected users
 
-		__userID -- user ID that joined the channel
+		userID -- user ID that joined the channel
 		"""
 
-		if __userID not in self.connectedUsers:
-			self.connectedUsers.append(__userID)
+		if userID not in self.connectedUsers:
+			self.connectedUsers.append(userID)
 
 
-	def userPart(self, __userID):
+	def userPart(self, userID):
 		"""
 		Remove a user from connected users
 
-		__userID -- user ID that left the channel
+		userID -- user ID that left the channel
 		"""
 
-		if __userID in self.connectedUsers:
-			self.connectedUsers.remove(__userID)
+		if userID in self.connectedUsers:
+			self.connectedUsers.remove(userID)
 
 		# Remove temp channels if empty or there's only fokabot connected
 		l = len(self.connectedUsers)

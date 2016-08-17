@@ -12,22 +12,16 @@ npRegex = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
 
 def connect():
 	"""Add FokaBot to connected users and send userpanel/stats packet to everyone"""
-
 	token = glob.tokens.addToken(999)
 	token.actionID = actions.idle
 	glob.tokens.enqueueAll(serverPackets.userPanel(999))
-	####glob.tokens.enqueueAll(serverPackets.userStats(999))
+	glob.tokens.enqueueAll(serverPackets.userStats(999))
 
-	# NOTE: Debug thing to set all users as connected
-	#users = glob.db.fetchAll("SELECT id FROM users")
-	#for i in users:
-	#	t = glob.tokens.addToken(i["id"])
-	#	t.actionID = actions.idle
 
 def disconnect():
 	"""Remove FokaBot from connected users"""
-
 	glob.tokens.deleteToken(glob.tokens.getTokenFromUserID(999))
+
 
 def fokabotResponse(fro, chan, message):
 	"""
@@ -39,7 +33,6 @@ def fokabotResponse(fro, chan, message):
 
 	return -- fokabot's response string or False
 	"""
-
 	for i in fokabotCommands.commands:
 		# Loop though all commands
 		#if i["trigger"] in message:

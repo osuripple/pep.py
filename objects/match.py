@@ -29,29 +29,29 @@ class match:
 	matchModMode = matchModModes.normal
 	seed = 0
 
-	def __init__(self, __matchID, __matchName, __matchPassword, __beatmapID, __beatmapName, __beatmapMD5, __gameMode, __hostUserID):
+	def __init__(self, matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID):
 		"""
 		Create a new match object
 
-		__matchID -- match progressive identifier
-		__matchName -- match name, string
-		__matchPassword -- match md5 password. Leave empty for no password
-		__beatmapID -- beatmap ID
-		__beatmapName -- beatmap name, string
-		__beatmapMD5 -- beatmap md5 hash, string
-		__gameMode -- game mode ID. See gameModes.py
-		__hostUserID -- user id of the host
+		matchID -- match progressive identifier
+		matchName -- match name, string
+		matchPassword -- match md5 password. Leave empty for no password
+		beatmapID -- beatmap ID
+		beatmapName -- beatmap name, string
+		beatmapMD5 -- beatmap md5 hash, string
+		gameMode -- game mode ID. See gameModes.py
+		hostUserID -- user id of the host
 		"""
-		self.matchID = __matchID
+		self.matchID = matchID
 		self.inProgress = False
 		self.mods = 0
-		self.matchName = __matchName
-		self.matchPassword = __matchPassword
-		self.beatmapID = __beatmapID
-		self.beatmapName = __beatmapName
-		self.beatmapMD5 = __beatmapMD5
-		self.hostUserID = __hostUserID
-		self.gameMode = __gameMode
+		self.matchName = matchName
+		self.matchPassword = matchPassword
+		self.beatmapID = beatmapID
+		self.beatmapName = beatmapName
+		self.beatmapMD5 = beatmapMD5
+		self.hostUserID = hostUserID
+		self.gameMode = gameMode
 		self.matchScoringTypes = matchScoringTypes.score	# default values
 		self.matchTeamType = matchTeamTypes.headToHead		# default value
 		self.matchModMode = matchModModes.normal			# default value
@@ -617,8 +617,6 @@ class match:
 		newTeam = matchTeams.blue if self.slots[slotID]["team"] == matchTeams.red else matchTeams.red
 		self.setSlot(slotID, None, newTeam)
 		self.sendUpdate()
-
-
 
 	def sendUpdate(self):
 		# Send to users in room

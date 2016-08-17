@@ -35,11 +35,11 @@ class token:
 	"""
 
 
-	def __init__(self, __userID, token = None, ip = "", irc = False, timeOffset = 0):
+	def __init__(self, userID, token = None, ip = "", irc = False, timeOffset = 0):
 		"""
 		Create a token object and set userID and token
 
-		__userID -- user associated to this token
+		userID -- user associated to this token
 		token -- 	if passed, set token to that value
 					if not passed, token will be generated
 		ip		--	client ip. optional.
@@ -47,7 +47,7 @@ class token:
 		"""
 
 		# Set stuff
-		self.userID = __userID
+		self.userID = userID
 		self.username = userHelper.getUsername(self.userID)
 		self.privileges = userHelper.getPrivileges(self.userID)
 		self.admin = userHelper.isInPrivilegeGroup(self.userID, "developer") or userHelper.isInPrivilegeGroup(self.userID, "community manager")
@@ -101,12 +101,6 @@ class token:
 		# If we have a valid ip, save bancho session in DB so we can cache LETS logins
 		if ip != "":
 			userHelper.saveBanchoSession(self.userID, self.ip)
-
-		# If we are restricted, send message from FokaBot to user
-		# NOTE: Sent later
-		#if self.restricted == True:
-		#	self.setRestricted()
-
 
 	def enqueue(self, __bytes):
 		"""
@@ -164,11 +158,11 @@ class token:
 		return self.location[1]
 
 
-	def startSpectating(self, __userID):
-		"""Set the spectating user to __userID
+	def startSpectating(self, userID):
+		"""Set the spectating user to userID
 
-		__userID -- target userID"""
-		self.spectating = __userID
+		userID -- target userID"""
+		self.spectating = userID
 
 
 	def stopSpectating(self):
@@ -176,24 +170,24 @@ class token:
 		self.spectating = 0
 
 
-	def addSpectator(self, __userID):
-		"""Add __userID to our spectators
+	def addSpectator(self, userID):
+		"""Add userID to our spectators
 
 		userID -- new spectator userID"""
 
 		# Add userID to spectators if not already in
-		if __userID not in self.spectators:
-			self.spectators.append(__userID)
+		if userID not in self.spectators:
+			self.spectators.append(userID)
 
 
-	def removeSpectator(self, __userID):
-		"""Remove __userID from our spectators
+	def removeSpectator(self, userID):
+		"""Remove userID from our spectators
 
 		userID -- old spectator userID"""
 
 		# Remove spectator
-		if __userID in self.spectators:
-			self.spectators.remove(__userID)
+		if userID in self.spectators:
+			self.spectators.remove(userID)
 
 
 	def setCountry(self, __countryID):

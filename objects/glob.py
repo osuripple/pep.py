@@ -20,7 +20,6 @@ tokens = tokenList.tokenList()
 channels = channelList.channelList()
 matches = matchList.matchList()
 restarting = False
-pool = None
 fLocks = fileLocks.fileLocks()
 verifiedCache = {}
 cloudflare = False

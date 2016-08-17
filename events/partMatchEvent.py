@@ -1,5 +1,4 @@
 from objects import glob
-from helpers import chatHelper as chat
 
 def handle(userToken, _):
 	# get data from usertoken

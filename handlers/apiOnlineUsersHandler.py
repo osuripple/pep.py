@@ -1,24 +1,23 @@
-from helpers import requestHelper
 import json
 from objects import glob
+import bottle
 
-class handler(requestHelper.asyncRequestHandler):
-	def asyncGet(self):
-		statusCode = 400
-		data = {"message": "unknown error"}
-		try:
-			# Get online users count
-			data["result"] = len(glob.tokens.tokens)
+@bottle.route("/api/v1/onlineUsers")
+def GETApiOnlineUsers():
+	statusCode = 400
+	data = {"message": "unknown error"}
+	try:
+		# Get online users count
+		data["result"] = len(glob.tokens.tokens)
 
-			# Status code and message
-			statusCode = 200
-			data["message"] = "ok"
-		finally:
-			# Add status code to data
-			data["status"] = statusCode
+		# Status code and message
+		statusCode = 200
+		data["message"] = "ok"
+	finally:
+		# Add status code to data
+		data["status"] = statusCode
 
-			# Send response
-			#self.clear()
-			self.write(json.dumps(data))
-			self.set_status(statusCode)
-			#self.finish(json.dumps(data))
+		# Send response
+		bottle.response.status = statusCode
+		bottle.response.add_header("Content-Type", "application/json")
+		yield json.dumps(data)

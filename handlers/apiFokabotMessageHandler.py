@@ -1,27 +1,32 @@
 from constants import exceptions
 import json
 from objects import glob
+from helpers import chatHelper
 import bottle
 
-@bottle.route("/api/v1/isOnline")
-def GETApiIsOnline():
+@bottle.route("/api/v1/fokabotMessage")
+def GETApiFokabotMessage():
 	statusCode = 400
 	data = {"message": "unknown error"}
 	try:
 		# Check arguments
-		if "u" not in bottle.request.query:
+		if "k" not in bottle.request.query or "to" not in bottle.request.query or "msg" not in bottle.request.query:
 			raise exceptions.invalidArgumentsException()
 
-		# Get online staus
-		username = bottle.request.query["u"]
-		data["result"] = True if glob.tokens.getTokenFromUsername(username) != None else False
+		# Check ci key
+		key = bottle.request.query["k"]
+		if key is None or key != glob.conf.config["server"]["cikey"]:
+			raise exceptions.invalidArgumentsException()
+
+		# Send chat message
+		chatHelper.sendMessage("FokaBot", bottle.request.query["to"], bottle.request.query["msg"])
 
 		# Status code and message
 		statusCode = 200
 		data["message"] = "ok"
 	except exceptions.invalidArgumentsException:
 		statusCode = 400
-		data["message"] = "missing required arguments"
+		data["message"] = "invalid parameters"
 	finally:
 		# Add status code to data
 		data["status"] = statusCode

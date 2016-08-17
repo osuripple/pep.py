@@ -1,6 +1,3 @@
-"""
-Event called when someone parts a channel
-"""
 from constants import clientPackets
 from helpers import chatHelper as chat
 

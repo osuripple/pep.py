@@ -56,6 +56,7 @@ class channelList:
 		self.channels[name] = channel.channel(name, "Chat", True, True, True, True)
 		log.info("Created temp channel {}".format(name))
 
+
 	def removeChannel(self, name):
 		"""
 		Removes a channel from channels list

@@ -1,7 +1,6 @@
 from objects import glob
 from constants import slotStatuses
 from constants import serverPackets
-from helpers import logHelper as log
 
 def handle(userToken, packetData):
 	# Get usertoken data

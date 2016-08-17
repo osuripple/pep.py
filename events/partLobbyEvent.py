@@ -1,5 +1,4 @@
 from objects import glob
-from events import channelPartEvent
 from helpers import logHelper as log
 from helpers import chatHelper as chat
 
