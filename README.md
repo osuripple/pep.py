@@ -10,13 +10,14 @@ This is Ripple's bancho server. It handles:
 ## Requirements
 - Python 3.5
 - MySQLdb (`mysqlclient` or `mysql-python`)
-- Tornado (`tornado`)
-- Bcrypt (`bcrypt`)
+- Bottle
+- Gevent
+- Bcrypt
 
 ## How to set up pep.py
 First of all, install all the dependencies
 ```
-$ pip install mysqlclient tornado bcrypt
+$ pip install mysqlclient bottle gevent bcrypt
 ```
 then, run pep.py once to create the default config file and edit it
 ```
