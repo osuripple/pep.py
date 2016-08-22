@@ -55,7 +55,8 @@ def POSTMain():
 		st = datetime.datetime.now()
 
 	# Client's token string and request data
-	requestTokenString = bottle.request.headers.get("osu-token")
+	#requestTokenString = bottle.request.headers.get("osu-token")
+	requestTokenString = bottle.request.get_header("osu-token")
 	requestData = bottle.request.body.read()
 
 	# Server's token string and request data

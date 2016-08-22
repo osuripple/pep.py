@@ -189,4 +189,4 @@ if __name__ == "__main__":
 	consoleHelper.printColored("> Bottle listening for HTTP(s) clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 	# Start bottle
-	bottle.run(app=app, host="0.0.0.0", port=serverPort, server="gevent", quiet=True)
+	bottle.run(app=app, host="0.0.0.0", port=serverPort, server="gevent")
