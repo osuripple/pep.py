@@ -144,6 +144,7 @@ if __name__ == "__main__":
 	app.catchall = False
 	from handlers import mainHandler
 	from handlers import apiIsOnlineHandler
+	from handlers import apiOnlineUsersHandler
 	from handlers import apiServerStatusHandler
 	from handlers import ciTriggerHandler
 	from handlers import apiVerifiedStatusHandler
