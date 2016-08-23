@@ -586,7 +586,6 @@ def tillerinoLast(fro, chan, message):
 				stars = oppaiData["stars"]
 
 		msg += " | {0:.2f} stars".format(stars)
-
 		return msg
 	except Exception as a:
 		log.error(a)

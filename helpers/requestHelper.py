@@ -5,6 +5,7 @@ from tornado.ioloop import IOLoop
 from objects import glob
 from raven.contrib.tornado import SentryMixin
 from raven.contrib.tornado import AsyncSentryClient
+import gevent
 
 class asyncRequestHandler(tornado.web.RequestHandler):
 	"""
@@ -58,8 +59,10 @@ def runBackground(data, callback):
 	func, args, kwargs = data
 	def _callback(result):
 		IOLoop.instance().add_callback(lambda: callback(result))
-	glob.pool.apply_async(func, args, kwargs, _callback)
-
+	#glob.pool.apply_async(func, args, kwargs, _callback)
+	g = gevent.Greenlet(func, *args, **kwargs)
+	g.link(_callback)
+	g.start()
 
 def checkArguments(arguments, requiredArguments):
 	"""

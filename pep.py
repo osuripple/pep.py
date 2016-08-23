@@ -1,7 +1,6 @@
 """Hello, pep.py here, ex-owner of ripple and prime minister of Ripwot."""
 import sys
 import os
-from multiprocessing.pool import ThreadPool
 import threading
 
 # Tornado
@@ -9,6 +8,8 @@ import tornado.ioloop
 import tornado.web
 import tornado.httpserver
 import tornado.gen
+from gevent import monkey as brit_monkey
+brit_monkey.patch_all()
 
 # Raven
 from raven.contrib.tornado import AsyncSentryClient
@@ -97,15 +98,6 @@ if __name__ == "__main__":
 	consoleHelper.printNoNl("> Deleting cached bancho sessions from DB... ")
 	glob.tokens.deleteBanchoSessions()
 	consoleHelper.printDone()
-
-	# Create threads pool
-	try:
-		consoleHelper.printNoNl("> Creating threads pool... ")
-		glob.pool = ThreadPool(int(glob.conf.config["server"]["threads"]))
-		consoleHelper.printDone()
-	except:
-		consoleHelper.printError()
-		consoleHelper.printColored("[!] Error while creating threads pool. Please check your config.ini and run the server again", bcolors.RED)
 
 	try:
 		consoleHelper.printNoNl("> Loading chat filters... ")
