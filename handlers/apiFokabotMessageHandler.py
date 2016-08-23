@@ -1,37 +1,39 @@
+from helpers import requestHelper
 from constants import exceptions
 import json
 from objects import glob
 from helpers import chatHelper
-import bottle
+from helpers import logHelper as log
 
-@bottle.route("/api/v1/fokabotMessage")
-def GETApiFokabotMessage():
-	statusCode = 400
-	data = {"message": "unknown error"}
-	try:
-		# Check arguments
-		if "k" not in bottle.request.query or "to" not in bottle.request.query or "msg" not in bottle.request.query:
-			raise exceptions.invalidArgumentsException()
-
-		# Check ci key
-		key = bottle.request.query["k"]
-		if key is None or key != glob.conf.config["server"]["cikey"]:
-			raise exceptions.invalidArgumentsException()
-
-		# Send chat message
-		chatHelper.sendMessage("FokaBot", bottle.request.query["to"], bottle.request.query["msg"])
-
-		# Status code and message
-		statusCode = 200
-		data["message"] = "ok"
-	except exceptions.invalidArgumentsException:
+class handler(requestHelper.asyncRequestHandler):
+	def asyncGet(self):
 		statusCode = 400
-		data["message"] = "invalid parameters"
-	finally:
-		# Add status code to data
-		data["status"] = statusCode
+		data = {"message": "unknown error"}
+		try:
+			# Check arguments
+			if requestHelper.checkArguments(self.request.arguments, ["k", "to", "msg"]) == False:
+				raise exceptions.invalidArgumentsException()
 
-		# Send response
-		bottle.response.status = statusCode
-		bottle.response.add_header("Content-Type", "application/json")
-		yield json.dumps(data)
+			# Check ci key
+			key = self.get_argument("k")
+			if key is None or key != glob.conf.config["server"]["cikey"]:
+				raise exceptions.invalidArgumentsException()
+
+			log.info("API REQUEST FOR FOKABOT MESSAGE AAAAAAA")
+			chatHelper.sendMessage("FokaBot", self.get_argument("to"), self.get_argument("msg"))
+
+			# Status code and message
+			statusCode = 200
+			data["message"] = "ok"
+		except exceptions.invalidArgumentsException:
+			statusCode = 400
+			data["message"] = "invalid parameters"
+		finally:
+			# Add status code to data
+			data["status"] = statusCode
+
+			# Send response
+			#self.clear()
+			self.write(json.dumps(data))
+			self.set_status(statusCode)
+			#self.finish(json.dumps(data))

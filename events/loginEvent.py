@@ -2,22 +2,27 @@ from helpers import userHelper
 from constants import serverPackets
 from constants import exceptions
 from objects import glob
+from helpers import consoleHelper
+from constants import bcolors
 from helpers import locationHelper
 from helpers import countryHelper
+import time
+from helpers import generalFunctions
 import sys
 import traceback
+from helpers import requestHelper
+from helpers import discordBotHelper
 from helpers import logHelper as log
 from helpers import chatHelper as chat
 from constants import privileges
-from helpers import requestHelper
 
-def handle(bottleRequest):
+def handle(tornadoRequest):
 	# Data to return
 	responseTokenString = "ayy"
 	responseData = bytes()
 
 	# Get IP from tornado request
-	requestIP = requestHelper.getRequestIP(bottleRequest)
+	requestIP = tornadoRequest.getRequestIP()
 
 	# Avoid exceptions
 	clientData = ["unknown", "unknown", "unknown", "unknown", "unknown"]
@@ -25,8 +30,7 @@ def handle(bottleRequest):
 
 	# Split POST body so we can get username/password/hardware data
 	# 2:-3 thing is because requestData has some escape stuff that we don't need
-	postBody = bottleRequest.body.read()
-	loginData = str(postBody)[2:-3].split("\\n")
+	loginData = str(tornadoRequest.request.body)[2:-3].split("\\n")
 	try:
 		# If true, print error to console
 		err = False

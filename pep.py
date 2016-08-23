@@ -3,10 +3,16 @@ import sys
 import os
 import threading
 
-# Bottle
-import bottle
+# Tornado
+import tornado.ioloop
+import tornado.web
+import tornado.httpserver
+import tornado.gen
 from gevent import monkey as brit_monkey
 brit_monkey.patch_all()
+
+# Raven
+from raven.contrib.tornado import AsyncSentryClient
 
 # pep.py files
 from constants import bcolors
@@ -20,12 +26,26 @@ from helpers import databaseHelperNew
 from helpers import generalFunctions
 from helpers import logHelper as log
 
-# Raven
-from raven import Client
-from raven.contrib.bottle import Sentry
+from handlers import mainHandler
+from handlers import apiIsOnlineHandler
+from handlers import apiOnlineUsersHandler
+from handlers import apiServerStatusHandler
+from handlers import ciTriggerHandler
+from handlers import apiVerifiedStatusHandler
+from handlers import apiFokabotMessageHandler
 
-# IRC
 from irc import ircserver
+
+def make_app():
+	return tornado.web.Application([
+		(r"/", mainHandler.handler),
+		(r"/api/v1/isOnline", apiIsOnlineHandler.handler),
+		(r"/api/v1/onlineUsers", apiOnlineUsersHandler.handler),
+		(r"/api/v1/serverStatus", apiServerStatusHandler.handler),
+		(r"/api/v1/ciTrigger", ciTriggerHandler.handler),
+		(r"/api/v1/verifiedStatus", apiVerifiedStatusHandler.handler),
+		(r"/api/v1/fokabotMessage", apiFokabotMessageHandler.handler)
+	])
 
 if __name__ == "__main__":
 	# Server start
@@ -140,22 +160,13 @@ if __name__ == "__main__":
 		consoleHelper.printColored("[!] Warning! Server running in debug mode!", bcolors.YELLOW)
 
 	# Make app
-	app = bottle.app()
-	app.catchall = False
-	from handlers import mainHandler
-	from handlers import apiIsOnlineHandler
-	from handlers import apiOnlineUsersHandler
-	from handlers import apiServerStatusHandler
-	from handlers import ciTriggerHandler
-	from handlers import apiVerifiedStatusHandler
-	from handlers import apiFokabotMessageHandler
+	application = make_app()
 
 	# Set up sentry
 	try:
 		glob.sentry = generalFunctions.stringToBool(glob.conf.config["sentry"]["enable"])
 		if glob.sentry == True:
-			client = Client(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
-			app = Sentry(app, client)
+			application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
 		else:
 			consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
 	except:
@@ -185,8 +196,9 @@ if __name__ == "__main__":
 		consoleHelper.printColored("[!] Invalid server port! Please check your config.ini and run the server again", bcolors.RED)
 
 	# Server start message and console output
-	log.logMessage("Server started!", discord=True, stdout=False)
-	consoleHelper.printColored("> Bottle listening for HTTP(s) clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
+	log.logMessage("Server started!", discord=True, of="info.txt", stdout=False)
+	consoleHelper.printColored("> Tornado listening for HTTP(s) clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
-	# Start bottle
-	bottle.run(app=app, host="0.0.0.0", port=serverPort, server="gevent")
+	# Start tornado
+	application.listen(serverPort)
+	tornado.ioloop.IOLoop.instance().start()

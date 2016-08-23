@@ -1,11 +1,10 @@
-import bottle
 import datetime
 import gzip
+from helpers import requestHelper
 from objects import glob
-from helpers import packetHelper
-from helpers import logHelper as log
 from constants import exceptions
 from constants import packetIDs
+from helpers import packetHelper
 from constants import serverPackets
 from events import sendPublicMessageEvent
 from events import sendPrivateMessageEvent
@@ -47,199 +46,219 @@ from events import userStatsRequestEvent
 from events import requestStatusUpdateEvent
 from events import userPanelRequestEvent
 
-@bottle.route("/", method="POST")
-def POSTMain():
-	# Track time if needed
-	if glob.outputRequestTime == True:
-		# Start time
-		st = datetime.datetime.now()
+# Exception tracking
+import tornado.web
+import tornado.gen
+import sys
+import traceback
+from raven.contrib.tornado import SentryMixin
+from helpers import logHelper as log
 
-	# Client's token string and request data
-	#requestTokenString = bottle.request.headers.get("osu-token")
-	requestTokenString = bottle.request.get_header("osu-token")
-	requestData = bottle.request.body.read()
-
-	# Server's token string and request data
-	responseTokenString = "ayy"
-	responseData = bytes()
-	
-	if requestTokenString == None:
-		# No token, first request. Handle login.
-		responseTokenString, responseData = loginEvent.handle(bottle.request)
-	else:
-		userToken = None	# default value
+class handler(SentryMixin, requestHelper.asyncRequestHandler):
+	@tornado.web.asynchronous
+	@tornado.gen.engine
+	def asyncPost(self):
 		try:
-			# This is not the first packet, send response based on client's request
-			# Packet start position, used to read stacked packets
-			pos = 0
+			# Track time if needed
+			if glob.outputRequestTime == True:
+				# Start time
+				st = datetime.datetime.now()
 
-			# Make sure the token exists
-			if requestTokenString not in glob.tokens.tokens:
-				raise exceptions.tokenNotFoundException()
+			# Client's token string and request data
+			requestTokenString = self.request.headers.get("osu-token")
+			requestData = self.request.body
 
-			# Token exists, get its object and lock it
-			userToken = glob.tokens.tokens[requestTokenString]
-			userToken.lock.acquire()
+			# Server's token string and request data
+			responseTokenString = "ayy"
+			responseData = bytes()
 
-			# Keep reading packets until everything has been read
-			while pos < len(requestData):
-				# Get packet from stack starting from new packet
-				leftData = requestData[pos:]
+			if requestTokenString == None:
+				# No token, first request. Handle login.
+				responseTokenString, responseData = loginEvent.handle(self)
+			else:
+				userToken = None	# default value
+				try:
+					# This is not the first packet, send response based on client's request
+					# Packet start position, used to read stacked packets
+					pos = 0
 
-				# Get packet ID, data length and data
-				packetID = packetHelper.readPacketID(leftData)
-				dataLength = packetHelper.readPacketLength(leftData)
-				packetData = requestData[pos:(pos+dataLength+7)]
+					# Make sure the token exists
+					if requestTokenString not in glob.tokens.tokens:
+						raise exceptions.tokenNotFoundException()
 
-				# Console output if needed
-				if glob.outputPackets == True and packetID != 4:
-					log.debug("Incoming packet ({})({}):\n\nPacket code: {}\nPacket length: {}\nSingle packet data: {}\n".format(requestTokenString, userToken.username, str(packetID), str(dataLength), str(packetData)))
+					# Token exists, get its object and lock it
+					userToken = glob.tokens.tokens[requestTokenString]
+					userToken.lock.acquire()
 
-				# Event handler
-				def handleEvent(ev):
-					def wrapper():
-						ev.handle(userToken, packetData)
-					return wrapper
+					# Keep reading packets until everything has been read
+					while pos < len(requestData):
+						# Get packet from stack starting from new packet
+						leftData = requestData[pos:]
 
-				eventHandler = {
-					# TODO: Rename packets and events
-					# TODO: Host check for multi
-					packetIDs.client_changeAction: handleEvent(changeActionEvent),
-					packetIDs.client_logout: handleEvent(logoutEvent),
-					packetIDs.client_friendAdd: handleEvent(friendAddEvent),
-					packetIDs.client_friendRemove: handleEvent(friendRemoveEvent),
-					packetIDs.client_userStatsRequest: handleEvent(userStatsRequestEvent),
-					packetIDs.client_requestStatusUpdate: handleEvent(requestStatusUpdateEvent),
-					packetIDs.client_userPanelRequest: handleEvent(userPanelRequestEvent),
-					
-					packetIDs.client_channelJoin: handleEvent(channelJoinEvent),
-					packetIDs.client_channelPart: handleEvent(channelPartEvent),
-					packetIDs.client_sendPublicMessage: handleEvent(sendPublicMessageEvent),
-					packetIDs.client_sendPrivateMessage: handleEvent(sendPrivateMessageEvent),
-					packetIDs.client_setAwayMessage: handleEvent(setAwayMessageEvent),
+						# Get packet ID, data length and data
+						packetID = packetHelper.readPacketID(leftData)
+						dataLength = packetHelper.readPacketLength(leftData)
+						packetData = requestData[pos:(pos+dataLength+7)]
 
-					packetIDs.client_startSpectating: handleEvent(startSpectatingEvent),
-					packetIDs.client_stopSpectating: handleEvent(stopSpectatingEvent),
-					packetIDs.client_cantSpectate: handleEvent(cantSpectateEvent),
-					packetIDs.client_spectateFrames: handleEvent(spectateFramesEvent),
+						# Console output if needed
+						if glob.outputPackets == True and packetID != 4:
+							log.debug("Incoming packet ({})({}):\n\nPacket code: {}\nPacket length: {}\nSingle packet data: {}\n".format(requestTokenString, userToken.username, str(packetID), str(dataLength), str(packetData)))
 
-					packetIDs.client_joinLobby: handleEvent(joinLobbyEvent),
-					packetIDs.client_partLobby: handleEvent(partLobbyEvent),
-					packetIDs.client_createMatch: handleEvent(createMatchEvent),
-					packetIDs.client_joinMatch: handleEvent(joinMatchEvent),
-					packetIDs.client_partMatch: handleEvent(partMatchEvent),
-					packetIDs.client_matchChangeSlot: handleEvent(changeSlotEvent),
-					packetIDs.client_matchChangeSettings: handleEvent(changeMatchSettingsEvent),
-					packetIDs.client_matchChangePassword: handleEvent(changeMatchPasswordEvent),
-					packetIDs.client_matchChangeMods: handleEvent(changeMatchModsEvent),
-					packetIDs.client_matchReady: handleEvent(matchReadyEvent),
-					packetIDs.client_matchNotReady: handleEvent(matchReadyEvent),
-					packetIDs.client_matchLock: handleEvent(matchLockEvent),
-					packetIDs.client_matchStart: handleEvent(matchStartEvent),
-					packetIDs.client_matchLoadComplete: handleEvent(matchPlayerLoadEvent),
-					packetIDs.client_matchSkipRequest: handleEvent(matchSkipEvent),
-					packetIDs.client_matchScoreUpdate: handleEvent(matchFramesEvent),
-					packetIDs.client_matchComplete: handleEvent(matchCompleteEvent),
-					packetIDs.client_matchNoBeatmap: handleEvent(matchNoBeatmapEvent),
-					packetIDs.client_matchHasBeatmap: handleEvent(matchHasBeatmapEvent),
-					packetIDs.client_matchTransferHost: handleEvent(matchTransferHostEvent),
-					packetIDs.client_matchFailed: handleEvent(matchFailedEvent),
-					packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent),
-					packetIDs.client_invite: handleEvent(matchInviteEvent),
-				}
+						# Event handler
+						def handleEvent(ev):
+							def wrapper():
+								ev.handle(userToken, packetData)
+							return wrapper
 
-				# Packets processed if in restricted mode.
-				# All other packets will be ignored if the user is in restricted mode
-				packetsRestricted = [
-					packetIDs.client_logout,
-					packetIDs.client_userStatsRequest,
-					packetIDs.client_requestStatusUpdate,
-					packetIDs.client_userPanelRequest,
-					packetIDs.client_changeAction,
-					packetIDs.client_channelJoin,
-					packetIDs.client_channelPart,
-				]
+						eventHandler = {
+							# TODO: Rename packets and events
+							# TODO: Host check for multi
+							packetIDs.client_changeAction: handleEvent(changeActionEvent),
+							packetIDs.client_logout: handleEvent(logoutEvent),
+							packetIDs.client_friendAdd: handleEvent(friendAddEvent),
+							packetIDs.client_friendRemove: handleEvent(friendRemoveEvent),
+							packetIDs.client_userStatsRequest: handleEvent(userStatsRequestEvent),
+							packetIDs.client_requestStatusUpdate: handleEvent(requestStatusUpdateEvent),
+							packetIDs.client_userPanelRequest: handleEvent(userPanelRequestEvent),
+							
+							packetIDs.client_channelJoin: handleEvent(channelJoinEvent),
+							packetIDs.client_channelPart: handleEvent(channelPartEvent),
+							packetIDs.client_sendPublicMessage: handleEvent(sendPublicMessageEvent),
+							packetIDs.client_sendPrivateMessage: handleEvent(sendPrivateMessageEvent),
+							packetIDs.client_setAwayMessage: handleEvent(setAwayMessageEvent),
 
-				# Process/ignore packet
-				if packetID != 4:
-					if packetID in eventHandler:
-						if userToken.restricted == False or (userToken.restricted == True and packetID in packetsRestricted):
-							eventHandler[packetID]()
-						else:
-							log.warning("Ignored packet id from {} ({}) (user is restricted)".format(requestTokenString, packetID))
-					else:
-						log.warning("Unknown packet id from {} ({})".format(requestTokenString, packetID))
+							packetIDs.client_startSpectating: handleEvent(startSpectatingEvent),
+							packetIDs.client_stopSpectating: handleEvent(stopSpectatingEvent),
+							packetIDs.client_cantSpectate: handleEvent(cantSpectateEvent),
+							packetIDs.client_spectateFrames: handleEvent(spectateFramesEvent),
 
-				# Update pos so we can read the next stacked packet
-				# +7 because we add packet ID bytes, unused byte and data length bytes
-				pos += dataLength+7
+							packetIDs.client_joinLobby: handleEvent(joinLobbyEvent),
+							packetIDs.client_partLobby: handleEvent(partLobbyEvent),
+							packetIDs.client_createMatch: handleEvent(createMatchEvent),
+							packetIDs.client_joinMatch: handleEvent(joinMatchEvent),
+							packetIDs.client_partMatch: handleEvent(partMatchEvent),
+							packetIDs.client_matchChangeSlot: handleEvent(changeSlotEvent),
+							packetIDs.client_matchChangeSettings: handleEvent(changeMatchSettingsEvent),
+							packetIDs.client_matchChangePassword: handleEvent(changeMatchPasswordEvent),
+							packetIDs.client_matchChangeMods: handleEvent(changeMatchModsEvent),
+							packetIDs.client_matchReady: handleEvent(matchReadyEvent),
+							packetIDs.client_matchNotReady: handleEvent(matchReadyEvent),
+							packetIDs.client_matchLock: handleEvent(matchLockEvent),
+							packetIDs.client_matchStart: handleEvent(matchStartEvent),
+							packetIDs.client_matchLoadComplete: handleEvent(matchPlayerLoadEvent),
+							packetIDs.client_matchSkipRequest: handleEvent(matchSkipEvent),
+							packetIDs.client_matchScoreUpdate: handleEvent(matchFramesEvent),
+							packetIDs.client_matchComplete: handleEvent(matchCompleteEvent),
+							packetIDs.client_matchNoBeatmap: handleEvent(matchNoBeatmapEvent),
+							packetIDs.client_matchHasBeatmap: handleEvent(matchHasBeatmapEvent),
+							packetIDs.client_matchTransferHost: handleEvent(matchTransferHostEvent),
+							packetIDs.client_matchFailed: handleEvent(matchFailedEvent),
+							packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent),
+							packetIDs.client_invite: handleEvent(matchInviteEvent),
+						}
 
-			# Token queue built, send it
-			responseTokenString = userToken.token
-			responseData = userToken.queue
-			userToken.resetQueue()
+						# Packets processed if in restricted mode.
+						# All other packets will be ignored if the user is in restricted mode
+						packetsRestricted = [
+							packetIDs.client_logout,
+							packetIDs.client_userStatsRequest,
+							packetIDs.client_requestStatusUpdate,
+							packetIDs.client_userPanelRequest,
+							packetIDs.client_changeAction,
+							packetIDs.client_channelJoin,
+							packetIDs.client_channelPart,
+						]
 
-			# Update ping time for timeout
-			userToken.updatePingTime()
-		except exceptions.tokenNotFoundException:
-			# Token not found. Disconnect that user
-			responseData = serverPackets.loginError()
-			responseData += serverPackets.notification("Whoops! Something went wrong, please login again.")
-			log.warning("Received packet from unknown token ({}).".format(requestTokenString))
-			log.info("{} has been disconnected (invalid token)".format(requestTokenString))
-		finally:
-			# Unlock token
-			if userToken != None:
-				userToken.lock.release()
+						# Process/ignore packet
+						if packetID != 4:
+							if packetID in eventHandler:
+								if userToken.restricted == False or (userToken.restricted == True and packetID in packetsRestricted):
+									eventHandler[packetID]()
+								else:
+									log.warning("Ignored packet id from {} ({}) (user is restricted)".format(requestTokenString, packetID))
+							else:
+								log.warning("Unknown packet id from {} ({})".format(requestTokenString, packetID))
 
-	if glob.outputRequestTime == True:
-		# End time
-		et = datetime.datetime.now()
+						# Update pos so we can read the next stacked packet
+						# +7 because we add packet ID bytes, unused byte and data length bytes
+						pos += dataLength+7
 
-		# Total time:
-		tt = float((et.microsecond-st.microsecond)/1000)
-		log.debug("Request time: {}ms".format(tt))
+					# Token queue built, send it
+					responseTokenString = userToken.token
+					responseData = userToken.queue
+					userToken.resetQueue()
 
-	# Send server's response to client
-	# We don't use token object because we might not have a token (failed login)
-	if glob.gzip == True:
-		# First, write the gzipped response
-		responseData = gzip.compress(responseData, int(glob.conf.config["server"]["gziplevel"]))
+					# Update ping time for timeout
+					userToken.updatePingTime()
+				except exceptions.tokenNotFoundException:
+					# Token not found. Disconnect that user
+					responseData = serverPackets.loginError()
+					responseData += serverPackets.notification("Whoops! Something went wrong, please login again.")
+					log.warning("Received packet from unknown token ({}).".format(requestTokenString))
+					log.info("{} has been disconnected (invalid token)".format(requestTokenString))
+				finally:
+					# Unlock token
+					if userToken != None:
+						userToken.lock.release()
 
-		# Then, add gzip headers
-		bottle.response.add_header("Vary", "Accept-Encoding")
-		bottle.response.add_header("Content-Encoding", "gzip")
-	else:
-		# First, write the response
-		responseData = responseData
+			if glob.outputRequestTime == True:
+				# End time
+				et = datetime.datetime.now()
 
-	# Add all the headers AFTER the response has been written
-	bottle.response.status = 200
-	bottle.response.add_header("cho-token", responseTokenString)
-	bottle.response.add_header("cho-protocol", "19")
-	bottle.response.add_header("Content-Type", "text/html; charset=UTF-8")
-	yield responseData
+				# Total time:
+				tt = float((et.microsecond-st.microsecond)/1000)
+				log.debug("Request time: {}ms".format(tt))
 
-@bottle.route("/", method="GET")
-def GETMain():
-	html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
-	html += "           _                 __<br>"
-	html += "          (_)              /  /<br>"
-	html += "   ______ __ ____   ____  /  /____<br>"
-	html += "  /  ___/  /  _  \\/  _  \\/  /  _  \\<br>"
-	html += " /  /  /  /  /_) /  /_) /  /  ____/<br>"
-	html += "/__/  /__/  .___/  .___/__/ \\_____/<br>"
-	html += "        /  /   /  /<br>"
-	html += "       /__/   /__/<br>"
-	html += "<b>PYTHON > ALL VERSION</b><br><br>"
-	html += "<marquee style='white-space:pre;'><br>"
-	html += "                          .. o  .<br>"
-	html += "                         o.o o . o<br>"
-	html += "                        oo...<br>"
-	html += "                    __[]__<br>"
-	html += "    phwr-->  _\\:D/_/o_o_o_|__     <span style=\"font-family: 'Comic Sans MS'; font-size: 8pt;\">u wot m8</span><br>"
-	html += "             \\\"\"\"\"\"\"\"\"\"\"\"\"\"\"/<br>"
-	html += "              \\ . ..  .. . /<br>"
-	html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
-	html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.<br><br><i>&copy; Ripple team, 2016</i></pre></body></html>"
-	yield html
+			# Send server's response to client
+			# We don't use token object because we might not have a token (failed login)
+			if glob.gzip == True:
+				# First, write the gzipped response
+				self.write(gzip.compress(responseData, int(glob.conf.config["server"]["gziplevel"])))
+
+				# Then, add gzip headers
+				self.add_header("Vary", "Accept-Encoding")
+				self.add_header("Content-Encoding", "gzip")
+			else:
+				# First, write the response
+				self.write(responseData)
+
+			# Add all the headers AFTER the response has been written
+			self.set_status(200)
+			self.add_header("cho-token", responseTokenString)
+			self.add_header("cho-protocol", "19")
+			#self.add_header("Keep-Alive", "timeout=5, max=100")
+			#self.add_header("Connection", "keep-alive")
+			self.add_header("Content-Type", "text/html; charset=UTF-8")
+		except:
+			log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
+			if glob.sentry:
+				yield tornado.gen.Task(self.captureException, exc_info=True)
+		#finally:
+		#	self.finish()
+
+	@tornado.web.asynchronous
+	@tornado.gen.engine
+	def asyncGet(self):
+		html = 	"<html><head><title>MA MAURO ESISTE?</title><style type='text/css'>body{width:30%}</style></head><body><pre>"
+		html += "           _                 __<br>"
+		html += "          (_)              /  /<br>"
+		html += "   ______ __ ____   ____  /  /____<br>"
+		html += "  /  ___/  /  _  \\/  _  \\/  /  _  \\<br>"
+		html += " /  /  /  /  /_) /  /_) /  /  ____/<br>"
+		html += "/__/  /__/  .___/  .___/__/ \\_____/<br>"
+		html += "        /  /   /  /<br>"
+		html += "       /__/   /__/<br>"
+		html += "<b>PYTHON > ALL VERSION</b><br><br>"
+		html += "<marquee style='white-space:pre;'><br>"
+		html += "                          .. o  .<br>"
+		html += "                         o.o o . o<br>"
+		html += "                        oo...<br>"
+		html += "                    __[]__<br>"
+		html += "    phwr-->  _\\:D/_/o_o_o_|__     <span style=\"font-family: 'Comic Sans MS'; font-size: 8pt;\">u wot m8</span><br>"
+		html += "             \\\"\"\"\"\"\"\"\"\"\"\"\"\"\"/<br>"
+		html += "              \\ . ..  .. . /<br>"
+		html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
+		html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.<br><br><i>&copy; Ripple team, 2016</i></pre></body></html>"
+		self.write(html)
+		#yield tornado.gen.Task(self.captureMessage, "test")
+		#self.finish()
