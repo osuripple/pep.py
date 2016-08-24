@@ -9,7 +9,7 @@ class handler(requestHelper.asyncRequestHandler):
 		data = {"message": "unknown error"}
 		try:
 			# Check arguments
-			if "u" not in self.request.arguments or "id" not in self.request.arguments:
+			if "u" not in self.request.arguments and "id" not in self.request.arguments:
 				raise exceptions.invalidArgumentsException()
 
 			# Get online staus
