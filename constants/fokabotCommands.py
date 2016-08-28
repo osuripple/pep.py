@@ -399,16 +399,25 @@ def getPPMessage(userID, just_data = False):
 
 		# Return response in chat
 		# Song name and mods
-		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if token.tillerino[1] > 0 else "", mods=generalFunctions.readableMods(token.tillerino[1]))
+		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if currentMods > 0 else "", mods=generalFunctions.readableMods(currentMods))
 
 		# PP values
-		if token.tillerino[2] == -1:
+		if currentAcc == -1:
 			msg += "95%: {pp95}pp | 98%: {pp98}pp | 99% {pp99}pp | 100%: {pp100}pp".format(pp100=data["pp"][0], pp99=data["pp"][1], pp98=data["pp"][2], pp95=data["pp"][3])
 		else:
 			msg += "{acc:.2f}%: {pp}pp".format(acc=token.tillerino[2], pp=data["pp"][0])
 
+		originalAR = data["ar"]
+		# calc new AR if HR/EZ is on
+		if (currentMods & mods.Easy) > 0:
+			data["ar"] = max(0, data["ar"] / 2)
+		if (currentMods & mods.HardRock) > 0:
+			data["ar"] = min(10, data["ar"] * 1.4)
+
+		arstr = " ({})".format(originalAR) if originalAR != data["ar"] else ""
+
 		# Beatmap info
-		msg += " | {bpm} BPM | AR {ar} | {stars:.2f} stars".format(bpm=data["bpm"],	stars=data["stars"], ar=data["ar"])
+		msg += " | {bpm} BPM | AR {ar}{arstr} | {stars:.2f} stars".format(bpm=data["bpm"], stars=data["stars"], ar=data["ar"], arstr=arstr)
 
 		# Return final message
 		return msg
