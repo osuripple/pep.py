@@ -381,8 +381,12 @@ def getPPMessage(userID, just_data = False):
 		if token == None:
 			return False
 
+		currentMap = token.tillerino[0]
+		currentMods = token.tillerino[1]
+		currentAcc = token.tillerino[2]
+
 		# Send request to LETS api
-		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}&a={}".format(token.tillerino[0], token.tillerino[1], token.tillerino[2]), timeout=10).text
+		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}&a={}".format(currentMap, currentMods, currentAcc), timeout=10).text
 		data = json.loads(resp)
 
 		# Make sure status is in response data
@@ -401,16 +405,25 @@ def getPPMessage(userID, just_data = False):
 
 		# Return response in chat
 		# Song name and mods
-		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if token.tillerino[1] > 0 else "", mods=generalFunctions.readableMods(token.tillerino[1]))
+		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if currentMods > 0 else "", mods=generalFunctions.readableMods(currentMods))
 
 		# PP values
-		if token.tillerino[2] == -1:
+		if currentAcc == -1:
 			msg += "95%: {pp95}pp | 98%: {pp98}pp | 99% {pp99}pp | 100%: {pp100}pp".format(pp100=data["pp"][0], pp99=data["pp"][1], pp98=data["pp"][2], pp95=data["pp"][3])
 		else:
 			msg += "{acc:.2f}%: {pp}pp".format(acc=token.tillerino[2], pp=data["pp"][0])
 
+		originalAR = data["ar"]
+		# calc new AR if HR/EZ is on
+		if (currentMods & mods.Easy) > 0:
+			data["ar"] = max(0, data["ar"] / 2)
+		if (currentMods & mods.HardRock) > 0:
+			data["ar"] = min(10, data["ar"] * 1.4)
+
+		arstr = " ({})".format(originalAR) if originalAR != data["ar"] else ""
+
 		# Beatmap info
-		msg += " | {bpm} BPM | AR {ar} | {stars:.2f} stars".format(bpm=data["bpm"],	stars=data["stars"], ar=data["ar"])
+		msg += " | {bpm} BPM | AR {ar}{arstr} | {stars:.2f} stars".format(bpm=data["bpm"], stars=data["stars"], ar=data["ar"], arstr=arstr)
 
 		# Return final message
 		return msg
@@ -431,13 +444,33 @@ def tillerinoNp(fro, chan, message):
 		if chan.startswith("#"):
 			return False
 
+		playWatch = message[1] == "playing" or message[1] == "watching"
 		# Get URL from message
 		if message[1] == "listening":
 			beatmapURL = str(message[3][1:])
-		elif message[1] == "playing" or message[1] == "watching":
+		elif playWatch:
 			beatmapURL = str(message[2][1:])
 		else:
 			return False
+
+		modsEnum = 0
+		mapping = {
+			"-Easy": mods.Easy,
+			"-NoFail": mods.NoFail,
+			"+Hidden": mods.Hidden,
+			"+HardRock": mods.HardRock,
+			"+Nightcore": mods.Nightcore,
+			"+DoubleTime": mods.DoubleTime,
+			"-HalfTime": mods.HalfTime,
+			"+Flashlight": mods.Flashlight,
+			"-SpunOut": mods.SpunOut
+		}
+
+		if playWatch:
+			for part in message:
+				part = part.replace("\x01", "")
+				if part in mapping.keys():
+					modsEnum += mapping[part]
 
 		# Get beatmap id from URL
 		beatmapID = fokabot.npRegex.search(beatmapURL).groups(0)[0]
@@ -445,7 +478,7 @@ def tillerinoNp(fro, chan, message):
 		# Update latest tillerino song for current token
 		token = glob.tokens.getTokenFromUsername(fro)
 		if token != None:
-			token.tillerino = [int(beatmapID), 0, -1.0]
+			token.tillerino = [int(beatmapID), modsEnum, -1.0]
 		userID = token.userID
 
 		# Return tillerino message
