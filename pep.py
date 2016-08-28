@@ -71,6 +71,13 @@ if __name__ == "__main__":
 	else:
 		consoleHelper.printDone()
 
+	# Create data folder if needed
+	consoleHelper.printNoNl("> Checking folders... ")
+	paths = [".data"]
+	for i in paths:
+		if not os.path.exists(i):
+			os.makedirs(i, 0o770)
+	consoleHelper.printDone()
 
 	# Connect to db
 	try:
@@ -107,14 +114,6 @@ if __name__ == "__main__":
 		consoleHelper.printError()
 		consoleHelper.printColored("[!] Error while loading chat filters. Make sure there is a filters.txt file present", bcolors.RED)
 		raise
-
-	# Create data folder if needed
-	consoleHelper.printNoNl("> Checking folders... ")
-	paths = [".data"]
-	for i in paths:
-		if not os.path.exists(i):
-			os.makedirs(i, 0o770)
-	consoleHelper.printDone()
 
 	# Initialize chat channels
 	print("> Initializing chat channels... ")

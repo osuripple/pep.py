@@ -6,6 +6,8 @@ import sys
 import threading
 import signal
 from helpers import logHelper as log
+import time
+import math
 
 def runningUnderUnix():
 	"""
@@ -17,7 +19,7 @@ def runningUnderUnix():
 	return True if os.name == "posix" else False
 
 
-def scheduleShutdown(sendRestartTime, restart, message = ""):
+def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 	"""
 	Schedule a server shutdown/restart
 
@@ -27,7 +29,7 @@ def scheduleShutdown(sendRestartTime, restart, message = ""):
 	"""
 
 	# Console output
-	log.info("Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+20))
+	log.info("Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+delay))
 	log.info("Sending server restart packets in {} seconds...".format(sendRestartTime))
 
 	# Send notification if set
@@ -35,7 +37,7 @@ def scheduleShutdown(sendRestartTime, restart, message = ""):
 		glob.tokens.enqueueAll(serverPackets.notification(message))
 
 	# Schedule server restart packet
-	threading.Timer(sendRestartTime, glob.tokens.enqueueAll, [serverPackets.banchoRestart(50000)]).start()
+	threading.Timer(sendRestartTime, glob.tokens.enqueueAll, [serverPackets.banchoRestart(delay*2*1000)]).start()
 	glob.restarting = True
 
 	# Restart/shutdown
@@ -44,8 +46,8 @@ def scheduleShutdown(sendRestartTime, restart, message = ""):
 	else:
 		action = shutdownServer
 
-	# Schedule actual server shutdown/restart 20 seconds after server restart packet, so everyone gets it
-	threading.Timer(sendRestartTime+20, action).start()
+	# Schedule actual server shutdown/restart some seconds after server restart packet, so everyone gets it
+	threading.Timer(sendRestartTime+delay, action).start()
 
 
 def restartServer():
@@ -56,7 +58,7 @@ def restartServer():
 
 def shutdownServer():
 	"""Shutdown pep.py"""
-	log.info("> Shutting down pep.py...")
+	log.info("Shutting down pep.py...")
 	sig = signal.SIGKILL if runningUnderUnix() else signal.CTRL_C_EVENT
 	os.kill(os.getpid(), sig)
 
@@ -76,9 +78,23 @@ def getSystemInfo():
 	# General stats
 	data["connectedUsers"] = len(glob.tokens.tokens)
 	data["matches"] = len(glob.matches.matches)
+	delta = time.time()-glob.startTime
+	days = math.floor(delta/86400)
+	delta -= days*86400
+
+	hours = math.floor(delta/3600)
+	delta -= hours*3600
+
+	minutes = math.floor(delta/60)
+	delta -= minutes*60
+
+	seconds = math.floor(delta)
+
+	data["uptime"] = "{}d {}h {}m {}s".format(days, hours, minutes, seconds)
 	data["cpuUsage"] = psutil.cpu_percent()
-	data["totalMemory"] = "{0:.2f}".format(psutil.virtual_memory()[0]/1074000000)
-	data["usedMemory"] = "{0:.2f}".format(psutil.virtual_memory()[3]/1074000000)
+	memory = psutil.virtual_memory()
+	data["totalMemory"] = "{0:.2f}".format(memory.total/1074000000)
+	data["usedMemory"] = "{0:.2f}".format(memory.active/1074000000)
 
 	# Unix only stats
 	if data["unix"] == True:

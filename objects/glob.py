@@ -4,6 +4,7 @@ from objects import tokenList
 from objects import channelList
 from objects import matchList
 from objects import fileLocks
+import time
 
 try:
 	with open("version") as f:
@@ -32,3 +33,5 @@ discord = False
 gzip = False
 localize = False
 sentry = False
+
+startTime = int(time.time())

@@ -27,6 +27,11 @@ message -- 	list containing arguments passed from the message
 return the message or **False** if there's no response by the bot
 """
 
+def instantRestart(fro, chan, message):
+	glob.tokens.enqueueAll(serverPackets.notification("We are restarting Bancho. Be right back!"))
+	systemHelper.scheduleShutdown(0, True, delay=1)
+	return False
+
 def faq(fro, chan, message):
 	if message[0] == "rules":
 		return "Please make sure to check (Ripple's rules)[http://ripple.moe/?p=23]."
@@ -352,12 +357,13 @@ def systemStatus(fro, chan, message):
 	data = systemHelper.getSystemInfo()
 
 	# Final message
-	msg = "pep.py bancho server v{}".format(glob.VERSION)
+	msg = "pep.py bancho server v{}\n".format(glob.VERSION)
 	msg += "made by the Ripple team\n"
 	msg += "\n"
 	msg += "=== BANCHO STATS ===\n"
 	msg += "Connected users: {}\n".format(data["connectedUsers"])
 	msg += "Multiplayer matches: {}\n".format(data["matches"])
+	msg += "Uptime: {}\n".format(data["uptime"])
 	msg += "\n"
 	msg += "=== SYSTEM STATS ===\n"
 	msg += "CPU: {}%\n".format(data["cpuUsage"])
@@ -724,6 +730,10 @@ commands = [
 	}, {
 		"trigger": "!last",
 		"callback": tillerinoLast
+	}, {
+		"trigger": "!ir",
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
+		"callback": instantRestart
 	}
 	#
 	#	"trigger": "!acc",
