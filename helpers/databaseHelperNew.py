@@ -2,13 +2,13 @@ import MySQLdb
 import threading
 from helpers import logHelper as log
 
-class mysqlWorker:
+class mysqlWorker():
 	"""
-	Instance of a pettirosso meme
+	Instance of a mysql worker
 	"""
 	def __init__(self, wid, host, username, password, database):
 		"""
-		Create a pettirosso meme (mysql worker)
+		Create a mysql worker
 
 		wid -- worker id
 		host -- hostname
@@ -22,11 +22,10 @@ class mysqlWorker:
 		self.ready = True
 		self.lock = threading.Lock()
 
-class db:
+class db():
 	"""
 	A MySQL db connection with multiple workers
 	"""
-
 	def __init__(self, host, username, password, database, workers):
 		"""
 		Create MySQL workers aka pettirossi meme
@@ -37,9 +36,6 @@ class db:
 		database -- MySQL database name
 		workers -- Number of workers to spawn
 		"""
-		#self.lock = threading.Lock()
-		#self.connection = MySQLdb.connect(host, username, password, database)
-
 		self.workers = []
 		self.lastWorker = 0
 		self.workersNumber = workers
@@ -57,7 +53,6 @@ class db:
 			self.lastWorker = 0
 		else:
 			self.lastWorker += 1
-		#print("Using worker {}".format(self.lastWorker))
 		return self.workers[self.lastWorker]
 
 	def execute(self, query, params = ()):

@@ -2,15 +2,13 @@ from objects import glob
 from objects import channel
 from helpers import logHelper as log
 
-class channelList:
+class channelList():
 	"""
 	Channel list
 
 	channels -- dictionary. key: channel name, value: channel object
 	"""
-
 	channels = {}
-
 
 	def loadChannels(self):
 		"""
@@ -27,7 +25,6 @@ class channelList:
 				publicWrite = True if i["public_write"] == 1 else False
 				self.addChannel(i["name"], i["description"], publicRead, publicWrite)
 
-
 	def addChannel(self, name, description, publicRead, publicWrite, temp = False, hidden = False):
 		"""
 		Add a channel object to channels dictionary
@@ -42,7 +39,6 @@ class channelList:
 		self.channels[name] = channel.channel(name, description, publicRead, publicWrite, temp, hidden)
 		log.info("Created channel {}".format(name))
 
-
 	def addTempChannel(self, name):
 		"""
 		Add a temporary channel (like #spectator or #multiplayer), gets deleted when there's no one in the channel
@@ -55,7 +51,6 @@ class channelList:
 			return False
 		self.channels[name] = channel.channel(name, "Chat", True, True, True, True)
 		log.info("Created temp channel {}".format(name))
-
 
 	def removeChannel(self, name):
 		"""

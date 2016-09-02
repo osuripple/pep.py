@@ -57,13 +57,12 @@ def addRemoveFriend(stream):
 	return packetHelper.readPacketData(stream, [["friendID", dataTypes.sInt32]])
 
 
-
-""" SPECTATOR PACKETS """
+""" Spectator packets """
 def startSpectating(stream):
 	return packetHelper.readPacketData(stream,[["userID", dataTypes.sInt32]])
 
 
-""" MULTIPLAYER PACKETS """
+""" Multiplayer packets """
 def matchSettings(stream):
 	# Data to return, will be merged later
 	data = []
@@ -114,9 +113,6 @@ def matchSettings(stream):
 
 	# Read last part
 	data.append(packetHelper.readPacketData(stream[start:], struct, False))
-
-	# Mods if freemod (not used)
-	#if data[1]["freeMods"] == 1:
 
 	result = {}
 	for i in data:

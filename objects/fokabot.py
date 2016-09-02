@@ -17,11 +17,9 @@ def connect():
 	glob.tokens.enqueueAll(serverPackets.userPanel(999))
 	glob.tokens.enqueueAll(serverPackets.userStats(999))
 
-
 def disconnect():
 	"""Remove FokaBot from connected users"""
 	glob.tokens.deleteToken(glob.tokens.getTokenFromUserID(999))
-
 
 def fokabotResponse(fro, chan, message):
 	"""

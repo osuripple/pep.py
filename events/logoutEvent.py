@@ -15,20 +15,15 @@ def handle(userToken, _=None):
 	# the server, so we accept logout packets sent at least 5 seconds after login
 	# if the user logs out before 5 seconds, he will be disconnected later with timeout check
 	if int(time.time()-userToken.loginTime) >= 5 or userToken.irc == True:
-		# Stop spectating if needed
-		# TODO: Call stopSpectatingEvent!!!!!!!!!
-		if userToken.spectating != 0:
-			# The user was spectating someone
-			spectatorHostToken = glob.tokens.getTokenFromUserID(userToken.spectating)
-			if spectatorHostToken != None:
-				# The host is still online, send removeSpectator to him
-				spectatorHostToken.enqueue(serverPackets.removeSpectator(userID))
+		# Stop spectating
+		userToken.stopSpectating()
 
+		# Part matches
+		userToken.partMatch()
+		
 		# Part all joined channels
 		for i in userToken.joinedChannels:
 			chat.partChannel(token=userToken, channel=i)
-
-		# TODO: Lobby left if joined
 
 		# Enqueue our disconnection to everyone else
 		glob.tokens.enqueueAll(serverPackets.userLogout(userID))

@@ -13,5 +13,9 @@ def handle(userToken, packetData):
 	# Get our match
 	match = glob.matches.matches[matchID]
 
+	# Host check
+	if userToken.userID != match.hostUserID:
+		return
+
 	# Update match password
 	match.changePassword(packetData["matchPassword"])

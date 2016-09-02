@@ -19,5 +19,9 @@ def handle(userToken, packetData):
 	# Match exists, get object
 	match = glob.matches.matches[matchID]
 
+	# Host check
+	if userToken.userID != match.hostUserID:
+		return
+
 	# Transfer host
 	match.transferHost(packetData["slotID"])

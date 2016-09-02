@@ -1,6 +1,6 @@
 from objects import glob
 
-class channel:
+class channel():
 	"""
 	A chat channel
 	"""
@@ -16,7 +16,6 @@ class channel:
 		temp -- if True, channel will be deleted when there's no one in the channel
 		hidden -- if True, channel won't be shown in channels list
 		"""
-
 		self.name = name
 		self.description = description
 		self.publicRead = publicRead
@@ -33,17 +32,14 @@ class channel:
 		elif self.name.startswith("#multi_"):
 			self.clientName = "#multiplayer"
 
-
 	def userJoin(self, userID):
 		"""
 		Add a user to connected users
 
 		userID -- user ID that joined the channel
 		"""
-
 		if userID not in self.connectedUsers:
 			self.connectedUsers.append(userID)
-
 
 	def userPart(self, userID):
 		"""
@@ -51,7 +47,6 @@ class channel:
 
 		userID -- user ID that left the channel
 		"""
-
 		if userID in self.connectedUsers:
 			self.connectedUsers.remove(userID)
 
@@ -60,7 +55,6 @@ class channel:
 		if self.temp == True and ((l == 0) or (l == 1 and 999 in self.connectedUsers)):
 			glob.channels.removeChannel(self.name)
 
-
 	def getConnectedUsers(self):
 		"""
 		Get connected user IDs list
@@ -68,7 +62,6 @@ class channel:
 		return -- connectedUsers list
 		"""
 		return self.connectedUsers
-
 
 	def getConnectedUsersCount(self):
 		"""

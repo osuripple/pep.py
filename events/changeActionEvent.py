@@ -4,7 +4,6 @@ from constants import serverPackets
 from helpers import userHelper
 from helpers import logHelper as log
 from constants import actions
-from helpers import chatHelper as chat
 
 def handle(userToken, packetData):
 	# Get usertoken data
@@ -24,9 +23,16 @@ def handle(userToken, packetData):
 	# Change action packet
 	packetData = clientPackets.userActionChange(packetData)
 
+	# If we are not in spectate status but we're spectating someone, stop spectating
+	#if userToken.spectating != 0 and userToken.actionID != actions.watching and userToken.actionID != actions.idle and userToken.actionID != actions.afk:
+	#	userToken.stopSpectating()
+
+	# If we are not in multiplayer but we are in a match, part match
+	#if userToken.matchID != -1 and userToken.actionID != actions.multiplaying and userToken.actionID != actions.multiplayer and userToken.actionID != actions.afk:
+	#	userToken.partMatch()
+
 	# Update cached stats if our pp changedm if we've just submitted a score or we've changed gameMode
 	if (userToken.actionID == actions.playing or userToken.actionID == actions.multiplaying) or (userToken.pp != userHelper.getPP(userID, userToken.gameMode)) or (userToken.gameMode != packetData["gameMode"]):
-		log.debug("!!!! UPDATING CACHED STATS !!!!")
 		# Always update game mode, or we'll cache stats from the wrong game mode if we've changed it
 		userToken.gameMode = packetData["gameMode"]
 		userToken.updateCachedStats()
@@ -54,13 +60,6 @@ def handle(userToken, packetData):
 			force = True if token.userID == userID else False
 			token.enqueue(serverPackets.userPanel(userID, force))
 			token.enqueue(serverPackets.userStats(userID, force))
-
-	# Send osu!direct alert if needed
-	# NOTE: Remove this when osu!direct will be fixed
-	if userToken.actionID == actions.osuDirect and userToken.osuDirectAlert == False:
-		userToken.osuDirectAlert = True
-		chat.sendMessage("FokaBot", userToken.username, "Sup! osu!direct works, but you'll need to update the switcher to have the Download button working. If you didn't update the switcher yet, please do!")
-
 
 	# Console output
 	log.info("{} changed action: {} [{}][{}]".format(username, str(userToken.actionID), userToken.actionText, userToken.actionMd5))

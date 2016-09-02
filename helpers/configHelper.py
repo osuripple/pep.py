@@ -1,18 +1,7 @@
 import os
 import configparser
 
-class config:
-	"""
-	config.ini object
-
-	config -- list with ini data
-	default -- if true, we have generated a default config.ini
-	"""
-
-	config = configparser.ConfigParser()
-	fileName = ""		# config filename
-	default = True
-
+class config():
 	# Check if config.ini exists and load/generate it
 	def __init__(self, file):
 		"""
@@ -20,7 +9,8 @@ class config:
 
 		file -- filename
 		"""
-
+		self.config = configparser.ConfigParser()
+		self.default = True
 		self.fileName = file
 		if os.path.isfile(self.fileName):
 			# config.ini found, load it
@@ -39,7 +29,6 @@ class config:
 
 		return -- True if valid, False if not
 		"""
-
 		try:
 			# Try to get all the required keys
 			self.config.get("db","host")
@@ -75,11 +64,10 @@ class config:
 		except:
 			return False
 
-
-	# Generate a default config.ini
 	def generateDefaultConfig(self):
-		"""Open and set default keys for that config file"""
-
+		"""
+		Open and set default keys for that config file
+		"""
 		# Open config.ini in write mode
 		f = open(self.fileName, "w")
 

@@ -8,33 +8,9 @@ from objects import glob
 import uuid
 import time
 import threading
-from helpers import logHelper as log
 from helpers import chatHelper as chat
 
-class token:
-	"""
-	Osu Token object
-
-	token -- token string
-	userID -- userID associated to that token
-	username -- username relative to userID (cache)
-	actionID -- current user action (see actions.py)
-	actionText -- current user action text
-	actionMd5 -- md5 relative to user action
-	actionMods -- current acton mods
-	gameMode -- current user game mode
-	location -- [latitude,longitude]
-	queue -- packets queue
-	joinedChannels -- list. Contains joined channel names
-	spectating -- userID of spectating user. 0 if not spectating.
-	spectators -- list. Contains userIDs of spectators
-	country -- osu country code. Use countryHelper to convert from letter country code to osu country code
-	pingTime -- latest packet received UNIX time
-	loginTime -- login UNIX time
-	latestTillerino -- beatmap ID of latest song from tillerino bot
-	"""
-
-
+class token():
 	def __init__(self, userID, token = None, ip = "", irc = False, timeOffset = 0):
 		"""
 		Create a token object and set userID and token
@@ -44,8 +20,8 @@ class token:
 					if not passed, token will be generated
 		ip		--	client ip. optional.
 		irc 	--	if True, set this token as IRC client. optional.
+		timeOffset -- the time offset from UTC for this user. optional.
 		"""
-
 		# Set stuff
 		self.userID = userID
 		self.username = userHelper.getUsername(self.userID)
@@ -71,7 +47,6 @@ class token:
 		self.tillerino = [0,0,-1.0]	# beatmap, mods, acc
 		self.silenceEndTime = 0
 		self.queue = bytes()
-		self.osuDirectAlert = False	# NOTE: Remove this when osu!direct will be fixed
 
 		# Spam protection
 		self.spamRate = 0
@@ -102,14 +77,14 @@ class token:
 		if ip != "":
 			userHelper.saveBanchoSession(self.userID, self.ip)
 
-	def enqueue(self, __bytes):
+	def enqueue(self, bytes):
 		"""
 		Add bytes (packets) to queue
 
-		__bytes -- (packet) bytes to enqueue
+		bytes -- (packet) bytes to enqueue
 		"""
 		if self.irc == False:
-			self.queue += __bytes
+			self.queue += bytes
 
 
 	def resetQueue(self):
@@ -117,94 +92,139 @@ class token:
 		self.queue = bytes()
 
 
-	def joinChannel(self, __channel):
-		"""Add __channel to joined channels list
+	def joinChannel(self, channel):
+		"""
+		Add channel to joined channels list
 
-		__channel -- channel name"""
+		channel -- channel name
+		"""
+		if channel not in self.joinedChannels:
+			self.joinedChannels.append(channel)
 
-		if __channel not in self.joinedChannels:
-			self.joinedChannels.append(__channel)
+	def partChannel(self, channel):
+		"""
+		Remove channel from joined channels list
 
+		channel -- channel name
+		"""
+		if channel in self.joinedChannels:
+			self.joinedChannels.remove(channel)
 
-	def partChannel(self, __channel):
-		"""Remove __channel from joined channels list
+	def setLocation(self, location):
+		"""
+		Set location (latitude and longitude)
 
-		__channel -- channel name"""
-
-		if __channel in self.joinedChannels:
-			self.joinedChannels.remove(__channel)
-
-
-	def setLocation(self, __location):
-		"""Set location (latitude and longitude)
-
-		__location -- [latitude, longitude]"""
-
-		self.location = __location
-
+		location -- [latitude, longitude]
+		"""
+		self.location = location
 
 	def getLatitude(self):
-		"""Get latitude
+		"""
+		Get latitude
 
-		return -- latitude"""
-
+		return -- latitude
+		"""
 		return self.location[0]
 
-
 	def getLongitude(self):
-		"""Get longitude
+		"""
+		Get longitude
 
-		return -- longitude"""
+		return -- longitude
+		"""
 		return self.location[1]
 
-
 	def startSpectating(self, userID):
-		"""Set the spectating user to userID
+		"""
+		Set the spectating user to userID
 
-		userID -- target userID"""
+		userID -- target userID
+		"""
 		self.spectating = userID
 
-
 	def stopSpectating(self):
-		"""Set the spectating user to 0, aka no user"""
+		# Remove our userID from host's spectators
+		target = self.spectating
+		targetToken = glob.tokens.getTokenFromUserID(target)
+		if targetToken != None:
+			# Remove us from host's spectators list
+			targetToken.removeSpectator(self.userID)
+
+			# Send the spectator left packet to host
+			targetToken.enqueue(serverPackets.removeSpectator(self.userID))
+			for c in targetToken.spectators:
+				spec = glob.tokens.getTokenFromUserID(c)
+				spec.enqueue(serverPackets.fellowSpectatorLeft(self.userID))
+
+			# If nobody is spectating the host anymore, close #spectator channel
+			if len(targetToken.spectators) == 0:
+				chat.partChannel(token=targetToken, channel="#spect_{}".format(target), kick=True)
+
+		# Part #spectator channel
+		chat.partChannel(token=self, channel="#spect_{}".format(target), kick=True)
+
+		# Set our spectating user to 0
 		self.spectating = 0
 
+		# Console output
+		log.info("{} are no longer spectating {}".format(self.username, target))
+
+	def partMatch(self):
+		# Make sure we are in a match
+		if self.matchID == -1:
+			return
+
+		# Part #multiplayer channel
+		chat.partChannel(token=self, channel="#multi_{}".format(self.matchID), kick=True)
+
+		# Make sure the match exists
+		if self.matchID not in glob.matches.matches:
+			return
+
+		# The match exists, get object
+		match = glob.matches.matches[self.matchID]
+
+		# Set slot to free
+		match.userLeft(self.userID)
+
+		# Set usertoken match to -1
+		self.matchID = -1
 
 	def addSpectator(self, userID):
-		"""Add userID to our spectators
+		"""
+		Add userID to our spectators
 
-		userID -- new spectator userID"""
-
+		userID -- new spectator userID
+		"""
 		# Add userID to spectators if not already in
 		if userID not in self.spectators:
 			self.spectators.append(userID)
 
-
 	def removeSpectator(self, userID):
-		"""Remove userID from our spectators
+		"""
+		Remove userID from our spectators
 
-		userID -- old spectator userID"""
-
+		userID -- old spectator userID
+		"""
 		# Remove spectator
 		if userID in self.spectators:
 			self.spectators.remove(userID)
 
+	def setCountry(self, countryID):
+		"""
+		Set country to countryID
 
-	def setCountry(self, __countryID):
-		"""Set country to __countryID
-
-		__countryID -- numeric country ID. See countryHelper.py"""
-
-		self.country = __countryID
-
+		countryID -- numeric country ID. See countryHelper.py
+		"""
+		self.country = countryID
 
 	def getCountry(self):
-		"""Get numeric country ID
+		"""
+		Get numeric country ID
 
-		return -- numeric country ID. See countryHelper.py"""
-
+		return -- numeric country ID. See countryHelper.py
+		"""
 		return self.country
-
 
 	def updatePingTime(self):
 		"""Update latest ping time"""
@@ -214,23 +234,24 @@ class token:
 		"""Set a new away message"""
 		self.awayMessage = __awayMessage
 
-	def joinMatch(self, __matchID):
+	def joinMatch(self, matchID):
 		"""
 		Set match to matchID
 
-		__matchID -- new match ID
+		matchID -- new match ID
 		"""
-		self.matchID = __matchID
-
-	def partMatch(self):
-		"""Set match to -1"""
-		self.matchID = -1
+		self.matchID = matchID
 
 	def kick(self, message="You have been kicked from the server. Please login again."):
-		"""Kick this user from the server"""
+		"""
+		Kick this user from the server
+		
+		message -- Notification message to send to this user. Optional.
+		"""
 		# Send packet to target
 		log.info("{} has been disconnected. (kick)".format(self.username))
-		self.enqueue(serverPackets.notification(message))
+		if message != "":
+			self.enqueue(serverPackets.notification(message))
 		self.enqueue(serverPackets.loginFailed())
 
 		# Logout event

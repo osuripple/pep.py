@@ -6,6 +6,7 @@ from constants import matchTeamTypes
 from constants import matchTeams
 from constants import slotStatuses
 from helpers import logHelper as log
+from helpers import generalFunctions
 
 def handle(userToken, packetData):
 	# Read new settings
@@ -13,13 +14,17 @@ def handle(userToken, packetData):
 
 	# Get match ID
 	matchID = userToken.matchID
-
+		
 	# Make sure the match exists
 	if matchID not in glob.matches.matches:
 		return
 
 	# Get match object
 	match = glob.matches.matches[matchID]
+
+	# Host check
+	if userToken.userID != match.hostUserID:
+		return
 
 	# Some dank memes easter egg
 	memeTitles = [
@@ -53,7 +58,10 @@ def handle(userToken, packetData):
 
 	# Update match settings
 	match.inProgress = packetData["inProgress"]
-	match.matchPassword = packetData["matchPassword"]
+	if packetData["matchPassword"] != "":
+		match.matchPassword = generalFunctions.stringMd5(packetData["matchPassword"])
+	else:
+		match.matchPassword = ""
 	match.beatmapName = packetData["beatmapName"]
 	match.beatmapID = packetData["beatmapID"]
 	match.hostUserID = packetData["hostUserID"]
@@ -71,14 +79,14 @@ def handle(userToken, packetData):
 	# Reset ready if needed
 	if oldMods != match.mods or oldBeatmapMD5 != match.beatmapMD5:
 		for i in range(0,16):
-			if match.slots[i]["status"] == slotStatuses.ready:
-				match.slots[i]["status"] = slotStatuses.notReady
+			if match.slots[i].status == slotStatuses.ready:
+				match.slots[i].status = slotStatuses.notReady
 
 	# Reset mods if needed
 	if match.matchModMode == matchModModes.normal:
 		# Reset slot mods if not freeMods
 		for i in range(0,16):
-			match.slots[i]["mods"] = 0
+			match.slots[i].mods = 0
 	else:
 		# Reset match mods if freemod
 		match.mods = 0
@@ -88,13 +96,13 @@ def handle(userToken, packetData):
 		# Set teams
 		c=0
 		for i in range(0,16):
-			if match.slots[i]["team"] == matchTeams.noTeam:
-				match.slots[i]["team"] = matchTeams.red if c % 2 == 0 else matchTeams.blue
+			if match.slots[i].team == matchTeams.noTeam:
+				match.slots[i].team = matchTeams.red if c % 2 == 0 else matchTeams.blue
 				c+=1
 	else:
 		# Reset teams
 		for i in range(0,16):
-			match.slots[i]["team"] = matchTeams.noTeam
+			match.slots[i].team = matchTeams.noTeam
 
 	# Force no freemods if tag coop
 	if match.matchTeamType == matchTeamTypes.tagCoop or match.matchTeamType == matchTeamTypes.tagTeamVs:
@@ -105,4 +113,3 @@ def handle(userToken, packetData):
 
 	# Console output
 	log.info("MPROOM{}: Updated room settings".format(match.matchID))
-	#consoleHelper.printColored("> MPROOM{}: DEBUG: Host is {}".format(match.matchID, match.hostUserID), bcolors.PINK)

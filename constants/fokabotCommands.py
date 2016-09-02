@@ -25,8 +25,8 @@ message -- 	list containing arguments passed from the message
 			. . .
 
 return the message or **False** if there's no response by the bot
+TODO: Change False to None, because False doesn't make any sense
 """
-
 def instantRestart(fro, chan, message):
 	glob.tokens.enqueueAll(serverPackets.notification("We are restarting Bancho. Be right back!"))
 	systemHelper.scheduleShutdown(0, True, delay=1)

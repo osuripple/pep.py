@@ -147,9 +147,6 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 		log.warning("User not connected to IRC/Bancho")
 		return 442	# idk
 
-
-
-
 def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 	"""
 	Send a message to osu!bancho and IRC server
@@ -299,8 +296,13 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		return 401
 
 
-
 """ IRC-Bancho Connect/Disconnect/Join/Part interfaces"""
+def fixUsernameForBancho(username):
+	return username.replace("_", " ")
+
+def fixUsernameForIRC(username):
+	return username.replace(" ", "_")
+
 def IRCConnect(username):
 	userID = userHelper.getID(username)
 	if userID == False:

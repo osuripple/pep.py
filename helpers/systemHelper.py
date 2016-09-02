@@ -15,9 +15,7 @@ def runningUnderUnix():
 
 	return --- True if running under UNIX, otherwise False
 	"""
-
 	return True if os.name == "posix" else False
-
 
 def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 	"""
@@ -27,7 +25,6 @@ def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 	restart -- if True, server will restart. if False, server will shudown
 	message -- if set, send that message to every client to warn about the shutdown/restart
 	"""
-
 	# Console output
 	log.info("Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+delay))
 	log.info("Sending server restart packets in {} seconds...".format(sendRestartTime))
@@ -49,12 +46,10 @@ def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 	# Schedule actual server shutdown/restart some seconds after server restart packet, so everyone gets it
 	threading.Timer(sendRestartTime+delay, action).start()
 
-
 def restartServer():
 	"""Restart pep.py script"""
 	log.info("Restarting pep.py...")
 	os.execv(sys.executable, [sys.executable] + sys.argv)
-
 
 def shutdownServer():
 	"""Shutdown pep.py"""
@@ -62,14 +57,12 @@ def shutdownServer():
 	sig = signal.SIGKILL if runningUnderUnix() else signal.CTRL_C_EVENT
 	os.kill(os.getpid(), sig)
 
-
 def getSystemInfo():
 	"""
 	Get a dictionary with some system/server info
 
 	return -- ["unix", "connectedUsers", "webServer", "cpuUsage", "totalMemory", "usedMemory", "loadAverage"]
 	"""
-
 	data = {}
 
 	# Get if server is running under unix/nt

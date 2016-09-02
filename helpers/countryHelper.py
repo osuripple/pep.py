@@ -253,7 +253,6 @@ countryCodes = {
 	"AI": 7
 }
 
-
 def getCountryID(code):
 	"""
 	Get country ID for osu client

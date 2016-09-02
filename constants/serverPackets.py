@@ -5,9 +5,9 @@ from helpers import userHelper
 from objects import glob
 from constants import userRanks
 from constants import packetIDs
+from constants import privileges
 
-""" Login errors packets
-(userID packets derivates) """
+""" Login errors packets """
 def loginFailed():
 	return packetHelper.buildPacket(packetIDs.server_userID, [[-1, dataTypes.sInt32]])
 
@@ -18,7 +18,6 @@ def loginBanned():
 	packets = packetHelper.buildPacket(packetIDs.server_userID, [[-1, dataTypes.sInt32]])
 	packets += notification("You are banned. You can ask to get unbanned after 1 month since your ban by contacting support@ripple.moe")
 	return packets
-	#return packetHelper.buildPacket(packetIDs.server_userID, [[-3, dataTypes.sInt32]])
 
 def loginError():
 	return packetHelper.buildPacket(packetIDs.server_userID, [[-5, dataTypes.sInt32]])
@@ -28,6 +27,7 @@ def needSupporter():
 
 def needVerification():
 	return packetHelper.buildPacket(packetIDs.server_userID, [[-8, dataTypes.sInt32]])
+
 
 """ Login packets """
 def userID(uid):
@@ -51,19 +51,8 @@ def userSupporterGMT(supporter, GMT):
 	return packetHelper.buildPacket(packetIDs.server_supporterGMT, [[result, dataTypes.uInt32]])
 
 def friendList(userID):
-	friendsData = []
-
-	# Get friend IDs from db
 	friends = userHelper.getFriendList(userID)
-
-	# Friends number
-	friendsData.append([len(friends), dataTypes.uInt16])
-
-	# Add all friend user IDs to friendsData
-	for i in friends:
-		friendsData.append([i, dataTypes.sInt32])
-
-	return packetHelper.buildPacket(packetIDs.server_friendsList, friendsData)
+	return packetHelper.buildPacket(packetIDs.server_friendsList, [[friends, dataTypes.intList]])
 
 def onlineUsers():
 	userIDs = []
@@ -91,7 +80,7 @@ def userPanel(userID, force = False):
 
 	# Get user data
 	username = userToken.username
-	timezone = 24+userToken.timeOffset	# TODO: Timezone
+	timezone = 24+userToken.timeOffset
 	country = userToken.country
 	gameRank = userToken.gameRank
 	latitude = userToken.getLatitude()
@@ -105,7 +94,7 @@ def userPanel(userID, force = False):
 		userRank = userRanks.MOD
 	elif userHelper.isInPrivilegeGroup(userID, "developer") == True:
 		userRank = userRanks.ADMIN
-	elif userHelper.isInPrivilegeGroup(userID, "donor") == True:
+	elif (userToken.privileges & privileges.USER_DONOR) > 0:
 		userRank = userRanks.SUPPORTER
 	else:
 		userRank = userRanks.NORMAL
@@ -126,10 +115,12 @@ def userPanel(userID, force = False):
 def userStats(userID, force = False):
 	# Get userID's token from tokens list
 	userToken = glob.tokens.getTokenFromUserID(userID)
+
 	if userToken == None:
 		return bytes()
 	if (userToken.restricted == True or userToken.irc == True) and force == False:
 		return bytes()
+
 	return packetHelper.buildPacket(packetIDs.server_userStats,
 	[
 		[userID, 				dataTypes.uInt32],
@@ -150,14 +141,23 @@ def userStats(userID, force = False):
 
 """ Chat packets """
 def sendMessage(fro, to, message):
-	return packetHelper.buildPacket(packetIDs.server_sendMessage, [[fro, dataTypes.string], [message, dataTypes.string], [to, dataTypes.string], [userHelper.getID(fro), dataTypes.sInt32]])
+	return packetHelper.buildPacket(packetIDs.server_sendMessage, [
+		[fro, dataTypes.string],
+		[message, dataTypes.string],
+		[to, dataTypes.string],
+		[userHelper.getID(fro), dataTypes.sInt32]
+	])
 
 def channelJoinSuccess(userID, chan):
 	return packetHelper.buildPacket(packetIDs.server_channelJoinSuccess, [[chan, dataTypes.string]])
 
 def channelInfo(chan):
 	channel = glob.channels.channels[chan]
-	return packetHelper.buildPacket(packetIDs.server_channelInfo, [[chan, dataTypes.string], [channel.description, dataTypes.string], [channel.getConnectedUsersCount(), dataTypes.uInt16]])
+	return packetHelper.buildPacket(packetIDs.server_channelInfo, [
+		[chan, dataTypes.string],
+		[channel.description, dataTypes.string],
+		[channel.getConnectedUsersCount(), dataTypes.uInt16]
+	])
 
 def channelInfoEnd():
 	return packetHelper.buildPacket(packetIDs.server_channelInfoEnd, [[0, dataTypes.uInt32]])
@@ -199,7 +199,6 @@ def createMatch(matchID):
 	match = glob.matches.matches[matchID]
 	return packetHelper.buildPacket(packetIDs.server_newMatch, match.getMatchData())
 
-
 def updateMatch(matchID):
 	# Make sure the match exists
 	if matchID not in glob.matches.matches:
@@ -208,7 +207,6 @@ def updateMatch(matchID):
 	# Get match binary data and build packet
 	match = glob.matches.matches[matchID]
 	return packetHelper.buildPacket(packetIDs.server_updateMatch, match.getMatchData())
-
 
 def matchStart(matchID):
 	# Make sure the match exists
@@ -219,9 +217,8 @@ def matchStart(matchID):
 	match = glob.matches.matches[matchID]
 	return packetHelper.buildPacket(packetIDs.server_matchStart, match.getMatchData())
 
-
 def disposeMatch(matchID):
-	return packetHelper.buildPacket(packetIDs.server_disposeMatch, [[matchID, dataTypes.uInt16]])
+	return packetHelper.buildPacket(packetIDs.server_disposeMatch, [[matchID, dataTypes.uInt32]])
 
 def matchJoinSuccess(matchID):
 	# Make sure the match exists
@@ -259,6 +256,7 @@ def playerFailed(slotID):
 
 def matchTransferHost():
 	return packetHelper.buildPacket(packetIDs.server_matchTransferHost)
+
 
 """ Other packets """
 def notification(message):

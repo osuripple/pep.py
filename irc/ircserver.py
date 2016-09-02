@@ -19,7 +19,7 @@ from objects import glob
 from helpers import chatHelper as chat
 import raven
 
-class Client:
+class Client():
 	"""
 	IRC Client object
 	"""
@@ -43,6 +43,7 @@ class Client:
 		self.socket = sock
 		(self.ip, self.port) = sock.getpeername()
 		self.username = ""
+		self.banchoUsername = ""
 		self.supposedUsername = ""
 		self.joinedChannels = []
 
@@ -275,12 +276,12 @@ class Client:
 				return
 
 			# Make sure the IRC token was correct:
-			if nick.lower() != self.supposedUsername.lower():
+			if nick.lower() != chat.fixUsernameForIRC(self.supposedUsername.lower()):
 				self.reply("464 :Password incorrect")
 				return
 
 			# Make sure we are not connected to Bancho
-			token = glob.tokens.getTokenFromUsername(nick)
+			token = glob.tokens.getTokenFromUsername(chat.fixUsernameForBancho(nick))
 			if token != None:
 				self.reply("433 * {} :Nickname is already in use".format(nick))
 				return
@@ -293,6 +294,7 @@ class Client:
 
 			# Everything seems fine, set username (nickname)
 			self.username = nick
+			self.banchoUsername = chat.fixUsernameForBancho(self.username)
 		elif command == "USER":
 			# Ignore USER command, we use nickname only
 			return
@@ -307,7 +309,7 @@ class Client:
 		# If we now have a valid username, connect to bancho and send IRC welcome stuff
 		if self.username != "":
 			# Bancho connection
-			chat.IRCConnect(self.username)
+			chat.IRCConnect(self.banchoUsername)
 
 			# IRC reply
 			self.replyCode(1, "Welcome to the Internet Relay Network")
@@ -329,7 +331,7 @@ class Client:
 			return
 
 		# Get bancho token object
-		token = glob.tokens.getTokenFromUsername(self.username)
+		token = glob.tokens.getTokenFromUsername(self.banchoUsername)
 		if token == None:
 			return
 
@@ -354,7 +356,7 @@ class Client:
 				continue
 
 			# Attempt to join the channel
-			response = chat.IRCJoinChannel(self.username, channel)
+			response = chat.IRCJoinChannel(self.banchoUsername, channel)
 			if response == 0:
 				# Joined successfully
 				self.joinedChannels.append(channel)
@@ -376,7 +378,7 @@ class Client:
 					token = glob.tokens.getTokenFromUserID(user)
 					if token == None:
 						continue
-					usernames.append(token.username)
+					usernames.append(chat.fixUsernameForIRC(token.username))
 				usernames = " ".join(usernames)
 
 				# Send IRC users lis
@@ -394,7 +396,7 @@ class Client:
 			return
 
 		# Get bancho token object
-		token = glob.tokens.getTokenFromUsername(self.username)
+		token = glob.tokens.getTokenFromUsername(self.banchoUsername)
 		if token == None:
 			return
 
@@ -409,7 +411,7 @@ class Client:
 				continue
 
 			# Attempt to part the channel
-			response = chat.IRCPartChannel(self.username, channel)
+			response = chat.IRCPartChannel(self.banchoUsername, channel)
 			if response == 0:
 				# No errors, remove channel from joinedChannels
 				self.joinedChannels.remove(channel)
@@ -433,7 +435,7 @@ class Client:
 		message = arguments[1]
 
 		# Send the message to bancho and reply
-		response = chat.sendMessage(self.username, recipient, message, toIRC=False)
+		response = chat.sendMessage(self.banchoUsername, recipient, message, toIRC=False)
 		if response == 404:
 			self.replyCode(404, "Cannot send to channel", channel=recipient)
 			return
@@ -453,7 +455,6 @@ class Client:
 			for _, value in self.server.clients.items():
 				if recipient in value.joinedChannels and value != self:
 					value.message(":{} PRIVMSG {} :{}".format(self.username, recipient, message))
-			#self.messageChannel(recipient, command, "{} :{}".format(recipient, message))
 		else:
 			# Private message (IRC)
 			for _, value in self.server.clients.items():
@@ -513,7 +514,7 @@ class Client:
 
 
 
-class Server:
+class Server():
 	def __init__(self, port):
 		self.host = socket.getfqdn("127.0.0.1")[:63]
 		self.port = port
@@ -529,7 +530,7 @@ class Server:
 		for _, value in self.clients.items():
 			if value.username == username:
 				value.disconnect(callLogout=False)
-				break# or dictionary changes size during iteration
+				break # or dictionary changes size during iteration
 
 	def banchoJoinChannel(self, username, channel):
 		"""
@@ -538,6 +539,7 @@ class Server:
 		username -- username of bancho user
 		channel -- joined channel name
 		"""
+		username = chat.fixUsernameForIRC(username)
 		for _, value in self.clients.items():
 			if channel in value.joinedChannels:
 				value.message(":{} JOIN {}".format(username, channel))
@@ -549,6 +551,7 @@ class Server:
 		username -- username of bancho user
 		channel -- joined channel name
 		"""
+		username = chat.fixUsernameForIRC(username)
 		for _, value in self.clients.items():
 			if channel in value.joinedChannels:
 				value.message(":{} PART {}".format(username, channel))
@@ -561,6 +564,8 @@ class Server:
 		to -- receiver username
 		message -- text of the message
 		"""
+		fro = chat.fixUsernameForIRC(fro)
+		to = chat.fixUsernameForIRC(to)
 		if to.startswith("#"):
 			# Public message
 			for _, value in self.clients.items():

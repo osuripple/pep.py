@@ -1,6 +1,17 @@
-"""Some functions that don't fit in any other file"""
 from constants import mods
 from time import gmtime, strftime
+import hashlib
+
+def stringMd5(string):
+	"""
+	Return string's md5
+
+	string -- string to hash
+	return -- string's md5 hash
+	"""
+	d = hashlib.md5()
+	d.update(string.encode("utf-8"))
+	return d.hexdigest()
 
 def stringToBool(s):
 	"""
@@ -9,9 +20,7 @@ def stringToBool(s):
 	s -- string/int value
 	return -- True/False
 	"""
-
 	return (s == "True" or s== "true" or s == "1" or s == 1)
-
 
 def hexString(s):
 	"""
@@ -20,7 +29,6 @@ def hexString(s):
 	s -- string
 	return -- string with hex value
 	"""
-
 	return ":".join("{:02x}".format(ord(str(c))) for c in s)
 
 def readableMods(__mods):

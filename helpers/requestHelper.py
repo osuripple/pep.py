@@ -3,8 +3,6 @@ import tornado.web
 import tornado.gen
 from tornado.ioloop import IOLoop
 from objects import glob
-from raven.contrib.tornado import SentryMixin
-from raven.contrib.tornado import AsyncSentryClient
 import gevent
 
 class asyncRequestHandler(tornado.web.RequestHandler):
@@ -50,7 +48,6 @@ class asyncRequestHandler(tornado.web.RequestHandler):
 			return realIP
 		return self.request.remote_ip
 
-
 def runBackground(data, callback):
 	"""
 	Run a function in the background.
@@ -59,7 +56,6 @@ def runBackground(data, callback):
 	func, args, kwargs = data
 	def _callback(result):
 		IOLoop.instance().add_callback(lambda: callback(result))
-	#glob.pool.apply_async(func, args, kwargs, _callback)
 	g = gevent.Greenlet(func, *args, **kwargs)
 	g.link(_callback)
 	g.start()

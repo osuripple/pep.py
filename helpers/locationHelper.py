@@ -11,7 +11,6 @@ def getCountry(ip):
 	ip -- IP Address
 	return -- Country code (2 letters)
 	"""
-
 	try:
 		# Try to get country from Pikolo Aul's Go-Sanic ip API
 		result = json.loads(urllib.request.urlopen("{}/{}".format(glob.conf.config["localize"]["ipapiurl"], ip), timeout=3).read().decode())["country"]
@@ -20,7 +19,6 @@ def getCountry(ip):
 		log.error("Error in get country")
 		return "XX"
 
-
 def getLocation(ip):
 	"""
 	Get latitude and longitude from IP address
@@ -28,7 +26,6 @@ def getLocation(ip):
 	ip -- IP address
 	return -- [latitude, longitude]
 	"""
-
 	try:
 		# Try to get position from Pikolo Aul's Go-Sanic ip API
 		result = json.loads(urllib.request.urlopen("{}/{}".format(glob.conf.config["localize"]["ipapiurl"], ip), timeout=3).read().decode())["loc"].split(",")

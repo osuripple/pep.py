@@ -4,6 +4,7 @@ from objects import glob
 from constants import exceptions
 from helpers import logHelper as log
 from helpers import chatHelper as chat
+from helpers import generalFunctions
 
 def handle(userToken, packetData):
 	# read packet data
@@ -12,12 +13,15 @@ def handle(userToken, packetData):
 	# Get match from ID
 	joinMatch(userToken, packetData["matchID"], packetData["password"])
 
-def joinMatch(userToken, matchID, password):
+def joinMatch(userToken, matchID, password, isPasswordHashed = False):
 	try:
-		# TODO: leave other matches
-		# TODO: Stop spectating
+		# Stop spectating
+		userToken.stopSpectating()
 
-		# get usertoken data
+		# Leave other matches
+		userToken.partMatch()
+
+		# Get usertoken data
 		userID = userToken.userID
 
 		# Make sure the match exists
@@ -26,6 +30,10 @@ def joinMatch(userToken, matchID, password):
 
 		# Match exists, get object
 		match = glob.matches.matches[matchID]
+
+		# Hash password if needed
+		if isPasswordHashed == False and password != "":
+			password = generalFunctions.stringMd5(password)
 
 		# Check password
 		# TODO: Admins can enter every match

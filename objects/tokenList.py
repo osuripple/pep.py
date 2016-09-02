@@ -3,10 +3,9 @@ from objects import glob
 import time
 import threading
 from events import logoutEvent
-from helpers import logHelper as log
 from helpers import userHelper
 
-class tokenList:
+class tokenList():
 	"""
 	List of connected osu tokens
 
@@ -27,7 +26,6 @@ class tokenList:
 		irc -- if True, set this token as IRC client
 		return -- token object
 		"""
-
 		newToken = osuToken.token(userID, ip=ip, irc=irc, timeOffset=timeOffset)
 		self.tokens[newToken.token] = newToken
 		return newToken
@@ -38,7 +36,6 @@ class tokenList:
 
 		token -- token string
 		"""
-
 		if token in self.tokens:
 			# Delete session from DB
 			if self.tokens[token].ip != "":
@@ -47,23 +44,19 @@ class tokenList:
 			# Pop token from list
 			self.tokens.pop(token)
 
-
 	def getUserIDFromToken(self, token):
 		"""
 		Get user ID from a token
 
 		token -- token to find
-
-		return: false if not found, userID if found
+		return -- false if not found, userID if found
 		"""
-
 		# Make sure the token exists
 		if token not in self.tokens:
 			return False
 
 		# Get userID associated to that token
 		return self.tokens[token].userID
-
 
 	def getTokenFromUserID(self, userID):
 		"""
@@ -72,7 +65,6 @@ class tokenList:
 		userID -- user ID to find
 		return -- False if not found, token object if found
 		"""
-
 		# Make sure the token exists
 		for _, value in self.tokens.items():
 			if value.userID == userID:
@@ -81,7 +73,6 @@ class tokenList:
 		# Return none if not found
 		return None
 
-
 	def getTokenFromUsername(self, username):
 		"""
 		Get token from a username
@@ -89,7 +80,6 @@ class tokenList:
 		username -- username to find
 		return -- False if not found, token object if found
 		"""
-
 		# lowercase
 		who  = username.lower()
 
@@ -100,7 +90,6 @@ class tokenList:
 
 		# Return none if not found
 		return None
-
 
 	def deleteOldTokens(self, userID):
 		"""
@@ -114,11 +103,6 @@ class tokenList:
 			if value.userID == userID:
 				# Delete this token from the dictionary
 				self.tokens[key].kick("You have logged in from somewhere else. You can't connect to Bancho/IRC from more than one device at the same time.")
-				#self.tokens.pop(key)
-
-				# break or items() function throws errors
-				#break
-
 
 	def multipleEnqueue(self, packet, who, but = False):
 		"""
@@ -128,7 +112,6 @@ class tokenList:
 		who -- userIDs array
 		but -- if True, enqueue to everyone but users in who array
 		"""
-
 		for _, value in self.tokens.items():
 			shouldEnqueue = False
 			if value.userID in who and not but:
@@ -145,22 +128,20 @@ class tokenList:
 
 		packet -- packet bytes to enqueue
 		"""
-
 		for _, value in self.tokens.items():
 			value.enqueue(packet)
 
-	def usersTimeoutCheckLoop(self, __timeoutTime = 100, __checkTime = 100):
+	def usersTimeoutCheckLoop(self, timeoutTime = 100, checkTime = 100):
 		"""
 		Deletes all timed out users.
-		If called once, will recall after __checkTime seconds and so on, forever
+		If called once, will recall after checkTime seconds and so on, forever
 		CALL THIS FUNCTION ONLY ONCE!
 
-		__timeoutTime - seconds of inactivity required to disconnect someone (Default: 100)
-		__checkTime - seconds between loops (Default: 100)
+		timeoutTime - seconds of inactivity required to disconnect someone (Default: 100)
+		checkTime - seconds between loops (Default: 100)
 		"""
-
 		timedOutTokens = []		# timed out users
-		timeoutLimit = time.time()-__timeoutTime
+		timeoutLimit = time.time()-timeoutTime
 		for key, value in self.tokens.items():
 			# Check timeout (fokabot is ignored)
 			if value.pingTime < timeoutLimit and value.userID != 999 and value.irc == False:
@@ -174,15 +155,13 @@ class tokenList:
 			logoutEvent.handle(self.tokens[i], None)
 
 		# Schedule a new check (endless loop)
-		threading.Timer(__checkTime, self.usersTimeoutCheckLoop, [__timeoutTime, __checkTime]).start()
+		threading.Timer(checkTime, self.usersTimeoutCheckLoop, [timeoutTime, checkTime]).start()
 
 	def spamProtectionResetLoop(self):
 		"""
 		Reset spam rate every 10 seconds.
 		CALL THIS FUNCTION ONLY ONCE!
 		"""
-		#log.debug("Resetting spam protection...")
-
 		# Reset spamRate for every token
 		for _, value in self.tokens.items():
 			value.spamRate = 0

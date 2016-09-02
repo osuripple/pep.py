@@ -8,7 +8,6 @@ def uleb128Encode(num):
 	num -- int to encode
 	return -- bytearray with encoded number
 	"""
-
 	arr = bytearray()
 	length = 0
 
@@ -24,7 +23,6 @@ def uleb128Encode(num):
 
 	return arr
 
-
 def uleb128Decode(num):
 	"""
 	Decode uleb128 -> int
@@ -32,9 +30,7 @@ def uleb128Decode(num):
 	num -- encoded uleb128
 	return -- list. [total, length]
 	"""
-
 	shift = 0
-
 	arr = [0,0]	#total, length
 
 	while True:
@@ -47,42 +43,40 @@ def uleb128Decode(num):
 
 	return arr
 
-
-def unpackData(__data, __dataType):
+def unpackData(data, dataType):
 	"""
 	Unpacks data according to dataType
 
-	__data -- bytes array to unpack
-	__dataType -- data type. See dataTypes.py
+	data -- bytes array to unpack
+	dataType -- data type. See dataTypes.py
 
 	return -- unpacked bytes
 	"""
 
 	# Get right pack Type
-	if __dataType == dataTypes.uInt16:
+	if dataType == dataTypes.uInt16:
 		unpackType = "<H"
-	elif __dataType == dataTypes.sInt16:
+	elif dataType == dataTypes.sInt16:
 		unpackType = "<h"
-	elif __dataType == dataTypes.uInt32:
+	elif dataType == dataTypes.uInt32:
 		unpackType = "<L"
-	elif __dataType == dataTypes.sInt32:
+	elif dataType == dataTypes.sInt32:
 		unpackType = "<l"
-	elif __dataType == dataTypes.uInt64:
+	elif dataType == dataTypes.uInt64:
 		unpackType = "<Q"
-	elif __dataType == dataTypes.sInt64:
+	elif dataType == dataTypes.sInt64:
 		unpackType = "<q"
-	elif __dataType == dataTypes.string:
+	elif dataType == dataTypes.string:
 		unpackType = "<s"
-	elif __dataType == dataTypes.ffloat:
+	elif dataType == dataTypes.ffloat:
 		unpackType = "<f"
 	else:
 		unpackType = "<B"
 
 	# Unpack
-	return struct.unpack(unpackType, bytes(__data))[0]
+	return struct.unpack(unpackType, bytes(data))[0]
 
-
-def packData(__data, __dataType):
+def packData(__data, dataType):
 	"""
 	Packs data according to dataType
 
@@ -96,11 +90,11 @@ def packData(__data, __dataType):
 	pack = True		# if True, use pack. False only with strings
 
 	# Get right pack Type
-	if __dataType == dataTypes.bbytes:
+	if dataType == dataTypes.bbytes:
 		# Bytes, do not use pack, do manually
 		pack = False
 		data = __data
-	elif __dataType == dataTypes.intList:
+	elif dataType == dataTypes.intList:
 		# Pack manually
 		pack = False
 		# Add length
@@ -108,7 +102,7 @@ def packData(__data, __dataType):
 		# Add all elements
 		for i in __data:
 			data += packData(i, dataTypes.sInt32)
-	elif __dataType == dataTypes.string:
+	elif dataType == dataTypes.string:
 		# String, do not use pack, do manually
 		pack = False
 		if len(__data) == 0:
@@ -119,21 +113,21 @@ def packData(__data, __dataType):
 			data += b"\x0B"
 			data += uleb128Encode(len(__data))
 			data += str.encode(__data, "latin_1", "ignore")
-	elif __dataType == dataTypes.uInt16:
+	elif dataType == dataTypes.uInt16:
 		packType = "<H"
-	elif __dataType == dataTypes.sInt16:
+	elif dataType == dataTypes.sInt16:
 		packType = "<h"
-	elif __dataType == dataTypes.uInt32:
+	elif dataType == dataTypes.uInt32:
 		packType = "<L"
-	elif __dataType == dataTypes.sInt32:
+	elif dataType == dataTypes.sInt32:
 		packType = "<l"
-	elif __dataType == dataTypes.uInt64:
+	elif dataType == dataTypes.uInt64:
 		packType = "<Q"
-	elif __dataType == dataTypes.sInt64:
+	elif dataType == dataTypes.sInt64:
 		packType = "<q"
-	elif __dataType == dataTypes.string:
+	elif dataType == dataTypes.string:
 		packType = "<s"
-	elif __dataType == dataTypes.ffloat:
+	elif dataType == dataTypes.ffloat:
 		packType = "<f"
 	else:
 		packType = "<B"
@@ -144,7 +138,6 @@ def packData(__data, __dataType):
 
 	return data
 
-# TODO: Wat dangerous
 def buildPacket(__packet, __packetData = []):
 	"""
 	Build a packet
@@ -154,7 +147,6 @@ def buildPacket(__packet, __packetData = []):
 
 	return -- packet bytes
 	"""
-
 	# Set some variables
 	packetData = bytes()
 	packetLength = 0
@@ -174,7 +166,6 @@ def buildPacket(__packet, __packetData = []):
 	packetBytes += packetData						# packet data
 	return packetBytes
 
-
 def readPacketID(stream):
 	"""
 	Read packetID from stream (0-1 bytes)
@@ -182,9 +173,7 @@ def readPacketID(stream):
 	stream -- data stream
 	return -- packet ID (int)
 	"""
-
 	return unpackData(stream[0:2], dataTypes.uInt16)
-
 
 def readPacketLength(stream):
 	"""
@@ -193,7 +182,6 @@ def readPacketLength(stream):
 	stream -- data stream
 	return -- packet length (int)
 	"""
-
 	return unpackData(stream[3:7], dataTypes.uInt32)
 
 
@@ -208,7 +196,6 @@ def readPacketData(stream, structure = [], hasFirstBytes = True):
 						Optional. Default: True
 	return -- dictionary. key: name, value: read data
 	"""
-
 	# Read packet ID (first 2 bytes)
 	data = {}
 

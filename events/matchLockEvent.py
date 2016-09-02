@@ -14,6 +14,10 @@ def handle(userToken, packetData):
 		return
 	match = glob.matches.matches[matchID]
 
+	# Host check
+	if userID != match.hostUserID:
+		return
+
 	# Make sure we aren't locking our slot
 	ourSlot = match.getUserSlotID(userID)
 	if packetData["slotID"] == ourSlot:

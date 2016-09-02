@@ -226,8 +226,8 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 			self.set_status(200)
 			self.add_header("cho-token", responseTokenString)
 			self.add_header("cho-protocol", "19")
-			#self.add_header("Keep-Alive", "timeout=5, max=100")
-			#self.add_header("Connection", "keep-alive")
+			self.add_header("Connection", "keep-alive")
+			self.add_header("Keep-Alive", "timeout=5, max=100")
 			self.add_header("Content-Type", "text/html; charset=UTF-8")
 		except:
 			log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
@@ -260,5 +260,3 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 		html += "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^<br>"
 		html += "</marquee><br><strike>reverse engineering a protocol impossible to reverse engineer since always</strike><br>we are actually reverse engineering bancho successfully. for the third time.<br><br><i>&copy; Ripple team, 2016</i></pre></body></html>"
 		self.write(html)
-		#yield tornado.gen.Task(self.captureMessage, "test")
-		#self.finish()

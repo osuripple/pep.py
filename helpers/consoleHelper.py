@@ -1,13 +1,12 @@
-"""Some console related functions"""
-
 from constants import bcolors
 from objects import glob
 
 def printServerStartHeader(asciiArt):
-	"""Print server start header with optional ascii art
+	"""
+	Print server start header with optional ascii art
 
-	asciiArt -- if True, will print ascii art too"""
-
+	asciiArt -- if True, will print ascii art too
+	"""
 	if asciiArt == True:
 		print("{}           _                 __".format(bcolors.GREEN))
 		print("          (_)              /  /")
@@ -28,9 +27,8 @@ def printServerStartHeader(asciiArt):
 
 	printColored("> Welcome to pep.py osu!bancho server v{}".format(glob.VERSION), bcolors.GREEN)
 	printColored("> Made by the Ripple team", bcolors.GREEN)
-	printColored("> {}https://github.com/osuripple/ripple".format(bcolors.UNDERLINE), bcolors.GREEN)
+	printColored("> {}https://git.zxq.co/ripple/pep.py".format(bcolors.UNDERLINE), bcolors.GREEN)
 	printColored("> Press CTRL+C to exit\n",bcolors.GREEN)
-
 
 def printNoNl(string):
 	"""
@@ -38,9 +36,7 @@ def printNoNl(string):
 
 	string -- string to print
 	"""
-
 	print(string, end="")
-
 
 def printColored(string, color):
 	"""
@@ -49,23 +45,22 @@ def printColored(string, color):
 	string -- string to print
 	color -- see bcolors.py
 	"""
-
 	print("{}{}{}".format(color, string, bcolors.ENDC))
 
-
 def printError():
-	"""Print error text FOR LOADING"""
-
+	"""
+	Print error text FOR LOADING
+	"""
 	printColored("Error", bcolors.RED)
 
-
 def printDone():
-	"""Print error text FOR LOADING"""
-
+	"""
+	Print error text FOR LOADING
+	"""
 	printColored("Done", bcolors.GREEN)
 
-
 def printWarning():
-	"""Print error text FOR LOADING"""
-
+	"""
+	Print error text FOR LOADING
+	"""
 	printColored("Warning", bcolors.YELLOW)

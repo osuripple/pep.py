@@ -2,7 +2,7 @@ from objects import match
 from objects import glob
 from constants import serverPackets
 
-class matchList:
+class matchList():
 	matches = {}
 	usersInLobby = []
 	lastID = 1
@@ -32,19 +32,16 @@ class matchList:
 		self.matches[matchID] = match.match(matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID)
 		return matchID
 
-
 	def lobbyUserJoin(self, userID):
 		"""
 		Add userID to users in lobby
 
 		userID -- user who joined mp lobby
 		"""
-
 		# Make sure the user is not already in mp lobby
 		if userID not in self.usersInLobby:
 			# We don't need to join #lobby, client will automatically send a packet for it
 			self.usersInLobby.append(userID)
-
 
 	def lobbyUserPart(self, userID):
 		"""
@@ -52,29 +49,26 @@ class matchList:
 
 		userID -- user who left mp lobby
 		"""
-
 		# Make sure the user is in mp lobby
 		if userID in self.usersInLobby:
 			# Part lobby and #lobby channel
 			self.usersInLobby.remove(userID)
 
-
-	def disposeMatch(self, __matchID):
+	def disposeMatch(self, matchID):
 		"""
-		Destroy match object with id = __matchID
+		Destroy match object with id = matchID
 
-		__matchID -- ID of match to dispose
+		matchID -- ID of match to dispose
 		"""
-
 		# Make sure the match exists
-		if __matchID not in self.matches:
+		if matchID not in self.matches:
 			return
 
 		# Remove match object
-		self.matches.pop(__matchID)
+		self.matches.pop(matchID)
 
 		# Send match dispose packet to everyone in lobby
 		for i in self.usersInLobby:
 			token = glob.tokens.getTokenFromUserID(i)
 			if token != None:
-				token.enqueue(serverPackets.disposeMatch(__matchID))
+				token.enqueue(serverPackets.disposeMatch(matchID))

@@ -1,9 +1,6 @@
 import requests
 from objects import glob
-from helpers import generalFunctions
 from urllib.parse import urlencode
-from helpers import consoleHelper
-from constants import bcolors
 
 def sendDiscordMessage(channel, message, alertDev = False, prefix = "**pep.py**"):
 	"""
@@ -24,7 +21,6 @@ def sendDiscordMessage(channel, message, alertDev = False, prefix = "**pep.py**"
 			except:
 				continue
 
-
 def sendConfidential(message, alertDev = False):
 	"""
 	Send a message to #bunker
@@ -32,7 +28,6 @@ def sendConfidential(message, alertDev = False):
 	message -- message to send
 	"""
 	sendDiscordMessage("bunk", message, alertDev)
-
 
 def sendStaff(message):
 	"""
@@ -42,7 +37,6 @@ def sendStaff(message):
 	"""
 	sendDiscordMessage("staff", message)
 
-
 def sendGeneral(message):
 	"""
 	Send a message to #general
@@ -50,7 +44,6 @@ def sendGeneral(message):
 	message -- message to send
 	"""
 	sendDiscordMessage("general", message)
-
 
 def sendChatlog(message):
 	"""
