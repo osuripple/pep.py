@@ -63,14 +63,9 @@ def getSystemInfo():
 
 	return -- ["unix", "connectedUsers", "webServer", "cpuUsage", "totalMemory", "usedMemory", "loadAverage"]
 	"""
-	data = {}
-
-	# Get if server is running under unix/nt
-	data["unix"] = runningUnderUnix()
+	data = {"unix": runningUnderUnix(), "connectedUsers": len(glob.tokens.tokens), "matches": len(glob.matches.matches)}
 
 	# General stats
-	data["connectedUsers"] = len(glob.tokens.tokens)
-	data["matches"] = len(glob.matches.matches)
 	delta = time.time()-glob.startTime
 	days = math.floor(delta/86400)
 	delta -= days*86400
@@ -90,7 +85,7 @@ def getSystemInfo():
 	data["usedMemory"] = "{0:.2f}".format(memory.active/1074000000)
 
 	# Unix only stats
-	if data["unix"] == True:
+	if data["unix"]:
 		data["loadAverage"] = os.getloadavg()
 	else:
 		data["loadAverage"] = (0,0,0)

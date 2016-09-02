@@ -10,7 +10,7 @@ class handler(requestHelper.asyncRequestHandler):
 		data = {"message": "unknown error"}
 		try:
 			# Check arguments
-			if requestHelper.checkArguments(self.request.arguments, ["u"]) == False:
+			if not requestHelper.checkArguments(self.request.arguments, ["u"]):
 				raise exceptions.invalidArgumentsException()
 
 			# Get userID and its verified cache thing

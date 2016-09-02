@@ -40,7 +40,7 @@ def handle(userToken, packetData):
 
 		# Set slot mods
 		slotID = match.getUserSlotID(userID)
-		if slotID != None:
+		if slotID is not None:
 			match.setSlotMods(slotID, packetData["mods"])
 	else:
 		# Not freemod, set match mods

@@ -20,7 +20,7 @@ def stringToBool(s):
 	s -- string/int value
 	return -- True/False
 	"""
-	return (s == "True" or s== "true" or s == "1" or s == 1)
+	return s == "True" or s == "true" or s == "1" or s == 1
 
 def hexString(s):
 	"""

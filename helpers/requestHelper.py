@@ -44,7 +44,7 @@ class asyncRequestHandler(tornado.web.RequestHandler):
 
 	def getRequestIP(self):
 		realIP = self.request.headers.get("X-Forwarded-For") if glob.cloudflare == True else self.request.headers.get("X-Real-IP")
-		if realIP != None:
+		if realIP is not None:
 			return realIP
 		return self.request.remote_ip
 

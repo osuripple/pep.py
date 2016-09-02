@@ -27,5 +27,5 @@ def handle(userToken, packetData):
 	for i in range(0,16):
 		if match.slots[i].userID > -1 and match.slots[i].status == slotStatuses.playing:
 			token = glob.tokens.getTokenFromUserID(match.slots[i].userID)
-			if token != None:
+			if token is not None:
 				token.enqueue(serverPackets.matchFrames(slotID, packetData))

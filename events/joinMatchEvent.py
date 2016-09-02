@@ -45,7 +45,7 @@ def joinMatch(userToken, matchID, password, isPasswordHashed = False):
 		result = match.userJoin(userID)
 
 		# Check if we've joined the match successfully
-		if result == False:
+		if not result:
 			raise exceptions.matchJoinErrorException
 
 		# Match joined, set matchID for usertoken

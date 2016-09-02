@@ -7,7 +7,7 @@ def printServerStartHeader(asciiArt):
 
 	asciiArt -- if True, will print ascii art too
 	"""
-	if asciiArt == True:
+	if asciiArt:
 		print("{}           _                 __".format(bcolors.GREEN))
 		print("          (_)              /  /")
 		print("   ______ __ ____   ____  /  /____")

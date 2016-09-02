@@ -23,10 +23,10 @@ def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 	"""
 	try:
 		# Get token if not defined
-		if token == None:
+		if token is None:
 			token = glob.tokens.getTokenFromUserID(userID)
 			# Make sure the token exists
-			if token == None:
+			if token is None:
 				raise exceptions.userNotFoundException
 		else:
 			token = token
@@ -89,10 +89,10 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 	"""
 	try:
 		# Get token if not defined
-		if token == None:
+		if token is None:
 			token = glob.tokens.getTokenFromUserID(userID)
 			# Make sure the token exists
-			if token == None:
+			if token is None:
 				raise exceptions.userNotFoundException
 		else:
 			token = token
@@ -128,7 +128,7 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 
 		# Force close tab if needed
 		# NOTE: Maybe always needed, will check later
-		if kick == True:
+		if kick:
 			token.enqueue(serverPackets.channelKicked(channelClient))
 
 		# IRC part
@@ -164,9 +164,9 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 	try:
 		tokenString = ""
 		# Get token object if not passed
-		if token == None:
+		if token is None:
 			token = glob.tokens.getTokenFromUsername(fro)
-			if token == None:
+			if token is None:
 				raise exceptions.userNotFoundException
 		else:
 			# token object alredy passed, get its string and its username (fro)
@@ -176,14 +176,13 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		# Set some variables
 		userID = token.userID
 		username = token.username
-		recipients = []
 
 		# Make sure the user is not in restricted mode
-		if token.restricted == True:
+		if token.restricted:
 			raise exceptions.userRestrictedException
 
 		# Make sure the user is not silenced
-		if token.isSilenced() == True:
+		if token.isSilenced():
 			raise exceptions.userSilencedException
 
 		# Determine internal name if needed
@@ -213,7 +212,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 		# Send the message
 		isChannel = to.startswith("#")
-		if isChannel == True:
+		if isChannel:
 			# CHANNEL
 			# Make sure the channel exists
 			if to not in glob.channels.channels:
@@ -240,7 +239,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			# USER
 			# Make sure recipient user is connected
 			recipientToken = glob.tokens.getTokenFromUsername(to)
-			if recipientToken == None:
+			if recipientToken is None:
 				raise exceptions.userNotFoundException
 
 			# Make sure the recipient is not restricted or we are FokaBot
@@ -267,11 +266,11 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		# Fokabot message
 		if isChannel == True or to.lower() == "fokabot":
 			fokaMessage = fokabot.fokabotResponse(username, to, message)
-			if fokaMessage != False:
+			if fokaMessage:
 				sendMessage("FokaBot", to if isChannel else fro, fokaMessage)
 
 		# File and discord logs (public chat only)
-		if to.startswith("#") == True:
+		if to.startswith("#"):
 			log.chat("{fro} @ {to}: {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))))
 			discordBotHelper.sendChatlog("**{fro} @ {to}:** {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))[2:-1]))
 		return 0
@@ -305,7 +304,7 @@ def fixUsernameForIRC(username):
 
 def IRCConnect(username):
 	userID = userHelper.getID(username)
-	if userID == False:
+	if not userID:
 		log.warning("{} doesn't exist".format(username))
 		return
 	glob.tokens.deleteOldTokens(userID)
@@ -315,7 +314,7 @@ def IRCConnect(username):
 
 def IRCDisconnect(username):
 	token = glob.tokens.getTokenFromUsername(username)
-	if token == None:
+	if token is None:
 		log.warning("{} doesn't exist".format(username))
 		return
 	logoutEvent.handle(token)
@@ -323,7 +322,7 @@ def IRCDisconnect(username):
 
 def IRCJoinChannel(username, channel):
 	userID = userHelper.getID(username)
-	if userID == False:
+	if not userID:
 		log.warning("{} doesn't exist".format(username))
 		return
 	# NOTE: This should have also `toIRC` = False` tho,
@@ -333,7 +332,7 @@ def IRCJoinChannel(username, channel):
 
 def IRCPartChannel(username, channel):
 	userID = userHelper.getID(username)
-	if userID == False:
+	if not userID:
 		log.warning("{} doesn't exist".format(username))
 		return
 	return partChannel(userID, channel)

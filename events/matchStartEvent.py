@@ -23,7 +23,7 @@ def handle(userToken, _):
 		return
 
 	# Make sure we have enough players
-	if (match.countUsers() < 2 or match.checkTeams() == False):
+	if match.countUsers() < 2 or match.checkTeams() == False:
 		return
 
 	# Change inProgress value
@@ -41,7 +41,7 @@ def handle(userToken, _):
 	for i in range(0,16):
 		if (match.slots[i].status & slotStatuses.playing) > 0 and match.slots[i].userID != -1:
 			token = glob.tokens.getTokenFromUserID(match.slots[i].userID)
-			if token != None:
+			if token is not None:
 				token.enqueue(serverPackets.matchStart(matchID))
 
 	# Send updates

@@ -34,7 +34,7 @@ def handle(userToken, packetData):
 		for i in glob.matches.usersInLobby:
 			# Make sure this user is still connected
 			token = glob.tokens.getTokenFromUserID(i)
-			if token != None:
+			if token is not None:
 				token.enqueue(serverPackets.createMatch(matchID))
 
 		# Console output

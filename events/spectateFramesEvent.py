@@ -15,7 +15,7 @@ def handle(userToken, packetData):
 				spectatorToken = glob.tokens.getTokenFromUserID(i)
 
 				# Make sure the token exists
-				if spectatorToken == None:
+				if spectatorToken is None:
 					raise exceptions.stopSpectating
 
 				# Make sure this user is spectating us

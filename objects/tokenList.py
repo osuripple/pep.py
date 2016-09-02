@@ -5,7 +5,7 @@ import threading
 from events import logoutEvent
 from helpers import userHelper
 
-class tokenList():
+class tokenList:
 	"""
 	List of connected osu tokens
 

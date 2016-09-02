@@ -52,10 +52,10 @@ def handle(tornadoRequest):
 		username = str(loginData[0])
 		userID = userHelper.getID(username)
 
-		if userID == False:
+		if not userID:
 			# Invalid username
 			raise exceptions.loginFailedException()
-		if userHelper.checkLogin(userID, loginData[1]) == False:
+		if not userHelper.checkLogin(userID, loginData[1]):
 			# Invalid password
 			raise exceptions.loginFailedException()
 
@@ -65,7 +65,7 @@ def handle(tornadoRequest):
 			raise exceptions.loginBannedException()
 
 		# 2FA check
-		if userHelper.check2FA(userID, requestIP) == True:
+		if userHelper.check2FA(userID, requestIP):
 			log.warning("Need 2FA check for user {}".format(loginData[0]))
 			raise exceptions.need2FAException()
 
@@ -74,7 +74,7 @@ def handle(tornadoRequest):
 		# Verify this user (if pending activation)
 		firstLogin = False
 		if priv & privileges.USER_PENDING_VERIFICATION > 0 or userHelper.hasVerifiedHardware(userID) == False:
-			if userHelper.verifyUser(userID, clientData) == True:
+			if userHelper.verifyUser(userID, clientData):
 				# Valid account
 				log.info("Account {} verified successfully!".format(userID))
 				glob.verifiedCache[str(userID)] = 1
@@ -92,7 +92,7 @@ def handle(tornadoRequest):
 		# This is false only if HWID is empty
 		# if HWID is banned, we get restricted so there's no
 		# need to deny bancho access
-		if hwAllowed == False:
+		if not hwAllowed:
 			raise exceptions.haxException()
 
 		# Log user IP
@@ -115,11 +115,11 @@ def handle(tornadoRequest):
 		# Get supporter/GMT
 		userGMT = False
 		userSupporter = True
-		if responseToken.admin == True:
+		if responseToken.admin:
 			userGMT = True
 
 		# Server restarting check
-		if glob.restarting == True:
+		if glob.restarting:
 			raise exceptions.banchoRestartingException()
 
 		# Send login notification before maintenance message
@@ -127,8 +127,8 @@ def handle(tornadoRequest):
 			responseToken.enqueue(serverPackets.notification(glob.banchoConf.config["loginNotification"]))
 
 		# Maintenance check
-		if glob.banchoConf.config["banchoMaintenance"] == True:
-			if userGMT == False:
+		if glob.banchoConf.config["banchoMaintenance"]:
+			if not userGMT:
 				# We are not mod/admin, delete token, send notification and logout
 				glob.tokens.deleteToken(responseTokenString)
 				raise exceptions.banchoMaintenanceException()
@@ -152,7 +152,7 @@ def handle(tornadoRequest):
 		chat.joinChannel(token=responseToken, channel="#announce")
 
 		# Join admin channel if we are an admin
-		if responseToken.admin == True:
+		if responseToken.admin:
 			chat.joinChannel(token=responseToken, channel="#admin")
 
 		# Output channels info
@@ -171,7 +171,7 @@ def handle(tornadoRequest):
 		responseToken.enqueue(serverPackets.onlineUsers())
 
 		# Get location and country from ip.zxq.co or database
-		if glob.localize == True:
+		if glob.localize:
 			# Get location and country from IP
 			location = locationHelper.getLocation(requestIP)
 			countryLetters = locationHelper.getCountry(requestIP)
@@ -192,7 +192,7 @@ def handle(tornadoRequest):
 			userHelper.setCountry(userID, countryLetters)
 
 		# Send to everyone our userpanel if we are not restricted
-		if responseToken.restricted == False:
+		if not responseToken.restricted:
 			glob.tokens.enqueueAll(serverPackets.userPanel(userID))
 
 		# Set reponse data to right value and reset our queue
@@ -242,4 +242,4 @@ def handle(tornadoRequest):
 		log.info(msg, "bunker")
 
 		# Return token string and data
-		return (responseTokenString, responseData)
+		return responseTokenString, responseData

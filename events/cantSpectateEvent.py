@@ -3,7 +3,7 @@ from constants import serverPackets
 from constants import exceptions
 from helpers import logHelper as log
 
-def handle(userToken, packetData):
+def handle(userToken, _):
 	# get usertoken data
 	userID = userToken.userID
 

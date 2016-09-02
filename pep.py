@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	consoleHelper.printNoNl("> Loading config file... ")
 	glob.conf = configHelper.config("config.ini")
 
-	if glob.conf.default == True:
+	if glob.conf.default:
 		# We have generated a default config.ini, quit server
 		consoleHelper.printWarning()
 		consoleHelper.printColored("[!] config.ini not found. A default one has been generated.", bcolors.YELLOW)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 		sys.exit()
 
 	# If we haven't generated a default config.ini, check if it's valid
-	if glob.conf.checkConfig() == False:
+	if not glob.conf.checkConfig():
 		consoleHelper.printError()
 		consoleHelper.printColored("[!] Invalid config.ini. Please configure it properly", bcolors.RED)
 		consoleHelper.printColored("[!] Delete your config.ini to generate a default one", bcolors.RED)
@@ -136,31 +136,31 @@ if __name__ == "__main__":
 	consoleHelper.printDone()
 
 	# Cache user ids
-	consoleHelper.printNoNl("> Caching user IDs... ")
-	userHelper.cacheUserIDs()
-	consoleHelper.printDone()
+	#consoleHelper.printNoNl("> Caching user IDs... ")
+	#userHelper.cacheUserIDs()
+	#consoleHelper.printDone()
 
 	# Localize warning
 	glob.localize = generalFunctions.stringToBool(glob.conf.config["localize"]["enable"])
-	if glob.localize == False:
+	if not glob.localize:
 		consoleHelper.printColored("[!] Warning! Users localization is disabled!", bcolors.YELLOW)
 
 	# Discord
 	glob.discord = generalFunctions.stringToBool(glob.conf.config["discord"]["enable"])
-	if glob.discord == False:
+	if not glob.discord:
 		consoleHelper.printColored("[!] Warning! Discord logging is disabled!", bcolors.YELLOW)
 
 	# Gzip
 	glob.gzip = generalFunctions.stringToBool(glob.conf.config["server"]["gzip"])
 	glob.gziplevel = int(glob.conf.config["server"]["gziplevel"])
-	if glob.gzip == False:
+	if not glob.gzip:
 		consoleHelper.printColored("[!] Warning! Gzip compression is disabled!", bcolors.YELLOW)
 
 	# Debug mode
 	glob.debug = generalFunctions.stringToBool(glob.conf.config["debug"]["enable"])
 	glob.outputPackets = generalFunctions.stringToBool(glob.conf.config["debug"]["packets"])
 	glob.outputRequestTime = generalFunctions.stringToBool(glob.conf.config["debug"]["time"])
-	if glob.debug == True:
+	if glob.debug:
 		consoleHelper.printColored("[!] Warning! Server running in debug mode!", bcolors.YELLOW)
 
 	# Make app
@@ -169,7 +169,7 @@ if __name__ == "__main__":
 	# Set up sentry
 	try:
 		glob.sentry = generalFunctions.stringToBool(glob.conf.config["sentry"]["enable"])
-		if glob.sentry == True:
+		if glob.sentry:
 			application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
 		else:
 			consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
 	# IRC start message and console output
 	glob.irc = generalFunctions.stringToBool(glob.conf.config["irc"]["enable"])
-	if glob.irc == True:
+	if glob.irc:
 		# IRC port
 		try:
 			ircPort = int(glob.conf.config["irc"]["port"])

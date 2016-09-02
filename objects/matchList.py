@@ -2,7 +2,7 @@ from objects import match
 from objects import glob
 from constants import serverPackets
 
-class matchList():
+class matchList:
 	matches = {}
 	usersInLobby = []
 	lastID = 1
@@ -70,5 +70,5 @@ class matchList():
 		# Send match dispose packet to everyone in lobby
 		for i in self.usersInLobby:
 			token = glob.tokens.getTokenFromUserID(i)
-			if token != None:
+			if token is not None:
 				token.enqueue(serverPackets.disposeMatch(matchID))

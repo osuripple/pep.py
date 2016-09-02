@@ -2,7 +2,7 @@ import MySQLdb
 import threading
 from helpers import logHelper as log
 
-class mysqlWorker():
+class mysqlWorker:
 	"""
 	Instance of a mysql worker
 	"""
@@ -22,7 +22,7 @@ class mysqlWorker():
 		self.ready = True
 		self.lock = threading.Lock()
 
-class db():
+class db:
 	"""
 	A MySQL db connection with multiple workers
 	"""
@@ -78,7 +78,7 @@ class db():
 				cursor.close()
 			worker.lock.release()
 
-	def fetch(self, query, params = (), all = False):
+	def fetch(self, query, params = (), all_ = False):
 		"""
 		Fetch a single value from db that matches given query
 
@@ -95,7 +95,7 @@ class db():
 			# Create cursor, execute the query and fetch one/all result(s)
 			cursor = worker.connection.cursor(MySQLdb.cursors.DictCursor)
 			cursor.execute(query, params)
-			if all == True:
+			if all_:
 				return cursor.fetchall()
 			else:
 				return cursor.fetchone()

@@ -11,7 +11,7 @@ def checkOldPassword(password, salt, rightPassword):
 	rightPassword -- right password
 	return -- bool
 	"""
-	return (rightPassword == cryptHelper.crypt(password, "$2y$"+str(base64.b64decode(salt))))
+	return rightPassword == cryptHelper.crypt(password, "$2y$" + str(base64.b64decode(salt)))
 
 def checkNewPassword(password, dbPassword):
 	"""

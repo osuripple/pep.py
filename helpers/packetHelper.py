@@ -16,9 +16,9 @@ def uleb128Encode(num):
 
 	while num > 0:
 		arr.append(num & 127)
-		num = num >> 7
+		num >>= 7
 		if num != 0:
-			arr[length] = arr[length] | 128
+			arr[length] |= 128
 		length+=1
 
 	return arr
@@ -36,7 +36,7 @@ def uleb128Decode(num):
 	while True:
 		b = num[arr[1]]
 		arr[1]+=1
-		arr[0] = arr[0] | (int(b & 127) << shift)
+		arr[0] |= int(b & 127) << shift
 		if b & 128 == 0:
 			break
 		shift += 7
@@ -133,12 +133,12 @@ def packData(__data, dataType):
 		packType = "<B"
 
 	# Pack if needed
-	if pack == True:
+	if pack:
 		data += struct.pack(packType, __data)
 
 	return data
 
-def buildPacket(__packet, __packetData = []):
+def buildPacket(__packet, __packetData=None):
 	"""
 	Build a packet
 
@@ -148,6 +148,8 @@ def buildPacket(__packet, __packetData = []):
 	return -- packet bytes
 	"""
 	# Set some variables
+	if __packetData is None:
+		__packetData = []
 	packetData = bytes()
 	packetLength = 0
 	packetBytes = bytes()
@@ -185,7 +187,7 @@ def readPacketLength(stream):
 	return unpackData(stream[3:7], dataTypes.UINT32)
 
 
-def readPacketData(stream, structure = [], hasFirstBytes = True):
+def readPacketData(stream, structure=None, hasFirstBytes = True):
 	"""
 	Read packet data from stream according to structure
 
@@ -197,10 +199,12 @@ def readPacketData(stream, structure = [], hasFirstBytes = True):
 	return -- dictionary. key: name, value: read data
 	"""
 	# Read packet ID (first 2 bytes)
+	if structure is None:
+		structure = []
 	data = {}
 
 	# Skip packet ID and packet length if needed
-	if hasFirstBytes == True:
+	if hasFirstBytes:
 		end = 7
 		start = 7
 	else:
@@ -253,7 +257,7 @@ def readPacketData(stream, structure = [], hasFirstBytes = True):
 			end = start+8
 
 		# Unpack if needed
-		if unpack == True:
+		if unpack:
 			data[i[0]] = unpackData(stream[start:end], i[1])
 
 	return data

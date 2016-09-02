@@ -1,7 +1,7 @@
 import os
 import configparser
 
-class config():
+class config:
 	# Check if config.ini exists and load/generate it
 	def __init__(self, file):
 		"""

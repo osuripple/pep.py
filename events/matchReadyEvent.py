@@ -12,5 +12,5 @@ def handle(userToken, _):
 
 	# Get our slotID and change ready status
 	slotID = match.getUserSlotID(userID)
-	if slotID != None:
+	if slotID is not None:
 		match.toggleSlotReady(slotID)

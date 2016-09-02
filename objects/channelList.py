@@ -2,7 +2,7 @@ from objects import glob
 from objects import channel
 from helpers import logHelper as log
 
-class channelList():
+class channelList:
 	"""
 	Channel list
 

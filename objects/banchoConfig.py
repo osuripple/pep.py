@@ -2,7 +2,7 @@
 from objects import glob
 from helpers import generalFunctions
 
-class banchoConfig():
+class banchoConfig:
 	"""
 	Class that loads settings from bancho_settings db table
 	"""

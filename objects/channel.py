@@ -1,6 +1,6 @@
 from objects import glob
 
-class channel():
+class channel:
 	"""
 	A chat channel
 	"""

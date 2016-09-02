@@ -13,7 +13,7 @@ from helpers import chatHelper as chat
 from helpers import generalFunctions
 import copy
 
-class slot():
+class slot:
 	def __init__(self):
 		self.status = slotStatuses.free
 		self.team = 0
@@ -23,7 +23,7 @@ class slot():
 		self.skip = False
 		self.complete = False
 
-class match():
+class match:
 	"""Multiplayer match object"""
 	matchID = 0
 	inProgress = False
@@ -140,7 +140,7 @@ class match():
 
 		# Send host packet to new host
 		token = glob.tokens.getTokenFromUserID(newHost)
-		if token != None:
+		if token is not None:
 			token.enqueue(serverPackets.matchTransferHost())
 
 		log.info("MPROOM{}: {} is now the host".format(self.matchID, newHost))
@@ -160,25 +160,25 @@ class match():
 
 		If Null is passed, that value won't be edited
 		"""
-		if slotStatus != None:
+		if slotStatus is not None:
 			self.slots[slotID].status = slotStatus
 
-		if slotTeam != None:
+		if slotTeam is not None:
 			self.slots[slotID].team = slotTeam
 
-		if slotUserID != None:
+		if slotUserID is not None:
 			self.slots[slotID].userID = slotUserID
 
-		if slotMods != None:
+		if slotMods is not None:
 			self.slots[slotID].mods = slotMods
 
-		if slotLoaded != None:
+		if slotLoaded is not None:
 			self.slots[slotID].loaded = slotLoaded
 
-		if slotSkip != None:
+		if slotSkip is not None:
 			self.slots[slotID].skip = slotSkip
 
-		if slotComplete != None:
+		if slotComplete is not None:
 			self.slots[slotID].complete = slotComplete
 
 	def setSlotMods(self, slotID, mods):
@@ -231,7 +231,7 @@ class match():
 
 		# Set new slot status
 		self.setSlot(slotID, newStatus, 0, -1, 0)
-		if token != None:
+		if token is not None:
 			# Send updated settings to kicked user, so he returns to lobby
 			token.enqueue(serverPackets.updateMatch(self.matchID))
 
@@ -246,7 +246,7 @@ class match():
 		userID -- ID of user
 		"""
 		slotID = self.getUserSlotID(userID)
-		if slotID == None:
+		if slotID is None:
 			return
 
 		# Set loaded to True
@@ -259,7 +259,7 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].status == slotStatuses.playing:
 				total+=1
-				if self.slots[i].loaded == True:
+				if self.slots[i].loaded:
 					loaded+=1
 
 		if total == loaded:
@@ -270,7 +270,7 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].userID > -1 and self.slots[i].status == slotStatuses.playing:
 				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token != None:
+				if token is not None:
 					token.enqueue(serverPackets.allPlayersLoaded())
 
 		log.info("MPROOM{}: All players loaded! Match starting...".format(self.matchID))
@@ -282,7 +282,7 @@ class match():
 		userID -- ID of user
 		"""
 		slotID = self.getUserSlotID(userID)
-		if slotID == None:
+		if slotID is None:
 			return
 
 		# Set skip to True
@@ -294,7 +294,7 @@ class match():
 			uid = self.slots[i].userID
 			if (self.slots[i].status & slotStatuses.playing > 0) and uid > -1:
 				token = glob.tokens.getTokenFromUserID(uid)
-				if token != None:
+				if token is not None:
 					token.enqueue(serverPackets.playerSkipped(uid))
 
 		# Check all skipped
@@ -303,7 +303,7 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].status == slotStatuses.playing:
 				total+=1
-				if self.slots[i].skip == True:
+				if self.slots[i].skip:
 					skipped+=1
 
 		if total == skipped:
@@ -314,7 +314,7 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].userID > -1 and self.slots[i].status == slotStatuses.playing:
 				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token != None:
+				if token is not None:
 					token.enqueue(serverPackets.allPlayersSkipped())
 
 		log.info("MPROOM{}: All players have skipped!".format(self.matchID))
@@ -326,7 +326,7 @@ class match():
 		userID -- ID of user
 		"""
 		slotID = self.getUserSlotID(userID)
-		if slotID == None:
+		if slotID is None:
 			return
 		self.setSlot(slotID, None, None, None, None, None, None, True)
 
@@ -339,7 +339,7 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].status == slotStatuses.playing:
 				total+=1
-				if self.slots[i].complete == True:
+				if self.slots[i].complete:
 					completed+=1
 
 		if total == completed:
@@ -366,7 +366,7 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].userID > -1:
 				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token != None:
+				if token is not None:
 					token.enqueue(serverPackets.matchComplete())
 
 		# Console output
@@ -415,7 +415,7 @@ class match():
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
-		if slotID == None:
+		if slotID is None:
 			return
 
 		# Set that slot to free
@@ -452,7 +452,7 @@ class match():
 		"""
 		# Make sure the user is in room
 		oldSlotID = self.getUserSlotID(userID)
-		if oldSlotID == None:
+		if oldSlotID is None:
 			return
 
 		# Make sure there is no one inside new slot
@@ -489,7 +489,7 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].userID > -1:
 				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token != None:
+				if token is not None:
 					token.enqueue(serverPackets.changeMatchPassword(self.matchPassword))
 
 		# Send new match settings too
@@ -518,7 +518,7 @@ class match():
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
-		if slotID == None:
+		if slotID is None:
 			return
 
 		# Set slot
@@ -552,7 +552,7 @@ class match():
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
-		if slotID == None:
+		if slotID is None:
 			return
 
 		# Send packet to everyone
@@ -560,7 +560,7 @@ class match():
 			uid = self.slots[i].userID
 			if uid > -1:
 				token = glob.tokens.getTokenFromUserID(uid)
-				if token != None:
+				if token is not None:
 					token.enqueue(serverPackets.playerFailed(slotID))
 
 		# Console output
@@ -577,7 +577,7 @@ class match():
 		# Get tokens
 		froToken = glob.tokens.getTokenFromUserID(fro)
 		toToken = glob.tokens.getTokenFromUserID(to)
-		if froToken == None or toToken == None:
+		if froToken is None or toToken is None:
 			return
 
 		# FokaBot is too busy
@@ -608,7 +608,7 @@ class match():
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
-		if slotID == None:
+		if slotID is None:
 			return
 
 		# Update slot and send update
@@ -621,13 +621,13 @@ class match():
 		for i in range(0,16):
 			if self.slots[i].userID > -1:
 				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token != None:
+				if token is not None:
 					token.enqueue(serverPackets.updateMatch(self.matchID))
 
 		# Send to users in lobby
 		for i in glob.matches.usersInLobby:
 			token = glob.tokens.getTokenFromUserID(i)
-			if token != None:
+			if token is not None:
 				token.enqueue(serverPackets.updateMatch(self.matchID))
 
 	def checkTeams(self):

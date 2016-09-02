@@ -23,13 +23,13 @@ class handler(requestHelper.asyncRequestHandler):
 				except:
 					raise exceptions.invalidArgumentsException()
 
-			if username == None and userID == None:
+			if username is None and userID is None:
 				data["result"] = False
 			else:
-				if username != None:
-					data["result"] = True if glob.tokens.getTokenFromUsername(username) != None else False
+				if username is not None:
+					data["result"] = True if glob.tokens.getTokenFromUsername(username) is not None else False
 				else:
-					data["result"] = True if glob.tokens.getTokenFromUserID(userID) != None else False
+					data["result"] = True if glob.tokens.getTokenFromUserID(userID) is not None else False
 
 			# Status code and message
 			statusCode = 200

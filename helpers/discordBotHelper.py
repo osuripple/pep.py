@@ -12,7 +12,7 @@ def sendDiscordMessage(channel, message, alertDev = False, prefix = "**pep.py**"
 	alertDev -- if True, hl developers group
 	prefix -- string to prepend to message
 	"""
-	if glob.discord == True:
+	if glob.discord:
 		for _ in range(0,20):
 			try:
 				finalMsg = "{prefix} {message}".format(prefix=prefix, message=message) if alertDev == False else "{prefix} {hl} - {message}".format(prefix=prefix, hl=glob.conf.config["discord"]["devgroup"], message=message)

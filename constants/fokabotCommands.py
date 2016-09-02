@@ -76,7 +76,7 @@ def alertUser(fro, chan, message):
 	target = message[0].replace("_", " ")
 
 	targetToken = glob.tokens.getTokenFromUsername(target)
-	if targetToken != None:
+	if targetToken is not None:
 		targetToken.enqueue(serverPackets.notification(' '.join(message[1:])))
 		return False
 	else:
@@ -85,7 +85,7 @@ def alertUser(fro, chan, message):
 def moderated(fro, chan, message):
 	try:
 		# Make sure we are in a channel and not PM
-		if chan.startswith("#") == False:
+		if not chan.startswith("#"):
 			raise exceptions.moderatedPMException
 
 		# Get on/off
@@ -104,7 +104,7 @@ def kickAll(fro, chan, message):
 	# Kick everyone but mods/admins
 	toKick = []
 	for key, value in glob.tokens.tokens.items():
-		if value.admin == False:
+		if not value.admin:
 			toKick.append(key)
 
 	# Loop though users to kick (we can't change dictionary size while iterating)
@@ -120,7 +120,7 @@ def kick(fro, chan, message):
 
 	# Get target token and make sure is connected
 	targetToken = glob.tokens.getTokenFromUsername(target)
-	if targetToken == None:
+	if targetToken is None:
 		return "{} is not online".format(target)
 
 	# Kick user
@@ -131,7 +131,7 @@ def kick(fro, chan, message):
 
 def fokabotReconnect(fro, chan, message):
 	# Check if fokabot is already connected
-	if glob.tokens.getTokenFromUserID(999) != None:
+	if glob.tokens.getTokenFromUserID(999) is not None:
 		return "Fokabot is already connected to Bancho"
 
 	# Fokabot is not connected, connect it
@@ -151,7 +151,7 @@ def silence(fro, chan, message):
 	userID = userHelper.getID(fro)
 
 	# Make sure the user exists
-	if targetUserID == False:
+	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Calculate silence seconds
@@ -172,7 +172,7 @@ def silence(fro, chan, message):
 
 	# Send silence packet to target if he's connected
 	targetToken = glob.tokens.getTokenFromUsername(target)
-	if targetToken != None:
+	if targetToken is not None:
 		# user online, silence both in db and with packet
 		targetToken.silence(silenceTime, reason, userID)
 	else:
@@ -192,12 +192,12 @@ def removeSilence(fro, chan, message):
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
 	userID = userHelper.getID(fro)
-	if targetUserID == False:
+	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Send new silence end packet to user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(target)
-	if targetToken != None:
+	if targetToken is not None:
 		# User online, remove silence both in db and with packet
 		targetToken.silence(0, "", userID)
 	else:
@@ -215,7 +215,7 @@ def ban(fro, chan, message):
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
 	userID = userHelper.getID(fro)
-	if targetUserID == False:
+	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Set allowed to 0
@@ -223,7 +223,7 @@ def ban(fro, chan, message):
 
 	# Send ban packet to the user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(target)
-	if targetToken != None:
+	if targetToken is not None:
 		targetToken.enqueue(serverPackets.loginBanned())
 
 	log.rap(userID, "has banned {}".format(target), True)
@@ -238,7 +238,7 @@ def unban(fro, chan, message):
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
 	userID = userHelper.getID(fro)
-	if targetUserID == False:
+	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Set allowed to 1
@@ -256,7 +256,7 @@ def restrict(fro, chan, message):
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
 	userID = userHelper.getID(fro)
-	if targetUserID == False:
+	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Put this user in restricted mode
@@ -264,7 +264,7 @@ def restrict(fro, chan, message):
 
 	# Send restricted mode packet to this user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(target)
-	if targetToken != None:
+	if targetToken is not None:
 		targetToken.setRestricted()
 
 	log.rap(userID, "has put {} in restricted mode".format(target), True)
@@ -279,7 +279,7 @@ def unrestrict(fro, chan, message):
 	# Make sure the user exists
 	targetUserID = userHelper.getID(target)
 	userID = userHelper.getID(fro)
-	if targetUserID == False:
+	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Set allowed to 1
@@ -331,14 +331,14 @@ def systemMaintenance(fro, chan, message):
 	# Set new maintenance value in bancho_settings table
 	glob.banchoConf.setMaintenance(maintenance)
 
-	if maintenance == True:
+	if maintenance:
 		# We have turned on maintenance mode
 		# Users that will be disconnected
 		who = []
 
 		# Disconnect everyone but mod/admins
 		for _, value in glob.tokens.tokens.items():
-			if value.admin == False:
+			if not value.admin:
 				who.append(value.userID)
 
 		glob.tokens.enqueueAll(serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later."))
@@ -368,7 +368,7 @@ def systemStatus(fro, chan, message):
 	msg += "=== SYSTEM STATS ===\n"
 	msg += "CPU: {}%\n".format(data["cpuUsage"])
 	msg += "RAM: {}GB/{}GB\n".format(data["usedMemory"], data["totalMemory"])
-	if data["unix"] == True:
+	if data["unix"]:
 		msg += "Load average: {}/{}/{}\n".format(data["loadAverage"][0], data["loadAverage"][1], data["loadAverage"][2])
 
 	return msg
@@ -378,7 +378,7 @@ def getPPMessage(userID, just_data = False):
 	try:
 		# Get user token
 		token = glob.tokens.getTokenFromUserID(userID)
-		if token == None:
+		if token is None:
 			return False
 
 		currentMap = token.tillerino[0]
@@ -477,7 +477,7 @@ def tillerinoNp(fro, chan, message):
 
 		# Update latest tillerino song for current token
 		token = glob.tokens.getTokenFromUsername(fro)
-		if token != None:
+		if token is not None:
 			token.tillerino = [int(beatmapID), modsEnum, -1.0]
 		userID = token.userID
 
@@ -495,7 +495,7 @@ def tillerinoMods(fro, chan, message):
 
 		# Get token and user ID
 		token = glob.tokens.getTokenFromUsername(fro)
-		if token == None:
+		if token is None:
 			return False
 		userID = token.userID
 
@@ -547,7 +547,7 @@ def tillerinoAcc(fro, chan, message):
 
 		# Get token and user ID
 		token = glob.tokens.getTokenFromUsername(fro)
-		if token == None:
+		if token is None:
 			return False
 		userID = token.userID
 
@@ -578,12 +578,12 @@ def tillerinoLast(fro, chan, message):
 		WHERE users.username = %s
 		ORDER BY scores.time DESC
 		LIMIT 1""", [fro])
-		if data == None:
+		if data is None:
 			return False
 
 		diffString = "difficulty_{}".format(gameModes.getGameModeForDB(data["play_mode"]))
-		rank = generalFunctions.getRank(data["play_mode"], data["mods"], data["accuracy"],\
-			data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
+		rank = generalFunctions.getRank(data["play_mode"], data["mods"], data["accuracy"],
+										data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
 
 		ifPlayer = "{0} | ".format(fro) if chan != "FokaBot" else ""
 		ifFc = " (FC)" if data["max_combo"] == data["fc"] else " {0}x/{1}x".format(data["max_combo"], data["fc"])
@@ -614,7 +614,7 @@ def tillerinoLast(fro, chan, message):
 		stars = data[diffString]
 		if data["mods"]:
 			token = glob.tokens.getTokenFromUsername(fro)
-			if token == None:
+			if token is None:
 				return False
 			userID = token.userID
 			token.tillerino[0] = data["bid"]

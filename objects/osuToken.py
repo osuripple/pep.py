@@ -10,8 +10,8 @@ import time
 import threading
 from helpers import chatHelper as chat
 
-class token():
-	def __init__(self, userID, token = None, ip = "", irc = False, timeOffset = 0):
+class token:
+	def __init__(self, userID, token_ = None, ip ="", irc = False, timeOffset = 0):
 		"""
 		Create a token object and set userID and token
 
@@ -65,8 +65,8 @@ class token():
 		self.pp = 0
 
 		# Generate/set token
-		if token != None:
-			self.token = token
+		if token_ is not None:
+			self.token = token_
 		else:
 			self.token = str(uuid.uuid4())
 
@@ -77,14 +77,14 @@ class token():
 		if ip != "":
 			userHelper.saveBanchoSession(self.userID, self.ip)
 
-	def enqueue(self, bytes):
+	def enqueue(self, bytes_):
 		"""
 		Add bytes (packets) to queue
 
 		bytes -- (packet) bytes to enqueue
 		"""
-		if self.irc == False:
-			self.queue += bytes
+		if not self.irc:
+			self.queue += bytes_
 
 
 	def resetQueue(self):
@@ -146,7 +146,7 @@ class token():
 		# Remove our userID from host's spectators
 		target = self.spectating
 		targetToken = glob.tokens.getTokenFromUserID(target)
-		if targetToken != None:
+		if targetToken is not None:
 			# Remove us from host's spectators list
 			targetToken.removeSpectator(self.userID)
 
@@ -282,7 +282,7 @@ class token():
 		increaseSpamRate -- pass True if the user has sent a new message. Optional. Default: True
 		"""
 		# Increase the spam rate if needed
-		if increaseSpamRate == True:
+		if increaseSpamRate:
 			self.spamRate += 1
 
 		# Silence the user if needed
@@ -310,7 +310,7 @@ class token():
 		"""Update all cached stats for this token"""
 		stats = userHelper.getUserStats(self.userID, self.gameMode)
 		log.debug(str(stats))
-		if stats == None:
+		if stats is None:
 			log.warning("Stats query returned None")
 			return
 		self.rankedScore = stats["rankedScore"]
@@ -327,9 +327,9 @@ class token():
 		force --	If True, get restricted value from db.
 					If false, get the cached one. Optional. Default: False
 		"""
-		if force == True:
+		if force:
 			self.restricted = userHelper.isRestricted(self.userID)
-		if self.restricted == True:
+		if self.restricted:
 			self.setRestricted()
 
 	def setRestricted(self):

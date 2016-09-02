@@ -26,7 +26,7 @@ def handle(userToken, packetData):
 
 		# Get host token
 		targetToken = glob.tokens.getTokenFromUserID(packetData["userID"])
-		if targetToken == None:
+		if targetToken is None:
 			raise exceptions.tokenNotFoundException
 
 		# Add us to host's spectators

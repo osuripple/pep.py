@@ -18,7 +18,7 @@ def getID(username):
 	userID = glob.db.fetch("SELECT id FROM users WHERE username = %s LIMIT 1", [username])
 
 	# Make sure the query returned something
-	if userID == None:
+	if userID is None:
 		return False
 
 	# Return user ID
@@ -37,7 +37,7 @@ def checkLogin(userID, password):
 	passwordData = glob.db.fetch("SELECT password_md5, salt, password_version FROM users WHERE id = %s LIMIT 1", [userID])
 
 	# Make sure the query returned something
-	if passwordData == None:
+	if passwordData is None:
 		return False
 
 
@@ -58,7 +58,7 @@ def exists(userID):
 	return -- bool
 	"""
 	result = glob.db.fetch("SELECT id FROM users WHERE id = %s LIMIT 1", [userID])
-	if result == None:
+	if result is None:
 		return False
 	else:
 		return True
@@ -140,7 +140,7 @@ def getGameRank(userID, gameMode):
 
 	modeForDB = gameModes.getGameModeForDB(gameMode)
 	result = glob.db.fetch("SELECT position FROM leaderboard_"+modeForDB+" WHERE user = %s LIMIT 1", [userID])
-	if result == None:
+	if result is None:
 		return 0
 	else:
 		return result["position"]
@@ -178,7 +178,7 @@ def getFriendList(userID):
 	# Get friends from db
 	friends = glob.db.fetchAll("SELECT user2 FROM users_relationships WHERE user1 = %s", [userID])
 
-	if friends == None or len(friends) == 0:
+	if friends is None or len(friends) == 0:
 		# We have no friends, return 0 list
 		return [0]
 	else:
@@ -201,7 +201,7 @@ def addFriend(userID, friendID):
 		return
 
 	# check user isn't already a friend of ours
-	if glob.db.fetch("SELECT id FROM users_relationships WHERE user1 = %s AND user2 = %s LIMIT 1", [userID, friendID]) != None:
+	if glob.db.fetch("SELECT id FROM users_relationships WHERE user1 = %s AND user2 = %s LIMIT 1", [userID, friendID]) is not None:
 		return
 
 	# Set new value
@@ -259,7 +259,7 @@ def getShowCountry(userID):
 	return -- True if country is shown, False if it's hidden
 	"""
 	country = glob.db.fetch("SELECT show_country FROM users_stats WHERE id = %s LIMIT 1", [userID])
-	if country == None:
+	if country is None:
 		return False
 	return generalFunctions.stringToBool(country)
 
@@ -311,7 +311,7 @@ def check2FA(userID, ip):
 	ip -- user's IP address
 	return -- True if the IP is untrusted, False if it's trusted
 	"""
-	if is2FAEnabled(userID) == False:
+	if not is2FAEnabled(userID):
 		return False
 
 	result = glob.db.fetch("SELECT id FROM ip_user WHERE userid = %s AND ip = %s", [userID, ip])
@@ -338,7 +338,7 @@ def getUserStats(userID, gameMode):
 
 	# Get game rank
 	result = glob.db.fetch("SELECT position FROM leaderboard_{} WHERE user = %s LIMIT 1".format(modeForDB), [userID])
-	if result == None:
+	if result is None:
 		stats["gameRank"] = 0
 	else:
 		stats["gameRank"] = result["position"]
@@ -354,7 +354,7 @@ def isAllowed(userID):
 	return -- True if not banned or restricted, otherwise false.
 	"""
 	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s LIMIT 1", [userID])
-	if result != None:
+	if result is not None:
 		return (result["privileges"] & privileges.USER_NORMAL) and (result["privileges"] & privileges.USER_PUBLIC)
 	else:
 		return False
@@ -367,7 +367,7 @@ def isRestricted(userID):
 	return -- True if not restricted, otherwise false.
 	"""
 	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s LIMIT 1", [userID])
-	if result != None:
+	if result is not None:
 		return (result["privileges"] & privileges.USER_NORMAL) and not (result["privileges"] & privileges.USER_PUBLIC)
 	else:
 		return False
@@ -380,7 +380,7 @@ def isBanned(userID):
 	return -- True if not banned, otherwise false.
 	"""
 	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s LIMIT 1", [userID])
-	if result != None:
+	if result is not None:
 		return not (result["privileges"] & 3 > 0)
 	else:
 		return True
@@ -428,7 +428,7 @@ def getPrivileges(userID):
 	return -- privileges number
 	"""
 	result = glob.db.fetch("SELECT privileges FROM users WHERE id = %s LIMIT 1", [userID])
-	if result != None:
+	if result is not None:
 		return result["privileges"]
 	else:
 		return 0
@@ -444,11 +444,11 @@ def setPrivileges(userID, priv):
 
 def isInPrivilegeGroup(userID, groupName):
 	groupPrivileges = glob.db.fetch("SELECT privileges FROM privileges_groups WHERE name = %s LIMIT 1", [groupName])
-	if groupPrivileges == None:
+	if groupPrivileges is None:
 		return False
 	groupPrivileges = groupPrivileges["privileges"]
 	userToken = glob.tokens.getTokenFromUserID(userID)
-	if userToken != None:
+	if userToken is not None:
 		userPrivileges = userToken.privileges
 	else:
 		userPrivileges = getPrivileges(userID)
@@ -463,7 +463,7 @@ def appendNotes(userID, notes, addNl = True):
 	notes -- text to append
 	addNl -- if True, prepend \n to notes. Optional. Default: True.
 	"""
-	if addNl == True:
+	if addNl:
 		notes = "\n"+notes
 	glob.db.execute("UPDATE users SET notes=CONCAT(COALESCE(notes, ''),%s) WHERE id = %s LIMIT 1", [notes, userID])
 
@@ -489,7 +489,7 @@ def logHardware(userID, hashes, activation = False):
 			return False
 
 	# Run some HWID checks on that user if he is not restricted
-	if isRestricted(userID) == False:
+	if not isRestricted(userID):
 		# Get username
 		username = getUsername(userID)
 
@@ -509,7 +509,7 @@ def logHardware(userID, hashes, activation = False):
 			# Get the total numbers of logins
 			total = glob.db.fetch("SELECT COUNT(*) AS count FROM hw_user WHERE userid = %s LIMIT 1", [userID])
 			# and make sure it is valid
-			if total == None:
+			if total is None:
 				continue
 			total = total["count"]
 
@@ -539,7 +539,7 @@ def logHardware(userID, hashes, activation = False):
 				""", [userID, hashes[2], hashes[3], hashes[4]])
 
 	# Optionally, set this hash as 'used for activation'
-	if activation == True:
+	if activation:
 		glob.db.execute("UPDATE hw_user SET activated = 1 WHERE userid = %s AND mac = %s AND unique_id = %s AND disk_id = %s", [userID, hashes[2], hashes[3], hashes[4]])
 
 	# Access granted, abbiamo impiegato 3 giorni
@@ -556,7 +556,7 @@ def resetPendingFlag(userID, success=True):
 	success -- if True, set USER_PUBLIC and USER_NORMAL flags too
 	"""
 	glob.db.execute("UPDATE users SET privileges = privileges & %s WHERE id = %s LIMIT 1", [~privileges.USER_PENDING_VERIFICATION, userID])
-	if success == True:
+	if success:
 		glob.db.execute("UPDATE users SET privileges = privileges | %s WHERE id = %s LIMIT 1", [(privileges.USER_PUBLIC | privileges.USER_NORMAL), userID])
 
 def verifyUser(userID, hashes):
@@ -616,7 +616,7 @@ def hasVerifiedHardware(userID):
 	return -- True if hwid activation data is in db, otherwise false
 	"""
 	data = glob.db.fetch("SELECT id FROM hw_user WHERE userid = %s AND activated = 1 LIMIT 1", [userID])
-	if data != None:
+	if data is not None:
 		return True
 	return False
 

@@ -1,4 +1,4 @@
-class chatFilters():
+class chatFilters:
 	def __init__(self, fileName="filters.txt"):
 		self.filters = {}
 		self.loadFilters(fileName)

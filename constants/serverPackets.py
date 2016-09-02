@@ -44,9 +44,9 @@ def mainMenuIcon(icon):
 
 def userSupporterGMT(supporter, GMT):
 	result = 1
-	if supporter == True:
+	if supporter:
 		result += 4
-	if GMT == True:
+	if GMT:
 		result += 2
 	return packetHelper.buildPacket(packetIDs.server_supporterGMT, [[result, dataTypes.UINT32]])
 
@@ -60,7 +60,7 @@ def onlineUsers():
 
 	# Create list with all connected (and not restricted) users
 	for _, value in users.items():
-		if value.restricted == False:
+		if not value.restricted:
 			userIDs.append(value.userID)
 
 	return packetHelper.buildPacket(packetIDs.server_userPresenceBundle, [[userIDs, dataTypes.INT_LIST]])
@@ -73,7 +73,7 @@ def userLogout(userID):
 def userPanel(userID, force = False):
 	# Connected and restricted check
 	userToken = glob.tokens.getTokenFromUserID(userID)
-	if userToken == None:
+	if userToken is None:
 		return bytes()
 	if userToken.restricted == True and force == False:
 		return bytes()
@@ -90,9 +90,9 @@ def userPanel(userID, force = False):
 	# Only admins and normal users are currently supported
 	if username == "FokaBot":
 		userRank = userRanks.MOD
-	elif userHelper.isInPrivilegeGroup(userID, "community manager") == True:
+	elif userHelper.isInPrivilegeGroup(userID, "community manager"):
 		userRank = userRanks.MOD
-	elif userHelper.isInPrivilegeGroup(userID, "developer") == True:
+	elif userHelper.isInPrivilegeGroup(userID, "developer"):
 		userRank = userRanks.ADMIN
 	elif (userToken.privileges & privileges.USER_DONOR) > 0:
 		userRank = userRanks.SUPPORTER
@@ -116,7 +116,7 @@ def userStats(userID, force = False):
 	# Get userID's token from tokens list
 	userToken = glob.tokens.getTokenFromUserID(userID)
 
-	if userToken == None:
+	if userToken is None:
 		return bytes()
 	if (userToken.restricted == True or userToken.irc == True) and force == False:
 		return bytes()

@@ -19,7 +19,7 @@ from objects import glob
 from helpers import chatHelper as chat
 import raven
 
-class Client():
+class Client:
 	"""
 	IRC Client object
 	"""
@@ -131,7 +131,7 @@ class Client():
 		self.server.removeClient(self, quitmsg)
 
 		# Bancho logout
-		if callLogout == True:
+		if callLogout:
 			chat.IRCDisconnect(self.username)
 
 
@@ -282,7 +282,7 @@ class Client():
 
 			# Make sure we are not connected to Bancho
 			token = glob.tokens.getTokenFromUsername(chat.fixUsernameForBancho(nick))
-			if token != None:
+			if token is not None:
 				self.reply("433 * {} :Nickname is already in use".format(nick))
 				return
 
@@ -332,7 +332,7 @@ class Client():
 
 		# Get bancho token object
 		token = glob.tokens.getTokenFromUsername(self.banchoUsername)
-		if token == None:
+		if token is None:
 			return
 
 		# TODO: Part all channels
@@ -376,7 +376,7 @@ class Client():
 				usernames = []
 				for user in users:
 					token = glob.tokens.getTokenFromUserID(user)
-					if token == None:
+					if token is None:
 						continue
 					usernames.append(chat.fixUsernameForIRC(token.username))
 				usernames = " ".join(usernames)
@@ -397,7 +397,7 @@ class Client():
 
 		# Get bancho token object
 		token = glob.tokens.getTokenFromUsername(self.banchoUsername)
-		if token == None:
+		if token is None:
 			return
 
 		# Get channels to part list
@@ -514,7 +514,7 @@ class Client():
 
 
 
-class Server():
+class Server:
 	def __init__(self, port):
 		self.host = socket.getfqdn("127.0.0.1")[:63]
 		self.port = port
@@ -591,7 +591,7 @@ class Server():
 	def start(self):
 		"""Start IRC server main loop"""
 		# Sentry
-		if glob.sentry == True:
+		if glob.sentry:
 			sentryClient = raven.Client(glob.conf.config["sentry"]["ircdns"])
 
 		serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -642,7 +642,7 @@ class Server():
 					lastAliveCheck = now
 			except:
 				log.error("[IRC] Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
-				if glob.sentry == True:
+				if glob.sentry:
 					sentryClient.captureException()
 
 def main(port=6667):

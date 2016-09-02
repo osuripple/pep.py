@@ -38,7 +38,7 @@ def fokabotResponse(fro, chan, message):
 			# message has triggered a command
 
 			# Make sure the user has right permissions
-			if i["privileges"] != None:
+			if i["privileges"] is not None:
 				# Rank = x
 				if userHelper.getPrivileges(userHelper.getID(fro)) & i["privileges"] == 0:
 					return False
@@ -49,7 +49,7 @@ def fokabotResponse(fro, chan, message):
 				return "Wrong syntax: {} {}".format(i["trigger"], i["syntax"])
 
 			# Return response or execute callback
-			if i["callback"] == None:
+			if i["callback"] is None:
 				return i["response"]
 			else:
 				return i["callback"](fro, chan, message[1:])

@@ -60,7 +60,7 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 	def asyncPost(self):
 		try:
 			# Track time if needed
-			if glob.outputRequestTime == True:
+			if glob.outputRequestTime:
 				# Start time
 				st = datetime.datetime.now()
 
@@ -70,9 +70,8 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 
 			# Server's token string and request data
 			responseTokenString = "ayy"
-			responseData = bytes()
 
-			if requestTokenString == None:
+			if requestTokenString is None:
 				# No token, first request. Handle login.
 				responseTokenString, responseData = loginEvent.handle(self)
 			else:
@@ -198,10 +197,10 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 					log.info("{} has been disconnected (invalid token)".format(requestTokenString))
 				finally:
 					# Unlock token
-					if userToken != None:
+					if userToken is not None:
 						userToken.lock.release()
 
-			if glob.outputRequestTime == True:
+			if glob.outputRequestTime:
 				# End time
 				et = datetime.datetime.now()
 
@@ -211,7 +210,7 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 
 			# Send server's response to client
 			# We don't use token object because we might not have a token (failed login)
-			if glob.gzip == True:
+			if glob.gzip:
 				# First, write the gzipped response
 				self.write(gzip.compress(responseData, int(glob.conf.config["server"]["gziplevel"])))
 
