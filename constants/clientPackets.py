@@ -8,58 +8,58 @@ from constants import slotStatuses
 def userActionChange(stream):
 	return packetHelper.readPacketData(stream,
 	[
-		["actionID", 	dataTypes.byte],
-		["actionText", 	dataTypes.string],
-		["actionMd5", 	dataTypes.string],
-		["actionMods",	dataTypes.uInt32],
-		["gameMode",	dataTypes.byte]
+		["actionID", dataTypes.BYTE],
+		["actionText", dataTypes.STRING],
+		["actionMd5", dataTypes.STRING],
+		["actionMods", dataTypes.UINT32],
+		["gameMode", dataTypes.BYTE]
 	])
 
 def userStatsRequest(stream):
-	return packetHelper.readPacketData(stream, [["users", dataTypes.intList]])
+	return packetHelper.readPacketData(stream, [["users", dataTypes.INT_LIST]])
 
 def userPanelRequest(stream):
-	return packetHelper.readPacketData(stream, [["users", dataTypes.intList]])
+	return packetHelper.readPacketData(stream, [["users", dataTypes.INT_LIST]])
 
 
 """ Client chat packets """
 def sendPublicMessage(stream):
 	return packetHelper.readPacketData(stream,
 	[
-		["unknown", 	dataTypes.string],
-		["message", 	dataTypes.string],
-		["to", 			dataTypes.string]
+		["unknown", dataTypes.STRING],
+		["message", dataTypes.STRING],
+		["to", dataTypes.STRING]
 	])
 
 def sendPrivateMessage(stream):
 	return packetHelper.readPacketData(stream,
 	[
-		["unknown", 	dataTypes.string],
-		["message", 	dataTypes.string],
-		["to", 			dataTypes.string],
-		["unknown2",	dataTypes.uInt32]
+		["unknown", dataTypes.STRING],
+		["message", dataTypes.STRING],
+		["to", dataTypes.STRING],
+		["unknown2", dataTypes.UINT32]
 	])
 
 def setAwayMessage(stream):
 	return packetHelper.readPacketData(stream,
 	[
-		["unknown", 	dataTypes.string],
-		["awayMessage", dataTypes.string]
+		["unknown", dataTypes.STRING],
+		["awayMessage", dataTypes.STRING]
 	])
 
 def channelJoin(stream):
-	return packetHelper.readPacketData(stream,[["channel", 	dataTypes.string]])
+	return packetHelper.readPacketData(stream, [["channel", dataTypes.STRING]])
 
 def channelPart(stream):
-	return packetHelper.readPacketData(stream,[["channel", 	dataTypes.string]])
+	return packetHelper.readPacketData(stream, [["channel", dataTypes.STRING]])
 
 def addRemoveFriend(stream):
-	return packetHelper.readPacketData(stream, [["friendID", dataTypes.sInt32]])
+	return packetHelper.readPacketData(stream, [["friendID", dataTypes.SINT32]])
 
 
 """ Spectator packets """
 def startSpectating(stream):
-	return packetHelper.readPacketData(stream,[["userID", dataTypes.sInt32]])
+	return packetHelper.readPacketData(stream, [["userID", dataTypes.SINT32]])
 
 
 """ Multiplayer packets """
@@ -69,24 +69,24 @@ def matchSettings(stream):
 
 	# Some settings
 	struct = [
-		["matchID", dataTypes.uInt16],
-		["inProgress", dataTypes.byte],
-		["unknown", dataTypes.byte],
-		["mods", dataTypes.uInt32],
-		["matchName", dataTypes.string],
-		["matchPassword", dataTypes.string],
-		["beatmapName", dataTypes.string],
-		["beatmapID", dataTypes.uInt32],
-		["beatmapMD5", dataTypes.string]
+		["matchID", dataTypes.UINT16],
+		["inProgress", dataTypes.BYTE],
+		["unknown", dataTypes.BYTE],
+		["mods", dataTypes.UINT32],
+		["matchName", dataTypes.STRING],
+		["matchPassword", dataTypes.STRING],
+		["beatmapName", dataTypes.STRING],
+		["beatmapID", dataTypes.UINT32],
+		["beatmapMD5", dataTypes.STRING]
 	]
 
 	# Slot statuses (not used)
 	for i in range(0,16):
-		struct.append(["slot{}Status".format(str(i)), dataTypes.byte])
+		struct.append(["slot{}Status".format(str(i)), dataTypes.BYTE])
 
 	# Slot statuses (not used)
 	for i in range(0,16):
-		struct.append(["slot{}Team".format(str(i)), dataTypes.byte])
+		struct.append(["slot{}Team".format(str(i)), dataTypes.BYTE])
 
 	# Read first part
 	data.append(packetHelper.readPacketData(stream, struct))
@@ -104,11 +104,11 @@ def matchSettings(stream):
 
 	# Other settings
 	struct = [
-		["hostUserID", dataTypes.sInt32],
-		["gameMode", dataTypes.byte],
-		["scoringType", dataTypes.byte],
-		["teamType", dataTypes.byte],
-		["freeMods", dataTypes.byte],
+		["hostUserID", dataTypes.SINT32],
+		["gameMode", dataTypes.BYTE],
+		["scoringType", dataTypes.BYTE],
+		["teamType", dataTypes.BYTE],
+		["freeMods", dataTypes.BYTE],
 	]
 
 	# Read last part
@@ -126,19 +126,19 @@ def changeMatchSettings(stream):
 	return matchSettings(stream)
 
 def changeSlot(stream):
-	return packetHelper.readPacketData(stream, [["slotID", dataTypes.uInt32]])
+	return packetHelper.readPacketData(stream, [["slotID", dataTypes.UINT32]])
 
 def joinMatch(stream):
-	return packetHelper.readPacketData(stream, [["matchID", dataTypes.uInt32], ["password", dataTypes.string]])
+	return packetHelper.readPacketData(stream, [["matchID", dataTypes.UINT32], ["password", dataTypes.STRING]])
 
 def changeMods(stream):
-	return packetHelper.readPacketData(stream, [["mods", dataTypes.uInt32]])
+	return packetHelper.readPacketData(stream, [["mods", dataTypes.UINT32]])
 
 def lockSlot(stream):
-	return packetHelper.readPacketData(stream, [["slotID", dataTypes.uInt32]])
+	return packetHelper.readPacketData(stream, [["slotID", dataTypes.UINT32]])
 
 def transferHost(stream):
-	return packetHelper.readPacketData(stream, [["slotID", dataTypes.uInt32]])
+	return packetHelper.readPacketData(stream, [["slotID", dataTypes.UINT32]])
 
 def matchInvite(stream):
-	return packetHelper.readPacketData(stream, [["userID", dataTypes.uInt32]])
+	return packetHelper.readPacketData(stream, [["userID", dataTypes.UINT32]])

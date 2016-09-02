@@ -13,7 +13,7 @@ npRegex = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
 def connect():
 	"""Add FokaBot to connected users and send userpanel/stats packet to everyone"""
 	token = glob.tokens.addToken(999)
-	token.actionID = actions.idle
+	token.actionID = actions.IDLE
 	glob.tokens.enqueueAll(serverPackets.userPanel(999))
 	glob.tokens.enqueueAll(serverPackets.userStats(999))
 

@@ -32,7 +32,7 @@ def handle(userToken, packetData):
 	#	userToken.partMatch()
 
 	# Update cached stats if our pp changedm if we've just submitted a score or we've changed gameMode
-	if (userToken.actionID == actions.playing or userToken.actionID == actions.multiplaying) or (userToken.pp != userHelper.getPP(userID, userToken.gameMode)) or (userToken.gameMode != packetData["gameMode"]):
+	if (userToken.actionID == actions.PLAYING or userToken.actionID == actions.MULTIPLAYING) or (userToken.pp != userHelper.getPP(userID, userToken.gameMode)) or (userToken.gameMode != packetData["gameMode"]):
 		# Always update game mode, or we'll cache stats from the wrong game mode if we've changed it
 		userToken.gameMode = packetData["gameMode"]
 		userToken.updateCachedStats()

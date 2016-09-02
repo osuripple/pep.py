@@ -619,3 +619,9 @@ def hasVerifiedHardware(userID):
 	if data != None:
 		return True
 	return False
+
+def cacheUserIDs():
+	"""Cache userIDs in glob.userIDCache, used later with getID()."""
+	data = glob.db.fetchAll("SELECT id, username FROM users WHERE privileges & {} > 0".format(privileges.USER_NORMAL))
+	for i in data:
+		glob.userIDCache[i["username"]] = i["id"]

@@ -86,47 +86,47 @@ class match():
 		"""
 		# General match info
 		struct = [
-			[self.matchID, dataTypes.uInt16],
-			[int(self.inProgress), dataTypes.byte],
-			[0, dataTypes.byte],
-			[self.mods, dataTypes.uInt32],
-			[self.matchName, dataTypes.string],
-			[self.matchPassword, dataTypes.string],
-			[self.beatmapName, dataTypes.string],
-			[self.beatmapID, dataTypes.uInt32],
-			[self.beatmapMD5, dataTypes.string],
+			[self.matchID, dataTypes.UINT16],
+			[int(self.inProgress), dataTypes.BYTE],
+			[0, dataTypes.BYTE],
+			[self.mods, dataTypes.UINT32],
+			[self.matchName, dataTypes.STRING],
+			[self.matchPassword, dataTypes.STRING],
+			[self.beatmapName, dataTypes.STRING],
+			[self.beatmapID, dataTypes.UINT32],
+			[self.beatmapMD5, dataTypes.STRING],
 		]
 
 		# Slots status IDs, always 16 elements
 		for i in range(0,16):
-			struct.append([self.slots[i].status, dataTypes.byte])
+			struct.append([self.slots[i].status, dataTypes.BYTE])
 
 		# Slot teams, always 16 elements
 		for i in range(0,16):
-			struct.append([self.slots[i].team, dataTypes.byte])
+			struct.append([self.slots[i].team, dataTypes.BYTE])
 
 		# Slot user ID. Write only if slot is occupied
 		for i in range(0,16):
 			uid = self.slots[i].userID
 			if uid > -1:
-				struct.append([uid, dataTypes.uInt32])
+				struct.append([uid, dataTypes.UINT32])
 
 		# Other match data
 		struct.extend([
-			[self.hostUserID, dataTypes.sInt32],
-			[self.gameMode, dataTypes.byte],
-			[self.matchScoringType, dataTypes.byte],
-			[self.matchTeamType, dataTypes.byte],
-			[self.matchModMode, dataTypes.byte],
+			[self.hostUserID, dataTypes.SINT32],
+			[self.gameMode, dataTypes.BYTE],
+			[self.matchScoringType, dataTypes.BYTE],
+			[self.matchTeamType, dataTypes.BYTE],
+			[self.matchModMode, dataTypes.BYTE],
 		])
 
 		# Slot mods if free mod is enabled
 		if self.matchModMode == matchModModes.freeMod:
 			for i in range(0,16):
-				struct.append([self.slots[i].mods, dataTypes.uInt32])
+				struct.append([self.slots[i].mods, dataTypes.UINT32])
 
 		# Seed idk
-		struct.append([self.seed, dataTypes.uInt32])
+		struct.append([self.seed, dataTypes.UINT32])
 
 		return struct
 

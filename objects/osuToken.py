@@ -52,7 +52,7 @@ class token():
 		self.spamRate = 0
 
 		# Stats cache
-		self.actionID = actions.idle
+		self.actionID = actions.IDLE
 		self.actionText = ""
 		self.actionMd5 = ""
 		self.actionMods = 0

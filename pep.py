@@ -135,6 +135,11 @@ if __name__ == "__main__":
 	glob.tokens.spamProtectionResetLoop()
 	consoleHelper.printDone()
 
+	# Cache user ids
+	consoleHelper.printNoNl("> Caching user IDs... ")
+	userHelper.cacheUserIDs()
+	consoleHelper.printDone()
+
 	# Localize warning
 	glob.localize = generalFunctions.stringToBool(glob.conf.config["localize"]["enable"])
 	if glob.localize == False:

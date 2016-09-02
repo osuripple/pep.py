@@ -54,21 +54,21 @@ def unpackData(data, dataType):
 	"""
 
 	# Get right pack Type
-	if dataType == dataTypes.uInt16:
+	if dataType == dataTypes.UINT16:
 		unpackType = "<H"
-	elif dataType == dataTypes.sInt16:
+	elif dataType == dataTypes.SINT16:
 		unpackType = "<h"
-	elif dataType == dataTypes.uInt32:
+	elif dataType == dataTypes.UINT32:
 		unpackType = "<L"
-	elif dataType == dataTypes.sInt32:
+	elif dataType == dataTypes.SINT32:
 		unpackType = "<l"
-	elif dataType == dataTypes.uInt64:
+	elif dataType == dataTypes.UINT64:
 		unpackType = "<Q"
-	elif dataType == dataTypes.sInt64:
+	elif dataType == dataTypes.SINT64:
 		unpackType = "<q"
-	elif dataType == dataTypes.string:
+	elif dataType == dataTypes.STRING:
 		unpackType = "<s"
-	elif dataType == dataTypes.ffloat:
+	elif dataType == dataTypes.FFLOAT:
 		unpackType = "<f"
 	else:
 		unpackType = "<B"
@@ -90,19 +90,19 @@ def packData(__data, dataType):
 	pack = True		# if True, use pack. False only with strings
 
 	# Get right pack Type
-	if dataType == dataTypes.bbytes:
+	if dataType == dataTypes.BBYTES:
 		# Bytes, do not use pack, do manually
 		pack = False
 		data = __data
-	elif dataType == dataTypes.intList:
+	elif dataType == dataTypes.INT_LIST:
 		# Pack manually
 		pack = False
 		# Add length
-		data = packData(len(__data), dataTypes.uInt16)
+		data = packData(len(__data), dataTypes.UINT16)
 		# Add all elements
 		for i in __data:
-			data += packData(i, dataTypes.sInt32)
-	elif dataType == dataTypes.string:
+			data += packData(i, dataTypes.SINT32)
+	elif dataType == dataTypes.STRING:
 		# String, do not use pack, do manually
 		pack = False
 		if len(__data) == 0:
@@ -113,21 +113,21 @@ def packData(__data, dataType):
 			data += b"\x0B"
 			data += uleb128Encode(len(__data))
 			data += str.encode(__data, "latin_1", "ignore")
-	elif dataType == dataTypes.uInt16:
+	elif dataType == dataTypes.UINT16:
 		packType = "<H"
-	elif dataType == dataTypes.sInt16:
+	elif dataType == dataTypes.SINT16:
 		packType = "<h"
-	elif dataType == dataTypes.uInt32:
+	elif dataType == dataTypes.UINT32:
 		packType = "<L"
-	elif dataType == dataTypes.sInt32:
+	elif dataType == dataTypes.SINT32:
 		packType = "<l"
-	elif dataType == dataTypes.uInt64:
+	elif dataType == dataTypes.UINT64:
 		packType = "<Q"
-	elif dataType == dataTypes.sInt64:
+	elif dataType == dataTypes.SINT64:
 		packType = "<q"
-	elif dataType == dataTypes.string:
+	elif dataType == dataTypes.STRING:
 		packType = "<s"
-	elif dataType == dataTypes.ffloat:
+	elif dataType == dataTypes.FFLOAT:
 		packType = "<f"
 	else:
 		packType = "<B"
@@ -173,7 +173,7 @@ def readPacketID(stream):
 	stream -- data stream
 	return -- packet ID (int)
 	"""
-	return unpackData(stream[0:2], dataTypes.uInt16)
+	return unpackData(stream[0:2], dataTypes.UINT16)
 
 def readPacketLength(stream):
 	"""
@@ -182,7 +182,7 @@ def readPacketLength(stream):
 	stream -- data stream
 	return -- packet length (int)
 	"""
-	return unpackData(stream[3:7], dataTypes.uInt32)
+	return unpackData(stream[3:7], dataTypes.UINT32)
 
 
 def readPacketData(stream, structure = [], hasFirstBytes = True):
@@ -211,22 +211,22 @@ def readPacketData(stream, structure = [], hasFirstBytes = True):
 	for i in structure:
 		start = end
 		unpack = True
-		if i[1] == dataTypes.intList:
+		if i[1] == dataTypes.INT_LIST:
 			# sInt32 list.
 			# Unpack manually with for loop
 			unpack = False
 
 			# Read length (uInt16)
-			length = unpackData(stream[start:start+2], dataTypes.uInt16)
+			length = unpackData(stream[start:start+2], dataTypes.UINT16)
 
 			# Read all int inside list
 			data[i[0]] = []
 			for j in range(0,length):
-				data[i[0]].append(unpackData(stream[start+2+(4*j):start+2+(4*(j+1))], dataTypes.sInt32))
+				data[i[0]].append(unpackData(stream[start+2+(4*j):start+2+(4*(j+1))], dataTypes.SINT32))
 
 			# Update end
 			end = start+2+(4*length)
-		elif i[1] == dataTypes.string:
+		elif i[1] == dataTypes.STRING:
 			# String, don't unpack
 			unpack = False
 
@@ -243,13 +243,13 @@ def readPacketData(stream, structure = [], hasFirstBytes = True):
 
 				# Read bytes
 				data[i[0]] = ''.join(chr(j) for j in stream[start+1+length[1]:end])
-		elif i[1] == dataTypes.byte:
+		elif i[1] == dataTypes.BYTE:
 			end = start+1
-		elif i[1] == dataTypes.uInt16 or i[1] == dataTypes.sInt16:
+		elif i[1] == dataTypes.UINT16 or i[1] == dataTypes.SINT16:
 			end = start+2
-		elif i[1] == dataTypes.uInt32 or i[1] == dataTypes.sInt32:
+		elif i[1] == dataTypes.UINT32 or i[1] == dataTypes.SINT32:
 			end = start+4
-		elif i[1] == dataTypes.uInt64 or i[1] == dataTypes.sInt64:
+		elif i[1] == dataTypes.UINT64 or i[1] == dataTypes.SINT64:
 			end = start+8
 
 		# Unpack if needed
