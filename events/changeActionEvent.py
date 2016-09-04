@@ -24,12 +24,12 @@ def handle(userToken, packetData):
 	packetData = clientPackets.userActionChange(packetData)
 
 	# If we are not in spectate status but we're spectating someone, stop spectating
-	if userToken.spectating != 0 and userToken.actionID != actions.WATCHING and userToken.actionID != actions.IDLE and userToken.actionID != actions.AFK:
+	'''if userToken.spectating != 0 and userToken.actionID != actions.WATCHING and userToken.actionID != actions.IDLE and userToken.actionID != actions.AFK:
 		userToken.stopSpectating()
 
 	# If we are not in multiplayer but we are in a match, part match
 	if userToken.matchID != -1 and userToken.actionID != actions.MULTIPLAYING and userToken.actionID != actions.MULTIPLAYER and userToken.actionID != actions.AFK:
-		userToken.partMatch()
+		userToken.partMatch()'''
 
 	# Update cached stats if our pp changedm if we've just submitted a score or we've changed gameMode
 	if (userToken.actionID == actions.PLAYING or userToken.actionID == actions.MULTIPLAYING) or (userToken.pp != userHelper.getPP(userID, userToken.gameMode)) or (userToken.gameMode != packetData["gameMode"]):
