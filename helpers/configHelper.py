@@ -38,6 +38,7 @@ class config:
 			self.config.get("db","workers")
 
 			self.config.get("server","port")
+			self.config.get("server","threads")
 			self.config.get("server","gzip")
 			self.config.get("server","gziplevel")
 			self.config.get("server","cikey")
@@ -82,6 +83,7 @@ class config:
 
 		self.config.add_section("server")
 		self.config.set("server", "port", "5001")
+		self.config.set("server", "threads", "16")
 		self.config.set("server", "gzip", "1")
 		self.config.set("server", "gziplevel", "6")
 		self.config.set("server", "cikey", "changeme")

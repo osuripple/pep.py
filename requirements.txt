@@ -1,6 +1,5 @@
 requests
 tornado
-gevent
 mysqlclient
 psutil
 raven

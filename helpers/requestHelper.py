@@ -3,7 +3,6 @@ import tornado.web
 import tornado.gen
 from tornado.ioloop import IOLoop
 from objects import glob
-import gevent
 
 class asyncRequestHandler(tornado.web.RequestHandler):
 	"""
@@ -56,9 +55,7 @@ def runBackground(data, callback):
 	func, args, kwargs = data
 	def _callback(result):
 		IOLoop.instance().add_callback(lambda: callback(result))
-	g = gevent.Greenlet(func, *args, **kwargs)
-	g.link(_callback)
-	g.start()
+	glob.pool.apply_async(func, args, kwargs, _callback)
 
 def checkArguments(arguments, requiredArguments):
 	"""

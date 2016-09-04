@@ -28,6 +28,7 @@ verifiedCache = {}
 cloudflare = False
 chatFilters = None
 userIDCache = {}
+pool = None
 
 debug = False
 outputRequestTime = False

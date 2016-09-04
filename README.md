@@ -11,7 +11,6 @@ This is Ripple's bancho server. It handles:
 - Python 3.5
 - MySQLdb (`mysqlclient`)
 - Tornado
-- Gevent
 - Bcrypt
 - Raven
 
