@@ -19,7 +19,8 @@ def joinMatch(userToken, matchID, password, isPasswordHashed = False):
 		userToken.stopSpectating()
 
 		# Leave other matches
-		userToken.partMatch()
+		if userToken.matchID > -1 and userToken.matchID != matchID:
+			userToken.partMatch()
 
 		# Get usertoken data
 		userID = userToken.userID
