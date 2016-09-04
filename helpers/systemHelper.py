@@ -1,13 +1,24 @@
 from objects import glob
 from constants import serverPackets
+from helpers import consoleHelper
 import psutil
 import os
 import sys
 import threading
 import signal
 from helpers import logHelper as log
+from constants import bcolors
 import time
 import math
+
+def dispose():
+	"""
+	Perform some clean up. Called on shutdown.
+	:return:
+	"""
+	print("> Disposing server... ")
+	glob.fileBuffers.flushAll()
+	consoleHelper.printColored("Goodbye!", bcolors.GREEN)
 
 def runningUnderUnix():
 	"""
@@ -49,11 +60,13 @@ def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 def restartServer():
 	"""Restart pep.py script"""
 	log.info("Restarting pep.py...")
+	dispose()
 	os.execv(sys.executable, [sys.executable] + sys.argv)
 
 def shutdownServer():
 	"""Shutdown pep.py"""
 	log.info("Shutting down pep.py...")
+	dispose()
 	sig = signal.SIGKILL if runningUnderUnix() else signal.CTRL_C_EVENT
 	os.kill(os.getpid(), sig)
 

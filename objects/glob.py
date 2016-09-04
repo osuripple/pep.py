@@ -4,6 +4,7 @@ from objects import tokenList
 from objects import channelList
 from objects import matchList
 from objects import fileLocks
+from objects import fileBuffer
 import time
 
 try:
@@ -22,6 +23,7 @@ channels = channelList.channelList()
 matches = matchList.matchList()
 restarting = False
 fLocks = fileLocks.fileLocks()
+fileBuffers = fileBuffer.buffersList()
 verifiedCache = {}
 cloudflare = False
 chatFilters = None
