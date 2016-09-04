@@ -435,6 +435,7 @@ class Client:
 		message = arguments[1]
 
 		# Send the message to bancho and reply
+		recipient = chat.fixUsernameForBancho(recipient)
 		response = chat.sendMessage(self.banchoUsername, recipient, message, toIRC=False)
 		if response == 404:
 			self.replyCode(404, "Cannot send to channel", channel=recipient)
