@@ -11,6 +11,7 @@ import threading
 from helpers import chatHelper as chat
 
 class token:
+
 	def __init__(self, userID, token_ = None, ip ="", irc = False, timeOffset = 0):
 		"""
 		Create a token object and set userID and token

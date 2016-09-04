@@ -8,21 +8,21 @@ from constants import privileges
 
 def getID(username):
 	"""
-	Get username's user ID
+	Get username's user ID from userID cache (if cache hit)
+	or from db (and cache it for other requests) if cache miss
 
-	db -- database connection
 	username -- user
-	return -- user id or False
+	return -- user id or 0
 	"""
-	# Get user ID from db
-	userID = glob.db.fetch("SELECT id FROM users WHERE username = %s LIMIT 1", [username])
+	# Add to cache if needed
+	if username not in glob.userIDCache:
+		userID = glob.db.fetch("SELECT id FROM users WHERE username = %s LIMIT 1", [username])
+		if userID == None:
+			return 0
+		glob.userIDCache[username] = userID["id"]
 
-	# Make sure the query returned something
-	if userID is None:
-		return False
-
-	# Return user ID
-	return userID["id"]
+	# Get userID from cache
+	return glob.userIDCache[username]
 
 def checkLogin(userID, password):
 	"""

@@ -70,6 +70,7 @@ class handler(SentryMixin, requestHelper.asyncRequestHandler):
 
 			# Server's token string and request data
 			responseTokenString = "ayy"
+			responseData = bytes()
 
 			if requestTokenString is None:
 				# No token, first request. Handle login.

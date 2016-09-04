@@ -25,6 +25,7 @@ fLocks = fileLocks.fileLocks()
 verifiedCache = {}
 cloudflare = False
 chatFilters = None
+userIDCache = {}
 
 debug = False
 outputRequestTime = False
@@ -33,5 +34,6 @@ discord = False
 gzip = False
 localize = False
 sentry = False
+irc = False
 
 startTime = int(time.time())

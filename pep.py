@@ -1,14 +1,14 @@
 """Hello, pep.py here, ex-owner of ripple and prime minister of Ripwot."""
-import sys
 import os
+import sys
 import threading
 
-# Tornado
+import tornado.gen
+import tornado.httpserver
 import tornado.ioloop
 import tornado.web
-import tornado.httpserver
-import tornado.gen
 from gevent import monkey as brit_monkey
+
 brit_monkey.patch_all()
 
 # Raven
@@ -25,6 +25,7 @@ from helpers import consoleHelper
 from helpers import databaseHelperNew
 from helpers import generalFunctions
 from helpers import logHelper as log
+from helpers import userHelper
 
 from handlers import mainHandler
 from handlers import apiIsOnlineHandler
@@ -136,9 +137,9 @@ if __name__ == "__main__":
 	consoleHelper.printDone()
 
 	# Cache user ids
-	#consoleHelper.printNoNl("> Caching user IDs... ")
-	#userHelper.cacheUserIDs()
-	#consoleHelper.printDone()
+	consoleHelper.printNoNl("> Caching user IDs... ")
+	userHelper.cacheUserIDs()
+	consoleHelper.printDone()
 
 	# Localize warning
 	glob.localize = generalFunctions.stringToBool(glob.conf.config["localize"]["enable"])
