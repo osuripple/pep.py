@@ -146,6 +146,8 @@ class token:
 	def stopSpectating(self):
 		# Remove our userID from host's spectators
 		target = self.spectating
+		if self.spectating == 0:
+			return
 		targetToken = glob.tokens.getTokenFromUserID(target)
 		if targetToken is not None:
 			# Remove us from host's spectators list

@@ -82,9 +82,6 @@ if __name__ == "__main__":
 				os.makedirs(i, 0o770)
 		consoleHelper.printDone()
 
-		# Flush file buffers at exit
-		#atexit.register(lambda: glob.fileBuffers.flushAll())
-
 		# Connect to db
 		try:
 			consoleHelper.printNoNl("> Connecting to MySQL db")
