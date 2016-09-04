@@ -57,6 +57,7 @@ class config:
 
 			self.config.get("irc","enable")
 			self.config.get("irc","port")
+			self.config.get("irc","hostname")
 
 			self.config.get("localize","enable")
 			self.config.get("localize","ipapiurl")
@@ -104,6 +105,7 @@ class config:
 		self.config.add_section("irc")
 		self.config.set("irc", "enable", "1")
 		self.config.set("irc", "port", "6667")
+		self.config.set("irc", "hostname", "ripple")
 
 		self.config.add_section("localize")
 		self.config.set("localize", "enable", "1")

@@ -516,7 +516,8 @@ class Client:
 
 class Server:
 	def __init__(self, port):
-		self.host = socket.getfqdn("127.0.0.1")[:63]
+		#self.host = socket.getfqdn("127.0.0.1")[:63]
+		self.host = glob.conf.config["irc"]["hostname"]
 		self.port = port
 		self.clients = {}  # Socket --> Client instance.
 		self.motd = ["Welcome to pep.py's embedded IRC server!", "This is a VERY simple IRC server and it's still in beta.", "Expect things to crash and not work as expected :("]
