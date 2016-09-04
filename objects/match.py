@@ -391,6 +391,12 @@ class match:
 		return -- True if join success, False if fail (room is full)
 		"""
 
+		# Make sure we're not in this match
+		for i in range(0,16):
+			if self.slots[i].userID == userID:
+				# Set bugged slot to free
+				self.setSlot(i, slotStatuses.free, 0, -1, 0)
+
 		# Find first free slot
 		for i in range(0,16):
 			if self.slots[i].status == slotStatuses.free:
