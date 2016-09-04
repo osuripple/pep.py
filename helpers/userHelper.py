@@ -251,18 +251,6 @@ def setCountry(userID, country):
 	"""
 	glob.db.execute("UPDATE users_stats SET country = %s WHERE id = %s LIMIT 1", [country, userID])
 
-def getShowCountry(userID):
-	"""
-	Get userID's show country status
-
-	userID -- userID
-	return -- True if country is shown, False if it's hidden
-	"""
-	country = glob.db.fetch("SELECT show_country FROM users_stats WHERE id = %s LIMIT 1", [userID])
-	if country is None:
-		return False
-	return generalFunctions.stringToBool(country)
-
 def logIP(userID, ip):
 	"""
 	User IP log
