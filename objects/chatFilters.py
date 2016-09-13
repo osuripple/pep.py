@@ -16,7 +16,9 @@ class chatFilters:
 			for line in data:
 				# Get old/new word and save it in dictionary
 				lineSplit = line.split("=")
-				self.filters[lineSplit[0]] = lineSplit[1].replace("\n", "")
+				self.filters[lineSplit[0].lower()] = lineSplit[1].replace("\n", "")
+
+		print(str(self.filters))
 
 	def filterMessage(self, message):
 		# Split words by spaces
@@ -24,9 +26,11 @@ class chatFilters:
 
 		# Check each word
 		for word in messageTemp:
+			lowerWord = word.lower()
+
 			# If the word is filtered, replace it
-			if word in self.filters:
-				message = message.replace(word, self.filters[word])
+			if lowerWord in self.filters:
+				message = message.replace(word, self.filters[lowerWord])
 
 		# Return filtered message
 		return message
