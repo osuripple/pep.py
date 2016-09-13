@@ -83,3 +83,6 @@ class haxException(Exception):
 
 class forceUpdateException(Exception):
 	pass
+
+class loginLockedException(Exception):
+	pass

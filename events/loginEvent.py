@@ -31,7 +31,7 @@ def handle(tornadoRequest):
 
 		# Make sure loginData is valid
 		if len(loginData) < 3:
-			raise exceptions.haxException()
+			raise exceptions.invalidArgumentsException()
 
 		# Get HWID, MAC address and more
 		# Structure (new line = "|", already split)
@@ -59,10 +59,12 @@ def handle(tornadoRequest):
 			# Invalid password
 			raise exceptions.loginFailedException()
 
-		# Make sure we are not banned
+		# Make sure we are not banned or locked
 		priv = userHelper.getPrivileges(userID)
 		if userHelper.isBanned(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
 			raise exceptions.loginBannedException()
+		if userHelper.isLocked(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
+			raise exceptions.loginLockedException()
 
 		# 2FA check
 		if userHelper.check2FA(userID, requestIP):
@@ -203,7 +205,7 @@ def handle(tornadoRequest):
 		# (we don't use enqueue because we don't have a token since login has failed)
 		err = True
 		responseData += serverPackets.loginFailed()
-	except exceptions.haxException:
+	except exceptions.invalidArgumentsException:
 		# Invalid POST data
 		# (we don't use enqueue because we don't have a token since login has failed)
 		err = True
@@ -213,6 +215,10 @@ def handle(tornadoRequest):
 		# Login banned error packet
 		err = True
 		responseData += serverPackets.loginBanned()
+	except exceptions.loginLockedException:
+		# Login banned error packet
+		err = True
+		responseData += serverPackets.loginLocked()
 	except exceptions.banchoMaintenanceException:
 		# Bancho is in maintenance mode
 		responseData = responseToken.queue
@@ -230,7 +236,7 @@ def handle(tornadoRequest):
 		# (we don't use enqueue because we don't have a token since login has failed)
 		err = True
 		responseData += serverPackets.forceUpdate()
-		responseData += serverPackets.notification("Hory shitto, your client is TOO old! Nice preistoria! Please turn off the switcher and update it.")
+		responseData += serverPackets.notification("Hory shitto, your client is TOO old! Nice prehistory! Please turn update it from the settings!")
 	except:
 		log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
 	finally:
