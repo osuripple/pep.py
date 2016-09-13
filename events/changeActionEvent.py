@@ -39,11 +39,12 @@ if userToken.matchID != -1 and userToken.actionID != actions.MULTIPLAYING and us
 		userToken.gameMode = packetData["gameMode"]
 		userToken.updateCachedStats()
 
-	# Always update action id, text and md5
+	# Always update action id, text, md5 and beatmapID
 	userToken.actionID = packetData["actionID"]
 	userToken.actionText = packetData["actionText"]
 	userToken.actionMd5 = packetData["actionMd5"]
 	userToken.actionMods = packetData["actionMods"]
+	userToken.beatmapID = packetData["beatmapID"]
 
 	# Enqueue our new user panel and stats to us and our spectators
 	recipients = [userID]
@@ -64,4 +65,4 @@ if userToken.matchID != -1 and userToken.actionID != actions.MULTIPLAYING and us
 			token.enqueue(serverPackets.userStats(userID, force))
 
 	# Console output
-	log.info("{} changed action: {} [{}][{}]".format(username, str(userToken.actionID), userToken.actionText, userToken.actionMd5))
+	log.info("{} changed action: {} [{}][{}][{}]".format(username, str(userToken.actionID), userToken.actionText, userToken.actionMd5, userToken.beatmapID))

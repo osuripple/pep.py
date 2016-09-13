@@ -134,7 +134,7 @@ def userStats(userID, force = False):
 		[userToken.actionMd5, dataTypes.STRING],
 		[userToken.actionMods, dataTypes.SINT32],
 		[userToken.gameMode, dataTypes.BYTE],
-		[0, dataTypes.SINT32],
+		[userToken.beatmapID, dataTypes.SINT32],
 		[userToken.rankedScore, dataTypes.UINT64],
 		[userToken.accuracy, dataTypes.FFLOAT],
 		[userToken.playcount, dataTypes.UINT32],

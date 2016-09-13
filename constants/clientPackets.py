@@ -12,7 +12,8 @@ def userActionChange(stream):
 		["actionText", dataTypes.STRING],
 		["actionMd5", dataTypes.STRING],
 		["actionMods", dataTypes.UINT32],
-		["gameMode", dataTypes.BYTE]
+		["gameMode", dataTypes.BYTE],
+		["beatmapID", dataTypes.SINT32]
 	])
 
 def userStatsRequest(stream):

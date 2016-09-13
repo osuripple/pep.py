@@ -58,6 +58,7 @@ class token:
 		self.actionMd5 = ""
 		self.actionMods = 0
 		self.gameMode = gameModes.std
+		self.beatmapID = 0
 		self.rankedScore = 0
 		self.accuracy = 0.0
 		self.playcount = 0
