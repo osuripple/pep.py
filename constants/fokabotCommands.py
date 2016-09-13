@@ -634,6 +634,35 @@ def mm00(fro, chan, message):
 	random.seed()
 	return random.choice(["meme", "MA MAURO ESISTE?"])
 
+def pp(fro, chan, message):
+	if chan.startswith("#"):
+		return False
+
+	gameMode = None
+	if len(message) >= 1:
+		gm = {
+			"standard": 0,
+			"std": 0,
+			"taiko": 1,
+			"ctb": 2,
+			"mania": 3
+		}
+		if message[0].lower() not in gm:
+			return "What's that game mode? I've never heard of it :/"
+		else:
+			gameMode = gm[message[0].lower()]
+
+	token = glob.tokens.getTokenFromUsername(fro)
+	if token is None:
+		return False
+	if gameMode is None:
+		gameMode = token.gameMode
+	if gameMode == gameModes.taiko or gameMode == gameModes.ctb:
+		return "PP for your current game mode is not supported yet."
+	pp = userHelper.getPP(token.userID, gameMode)
+	return "You have {:,} pp".format(pp)
+
+
 """
 Commands list
 
@@ -767,6 +796,9 @@ commands = [
 		"trigger": "!ir",
 		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": instantRestart
+	}, {
+		"trigger": "!pp",
+		"callback": pp
 	}
 	#
 	#	"trigger": "!acc",
