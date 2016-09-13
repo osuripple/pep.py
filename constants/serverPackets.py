@@ -140,7 +140,7 @@ def userStats(userID, force = False):
 		[userToken.playcount, dataTypes.UINT32],
 		[userToken.totalScore, dataTypes.UINT64],
 		[userToken.gameRank, dataTypes.UINT32],
-		[userToken.pp, dataTypes.UINT16]
+		[userToken.pp if userToken.pp <= 65535 else 0, dataTypes.UINT16]
 	])
 
 
