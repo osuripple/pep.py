@@ -18,8 +18,6 @@ class chatFilters:
 				lineSplit = line.split("=")
 				self.filters[lineSplit[0].lower()] = lineSplit[1].replace("\n", "")
 
-		print(str(self.filters))
-
 	def filterMessage(self, message):
 		# Split words by spaces
 		messageTemp = message.split(" ")
