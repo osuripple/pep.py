@@ -15,6 +15,7 @@ try:
 except:
 	VERSION = "¯\_(xd)_/¯"
 
+application = None
 db = None
 conf = None
 banchoConf = None
@@ -29,6 +30,7 @@ cloudflare = False
 chatFilters = None
 userIDCache = {}
 pool = None
+busyThreads = 0
 
 debug = False
 outputRequestTime = False

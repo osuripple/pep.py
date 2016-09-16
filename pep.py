@@ -174,13 +174,13 @@ if __name__ == "__main__":
 			consoleHelper.printColored("[!] Warning! Server running in debug mode!", bcolors.YELLOW)
 
 		# Make app
-		application = make_app()
+		glob.application = make_app()
 
 		# Set up sentry
 		try:
 			glob.sentry = generalFunctions.stringToBool(glob.conf.config["sentry"]["enable"])
 			if glob.sentry:
-				application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
+				glob.application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
 			else:
 				consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
 		except:
@@ -214,7 +214,7 @@ if __name__ == "__main__":
 		consoleHelper.printColored("> Tornado listening for HTTP(s) clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 		# Start tornado
-		application.listen(serverPort)
+		glob.application.listen(serverPort)
 		tornado.ioloop.IOLoop.instance().start()
 	finally:
 		system.dispose()

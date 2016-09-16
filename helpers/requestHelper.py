@@ -3,6 +3,8 @@ import tornado.web
 import tornado.gen
 from tornado.ioloop import IOLoop
 from objects import glob
+import threading
+from helpers import logHelper as log
 
 class asyncRequestHandler(tornado.web.RequestHandler):
 	"""
@@ -54,8 +56,25 @@ def runBackground(data, callback):
 	"""
 	func, args, kwargs = data
 	def _callback(result):
+		#glob.busyThreads -= 1
 		IOLoop.instance().add_callback(lambda: callback(result))
 	glob.pool.apply_async(func, args, kwargs, _callback)
+	#threading.Thread(target=checkPoolSaturation).start()
+	#glob.busyThreads += 1
+
+def checkPoolSaturation():
+	"""
+	Check the number of busy threads in connections pool.
+	If the pool is 100% busy, log a message to sentry
+	"""
+	size = int(glob.conf.config["server"]["threads"])
+	if glob.busyThreads >= size:
+		msg = "Connections threads pool is saturated!"
+		log.warning(msg)
+		glob.application.sentry_client.captureMessage(msg, level="warning", extra={
+			"workersBusy": glob.busyThreads,
+			"workersTotal": size
+		})
 
 def checkArguments(arguments, requiredArguments):
 	"""
