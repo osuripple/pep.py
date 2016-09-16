@@ -297,6 +297,17 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 """ IRC-Bancho Connect/Disconnect/Join/Part interfaces"""
 def fixUsernameForBancho(username):
+	# If there are no spaces or underscores in the name
+	# return it
+	if " " not in username and "_" not in username:
+		return username
+
+	# Exact match first
+	result = glob.db.fetch("SELECT id FROM users WHERE username = %s LIMIT 1", [username])
+	if result is not None:
+		return username
+
+	# Username not found, replace _ with space
 	return username.replace("_", " ")
 
 def fixUsernameForIRC(username):

@@ -42,7 +42,7 @@ class Client:
 		self.server = server
 		self.socket = sock
 		(self.ip, self.port) = sock.getpeername()
-		self.username = ""
+		self.IRCUsername = ""
 		self.banchoUsername = ""
 		self.supposedUsername = ""
 		self.joinedChannels = []
@@ -91,7 +91,7 @@ class Client:
 		channel -- optional
 		"""
 		if nickname == "":
-			nickname = self.username
+			nickname = self.IRCUsername
 		if channel != "":
 			channel = " "+channel
 		self.reply("{code:03d} {nickname}{channel} :{message}".format(code=code, nickname=nickname, channel=channel, message=message))
@@ -132,7 +132,7 @@ class Client:
 
 		# Bancho logout
 		if callLogout:
-			chat.IRCDisconnect(self.username)
+			chat.IRCDisconnect(self.IRCUsername)
 
 
 	def readSocket(self):
@@ -253,7 +253,7 @@ class Client:
 				tokenHash = m.hexdigest()
 				supposedUsername = glob.db.fetch("SELECT users.username FROM users LEFT JOIN irc_tokens ON users.id = irc_tokens.userid WHERE irc_tokens.token = %s LIMIT 1", [tokenHash])
 				if supposedUsername:
-					self.supposedUsername = supposedUsername["username"]
+					self.supposedUsername = chat.fixUsernameForIRC(supposedUsername["username"])
 					self.__handleCommand = self.registerHandler
 				else:
 					# Wrong IRC Token
@@ -271,12 +271,13 @@ class Client:
 			nick = arguments[0]
 
 			# Make sure this is the first time we set our nickname
-			if self.username != "":
+			if self.IRCUsername != "":
 				self.reply("432 * %s :Erroneous nickname" % nick)
 				return
 
 			# Make sure the IRC token was correct:
-			if nick.lower() != chat.fixUsernameForIRC(self.supposedUsername.lower()):
+			# (self.supposedUsername is already fixed for IRC)
+			if nick.lower() != self.supposedUsername.lower():
 				self.reply("464 :Password incorrect")
 				return
 
@@ -288,13 +289,13 @@ class Client:
 
 			# Make sure we are not already connected from IRC with that name
 			for _, value in self.server.clients.items():
-				if value.username == self.username and value != self:
+				if value.IRCUsername == self.IRCUsername and value != self:
 					self.reply("433 * {} :Nickname is already in use".format(nick))
 					return
 
 			# Everything seems fine, set username (nickname)
-			self.username = nick
-			self.banchoUsername = chat.fixUsernameForBancho(self.username)
+			self.IRCUsername = nick	# username for IRC
+			self.banchoUsername = chat.fixUsernameForBancho(self.IRCUsername)	# username for bancho
 		elif command == "USER":
 			# Ignore USER command, we use nickname only
 			return
@@ -307,7 +308,7 @@ class Client:
 			return
 
 		# If we now have a valid username, connect to bancho and send IRC welcome stuff
-		if self.username != "":
+		if self.IRCUsername != "":
 			# Bancho connection
 			chat.IRCConnect(self.banchoUsername)
 
@@ -322,7 +323,7 @@ class Client:
 
 	def quitHandler(self, command, arguments):
 		"""QUIT command handler"""
-		self.disconnect(self.username if len(arguments) < 1 else arguments[0])
+		self.disconnect(self.IRCUsername if len(arguments) < 1 else arguments[0])
 
 	def joinHandler(self, command, arguments):
 		"""JOIN command handler"""
@@ -362,7 +363,7 @@ class Client:
 				self.joinedChannels.append(channel)
 
 				# Let everyone in this channel know that we've joined
-				self.messageChannel(channel, "{} JOIN".format(self.username), channel, True)
+				self.messageChannel(channel, "{} JOIN".format(self.IRCUsername), channel, True)
 
 				# Send channel description (topic)
 				description = glob.channels.channels[channel].description
@@ -381,7 +382,7 @@ class Client:
 					usernames.append(chat.fixUsernameForIRC(token.username))
 				usernames = " ".join(usernames)
 
-				# Send IRC users lis
+				# Send IRC users list
 				self.replyCode(353, usernames, channel="= {}".format(channel))
 				self.replyCode(366, "End of NAMES list", channel=channel)
 			elif response == 403:
@@ -431,36 +432,40 @@ class Client:
 		if len(arguments) == 1:
 			self.replyCode(412, "No text to send")
 			return
-		recipient = arguments[0]
+		recipientIRC = arguments[0]
 		message = arguments[1]
 
 		# Send the message to bancho and reply
-		recipient = chat.fixUsernameForBancho(recipient)
-		response = chat.sendMessage(self.banchoUsername, recipient, message, toIRC=False)
+		if not recipientIRC.startswith("#"):
+			print("PMPMPM!!!!!!!!!!")
+			recipientBancho = chat.fixUsernameForBancho(recipientIRC)
+		else:
+			recipientBancho = recipientIRC
+		response = chat.sendMessage(self.banchoUsername, recipientBancho, message, toIRC=False)
 		if response == 404:
-			self.replyCode(404, "Cannot send to channel", channel=recipient)
+			self.replyCode(404, "Cannot send to channel", channel=recipientIRC)
 			return
 		elif response == 403:
-			self.replyCode(403, "No such channel", channel=recipient)
+			self.replyCode(403, "No such channel", channel=recipientIRC)
 			return
 		elif response == 401:
-			self.replyCode(401, "No such nick/channel", channel=recipient)
+			self.replyCode(401, "No such nick/channel", channel=recipientIRC)
 			return
 
 		# Send the message to IRC and bancho
-		if recipient.startswith("#"):
+		if recipientIRC.startswith("#"):
 			# Public message (IRC)
-			if recipient not in glob.channels.channels:
-				self.replyCode(401, "No such nick/channel", channel=recipient)
+			if recipientIRC not in glob.channels.channels:
+				self.replyCode(401, "No such nick/channel", channel=recipientIRC)
 				return
 			for _, value in self.server.clients.items():
-				if recipient in value.joinedChannels and value != self:
-					value.message(":{} PRIVMSG {} :{}".format(self.username, recipient, message))
+				if recipientIRC in value.joinedChannels and value != self:
+					value.message(":{} PRIVMSG {} :{}".format(self.IRCUsername, recipientIRC, message))
 		else:
 			# Private message (IRC)
 			for _, value in self.server.clients.items():
-				if value.username == recipient:
-					value.message(":{} PRIVMSG {} :{}".format(self.username, recipient, message))
+				if value.IRCUsername == recipientIRC:
+					value.message(":{} PRIVMSG {} :{}".format(self.IRCUsername, recipientIRC, message))
 
 	def motdHandler(self, command, arguments):
 		"""MOTD command handler"""
@@ -523,14 +528,14 @@ class Server:
 		self.clients = {}  # Socket --> Client instance.
 		self.motd = ["Welcome to pep.py's embedded IRC server!", "This is a VERY simple IRC server and it's still in beta.", "Expect things to crash and not work as expected :("]
 
-	def forceDisconnection(self, username):
+	def forceDisconnection(self, username, isBanchoUsername=True):
 		"""
 		Disconnect someone from IRC if connected
 
 		username -- victim
 		"""
 		for _, value in self.clients.items():
-			if value.username == username:
+			if (value.IRCUsername == username and not isBanchoUsername) or (value.banchoUsername == username and isBanchoUsername):
 				value.disconnect(callLogout=False)
 				break # or dictionary changes size during iteration
 
@@ -571,12 +576,12 @@ class Server:
 		if to.startswith("#"):
 			# Public message
 			for _, value in self.clients.items():
-				if to in value.joinedChannels and value.username != fro:
+				if to in value.joinedChannels and value.IRCUsername != fro:
 					value.message(":{} PRIVMSG {} :{}".format(fro, to, message))
 		else:
 			# Private message
 			for _, value in self.clients.items():
-				if value.username == to and value.username != fro:
+				if value.IRCUsername == to and value.IRCUsername != fro:
 					value.message(":{} PRIVMSG {} :{}".format(fro, to, message))
 
 
