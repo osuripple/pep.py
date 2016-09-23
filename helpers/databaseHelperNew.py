@@ -160,7 +160,6 @@ class db:
 		:param query: query to execute. You can bind parameters with %s
 		:param params: parameters list. First element replaces first %s and so on
 		"""
-		log.debug(query)
 		cursor = None
 		worker = self.pool.getWorker()
 
@@ -168,11 +167,12 @@ class db:
 			# Create cursor, execute query and commit
 			cursor = worker.connection.cursor(MySQLdb.cursors.DictCursor)
 			cursor.execute(query, params)
+			log.debug(query)
 			return cursor.lastrowid
 		except MySQLdb.OperationalError:
 			del worker
 			worker = None
-			self.execute(query, params)
+			return self.execute(query, params)
 		finally:
 			# Close the cursor and release worker's lock
 			if cursor is not None:
@@ -188,7 +188,6 @@ class db:
 		:param params: parameters list. First element replaces first %s and so on
 		:param all: fetch one or all values. Used internally. Use fetchAll if you want to fetch all values
 		"""
-		log.debug(query)
 		cursor = None
 		worker = self.pool.getWorker()
 
@@ -196,6 +195,7 @@ class db:
 			# Create cursor, execute the query and fetch one/all result(s)
 			cursor = worker.connection.cursor(MySQLdb.cursors.DictCursor)
 			cursor.execute(query, params)
+			log.debug(query)
 			if all == True:
 				return cursor.fetchall()
 			else:
@@ -203,7 +203,7 @@ class db:
 		except MySQLdb.OperationalError:
 			del worker
 			worker = None
-			self.fetch(query, params, all)
+			return self.fetch(query, params, all)
 		finally:
 			# Close the cursor and release worker's lock
 			if cursor is not None:
