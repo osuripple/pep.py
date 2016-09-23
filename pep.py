@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
 		# Connect to db
 		try:
-			consoleHelper.printNoNl("> Connecting to MySQL db")
+			consoleHelper.printNoNl("> Connecting to MySQL database...")
 			glob.db = databaseHelperNew.db(glob.conf.config["db"]["host"], glob.conf.config["db"]["username"], glob.conf.config["db"]["password"], glob.conf.config["db"]["database"], int(glob.conf.config["db"]["workers"]))
 			consoleHelper.printNoNl(" ")
 			consoleHelper.printDone()
