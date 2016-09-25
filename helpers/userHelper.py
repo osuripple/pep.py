@@ -627,3 +627,14 @@ def cacheUserIDs():
 	data = glob.db.fetchAll("SELECT id, username FROM users WHERE privileges & {} > 0".format(privileges.USER_NORMAL))
 	for i in data:
 		glob.userIDCache[i["username"]] = i["id"]
+
+def getDonorExpire(userID):
+	"""
+	Return userID's donor expiration UNIX timestamp
+	:param userID:
+	:return: donor expiration UNIX timestamp
+	"""
+	data = glob.db.fetch("SELECT donor_expire FROM users WHERE id = %s LIMIT 1", [userID])
+	if data is not None:
+		return data["donor_expire"]
+	return 0
