@@ -58,7 +58,7 @@ class tokenList:
 		# Get userID associated to that token
 		return self.tokens[token].userID
 
-	def getTokenFromUserID(self, userID):
+	def getTokenFromUserID(self, userID, ignoreIRC=False):
 		"""
 		Get token from a user ID
 
@@ -68,12 +68,14 @@ class tokenList:
 		# Make sure the token exists
 		for _, value in self.tokens.items():
 			if value.userID == userID:
+				if ignoreIRC and value.irc:
+					continue
 				return value
 
 		# Return none if not found
 		return None
 
-	def getTokenFromUsername(self, username):
+	def getTokenFromUsername(self, username, ignoreIRC=False):
 		"""
 		Get token from a username
 
@@ -86,6 +88,8 @@ class tokenList:
 		# Make sure the token exists
 		for _, value in self.tokens.items():
 			if value.username.lower() == who:
+				if ignoreIRC and value.irc:
+					continue
 				return value
 
 		# Return none if not found

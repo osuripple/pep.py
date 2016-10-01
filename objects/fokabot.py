@@ -14,8 +14,8 @@ def connect():
 	"""Add FokaBot to connected users and send userpanel/stats packet to everyone"""
 	token = glob.tokens.addToken(999)
 	token.actionID = actions.IDLE
-	glob.tokens.enqueueAll(serverPackets.userPanel(999))
-	glob.tokens.enqueueAll(serverPackets.userStats(999))
+	glob.streams.broadcast("main", serverPackets.userPanel(999))
+	glob.streams.broadcast("main", serverPackets.userStats(999))
 
 def disconnect():
 	"""Remove FokaBot from connected users"""

@@ -282,20 +282,21 @@ class Client:
 				return
 
 			# Make sure we are not connected to Bancho
-			token = glob.tokens.getTokenFromUsername(chat.fixUsernameForBancho(nick))
+			token = glob.tokens.getTokenFromUsername(chat.fixUsernameForBancho(nick), True)
 			if token is not None:
 				self.reply("433 * {} :Nickname is already in use".format(nick))
 				return
 
-			# Make sure we are not already connected from IRC with that name
-			for _, value in self.server.clients.items():
-				if value.IRCUsername == self.IRCUsername and value != self:
-					self.reply("433 * {} :Nickname is already in use".format(nick))
-					return
-
 			# Everything seems fine, set username (nickname)
 			self.IRCUsername = nick	# username for IRC
 			self.banchoUsername = chat.fixUsernameForBancho(self.IRCUsername)	# username for bancho
+
+			# Disconnect other IRC clients from the same user
+			for _, value in self.server.clients.items():
+				if value.IRCUsername.lower() == self.IRCUsername.lower() and value != self:
+					print("DISCONNECTERINOOOOOOOOOOOOOOOOOOOOO")
+					value.disconnect(quitmsg="Connected from another client")
+					return
 		elif command == "USER":
 			# Ignore USER command, we use nickname only
 			return

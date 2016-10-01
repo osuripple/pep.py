@@ -25,8 +25,11 @@ def handle(userToken, _=None):
 		for i in userToken.joinedChannels:
 			chat.partChannel(token=userToken, channel=i)
 
+		# Leave all joined streams
+		userToken.leaveAllStreams()
+
 		# Enqueue our disconnection to everyone else
-		glob.tokens.enqueueAll(serverPackets.userLogout(userID))
+		glob.streams.broadcast("main", serverPackets.userLogout(userID))
 
 		# Disconnect from IRC if needed
 		if userToken.irc == True and glob.irc == True:

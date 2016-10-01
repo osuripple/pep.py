@@ -205,7 +205,7 @@ def handle(tornadoRequest):
 
 		# Send to everyone our userpanel if we are not restricted
 		if not responseToken.restricted:
-			glob.tokens.enqueueAll(serverPackets.userPanel(userID))
+			glob.streams.broadcast("main", serverPackets.userPanel(userID))
 
 		# Set reponse data to right value and reset our queue
 		responseData = responseToken.queue

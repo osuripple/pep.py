@@ -34,6 +34,7 @@ class token:
 		self.pingTime = self.loginTime
 		self.timeOffset = timeOffset
 		self.lock = threading.Lock()	# Sync primitive
+		self.streams = []
 
 		# Default variables
 		self.spectators = []
@@ -78,6 +79,9 @@ class token:
 		# If we have a valid ip, save bancho session in DB so we can cache LETS logins
 		if ip != "":
 			userHelper.saveBanchoSession(self.userID, self.ip)
+
+		# Join main stream
+		self.joinStream("main")
 
 	def enqueue(self, bytes_):
 		"""
@@ -277,7 +281,7 @@ class token:
 		self.enqueue(serverPackets.silenceEndTime(seconds))
 
 		# Send silenced packet to everyone else
-		glob.tokens.enqueueAll(serverPackets.userSilenced(self.userID))
+		glob.streams.broadcast("main", serverPackets.userSilenced(self.userID))
 
 	def spamProtection(self, increaseSpamRate = True):
 		"""
@@ -343,3 +347,17 @@ class token:
 		"""
 		self.restricted = True
 		chat.sendMessage("FokaBot",self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information.")
+
+	def joinStream(self, name):
+		glob.streams.join(name, self)
+		if name not in self.streams:
+			self.streams.append(name)
+
+	def leaveStream(self, name):
+		glob.streams.leave(name, self)
+		if name in self.streams:
+			self.streams.remove(name)
+
+	def leaveAllStreams(self):
+		for i in self.streams:
+			self.leaveStream(i)

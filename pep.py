@@ -130,6 +130,11 @@ if __name__ == "__main__":
 		glob.channels.loadChannels()
 		consoleHelper.printDone()
 
+		# Initialize stremas
+		consoleHelper.printNoNl("> Creating main stream... ")
+		glob.streams.add("main")
+		consoleHelper.printDone()
+
 		# Start fokabot
 		consoleHelper.printNoNl("> Connecting FokaBot... ")
 		fokabot.connect()

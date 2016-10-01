@@ -28,7 +28,7 @@ return the message or **False** if there's no response by the bot
 TODO: Change False to None, because False doesn't make any sense
 """
 def instantRestart(fro, chan, message):
-	glob.tokens.enqueueAll(serverPackets.notification("We are restarting Bancho. Be right back!"))
+	glob.streams.broadcast("main", serverPackets.notification("We are restarting Bancho. Be right back!"))
 	systemHelper.scheduleShutdown(0, True, delay=1)
 	return False
 
@@ -69,7 +69,7 @@ def roll(fro, chan, message):
 #	return random.choice(["yes", "no", "maybe"])
 
 def alert(fro, chan, message):
-	glob.tokens.enqueueAll(serverPackets.notification(' '.join(message[:])))
+	glob.streams.broadcast("main", serverPackets.notification(' '.join(message[:])))
 	return False
 
 def alertUser(fro, chan, message):
@@ -311,11 +311,11 @@ def systemReload(fro, chan, message):
 	glob.chatFilters.loadFilters()
 
 	# Send new channels and new bottom icon to everyone
-	glob.tokens.enqueueAll(serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
-	glob.tokens.enqueueAll(serverPackets.channelInfoEnd())
+	glob.streams.broadcast("main", serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
+	glob.streams.broadcast("main", serverPackets.channelInfoEnd())
 	for key, value in glob.channels.channels.items():
 		if value.publicRead == True and value.hidden == False:
-			glob.tokens.enqueueAll(serverPackets.channelInfo(key))
+			glob.streams.broadcast("main", serverPackets.channelInfo(key))
 
 	return "Bancho settings reloaded!"
 
@@ -341,7 +341,7 @@ def systemMaintenance(fro, chan, message):
 			if not value.admin:
 				who.append(value.userID)
 
-		glob.tokens.enqueueAll(serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later."))
+		glob.streams.broadcast("main", serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later."))
 		glob.tokens.multipleEnqueue(serverPackets.loginError(), who)
 		msg = "The server is now in maintenance mode!"
 	else:

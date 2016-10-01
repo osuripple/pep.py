@@ -320,7 +320,7 @@ def IRCConnect(username):
 		return
 	glob.tokens.deleteOldTokens(userID)
 	glob.tokens.addToken(userID, irc=True)
-	glob.tokens.enqueueAll(serverPackets.userPanel(userID))
+	glob.streams.broadcast("main", serverPackets.userPanel(userID))
 	log.info("{} logged in from IRC".format(username))
 
 def IRCDisconnect(username):

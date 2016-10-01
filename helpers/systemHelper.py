@@ -42,10 +42,10 @@ def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 
 	# Send notification if set
 	if message != "":
-		glob.tokens.enqueueAll(serverPackets.notification(message))
+		glob.streams.broadcast("main", serverPackets.notification(message))
 
 	# Schedule server restart packet
-	threading.Timer(sendRestartTime, glob.tokens.enqueueAll, [serverPackets.banchoRestart(delay*2*1000)]).start()
+	threading.Timer(sendRestartTime, glob.streams.broadcast, ["main", serverPackets.banchoRestart(delay*2*1000)]).start()
 	glob.restarting = True
 
 	# Restart/shutdown

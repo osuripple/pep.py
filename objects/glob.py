@@ -5,6 +5,7 @@ from objects import channelList
 from objects import matchList
 from objects import fileLocks
 from objects import fileBuffer
+from objects import streamList
 import time
 
 try:
@@ -42,3 +43,6 @@ sentry = False
 irc = False
 
 startTime = int(time.time())
+
+
+streams = streamList.streamList()

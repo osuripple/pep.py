@@ -86,3 +86,6 @@ class forceUpdateException(Exception):
 
 class loginLockedException(Exception):
 	pass
+
+class unknownStreamException(Exception):
+	pass
