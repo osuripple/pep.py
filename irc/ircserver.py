@@ -146,7 +146,7 @@ class Client:
 			quitmsg = "EOT"
 		except socket.error as x:
 			# Error while reading data, this client will be disconnected
-			data = ""
+			data = bytes()
 			quitmsg = x
 
 		if data:
@@ -204,7 +204,7 @@ class Client:
 			log.debug("[IRC] [{}:{}] <- {}".format(self.ip, self.port, self.__writebuffer[:sent]))
 			self.__writebuffer = self.__writebuffer[sent:]
 		except socket.error as x:
-			self.disconnect(x)
+			self.disconnect(str(x))
 
 
 	def checkAlive(self):

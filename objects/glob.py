@@ -36,6 +36,7 @@ cloudflare = False
 chatFilters = None
 userIDCache = {}
 pool = None
+ircServer = None
 busyThreads = 0
 
 debug = False

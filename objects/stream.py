@@ -1,4 +1,4 @@
-class stream():
+class stream:
 	def __init__(self, name):
 		"""
 		Initialize a stream object

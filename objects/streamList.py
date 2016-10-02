@@ -1,6 +1,6 @@
 from objects import stream
 
-class streamList():
+class streamList:
 	def __init__(self):
 		self.streams = {}
 
