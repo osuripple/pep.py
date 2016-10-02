@@ -15,7 +15,11 @@ This is Ripple's bancho server. It handles:
 - Raven
 
 ## How to set up pep.py
-First of all, install all the dependencies
+First of all, initialize and update the submodules
+```
+$ git submodule init && git submodule update
+```
+afterwards, install the required dependencies with pip
 ```
 $ pip install -r requirements.txt
 ```
