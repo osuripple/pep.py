@@ -1,8 +1,10 @@
-from objects import glob
-from constants import serverPackets
 import time
-from helpers import logHelper as log
+
+from common.log import logUtils as log
+from constants import serverPackets
 from helpers import chatHelper as chat
+from objects import glob
+
 
 def handle(userToken, _=None):
 	# get usertoken data

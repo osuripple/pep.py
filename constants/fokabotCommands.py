@@ -1,17 +1,19 @@
-from objects import fokabot
-import random
-from objects import glob
-from constants import serverPackets
-from constants import exceptions
-from helpers import userHelper
-from helpers import systemHelper
-import requests
 import json
-from constants import mods
-from helpers import generalFunctions
-from helpers import logHelper as log
-from constants import gameModes
-from constants import privileges
+import random
+
+import requests
+
+from common import generalUtils
+from common.constants import mods
+from common.log import logUtils as log
+from common.ripple import userUtils
+from constants import exceptions
+from common.constants import gameModes
+from common.constants import privileges
+from constants import serverPackets
+from helpers import systemHelper
+from objects import fokabot
+from objects import glob
 
 """
 Commands callbacks
@@ -147,8 +149,8 @@ def silence(fro, chan, message):
 	reason = ' '.join(message[3:])
 
 	# Get target user ID
-	targetUserID = userHelper.getID(target)
-	userID = userHelper.getID(fro)
+	targetUserID = userUtils.getID(target)
+	userID = userUtils.getID(fro)
 
 	# Make sure the user exists
 	if not targetUserID:
@@ -177,7 +179,7 @@ def silence(fro, chan, message):
 		targetToken.silence(silenceTime, reason, userID)
 	else:
 		# User offline, silence user only in db
-		userHelper.silence(targetUserID, silenceTime, reason, userID)
+		userUtils.silence(targetUserID, silenceTime, reason, userID)
 
 	# Log message
 	msg = "{} has been silenced for the following reason: {}".format(target, reason)
@@ -190,8 +192,8 @@ def removeSilence(fro, chan, message):
 	target = message[0].replace("_", " ")
 
 	# Make sure the user exists
-	targetUserID = userHelper.getID(target)
-	userID = userHelper.getID(fro)
+	targetUserID = userUtils.getID(target)
+	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
 
@@ -202,7 +204,7 @@ def removeSilence(fro, chan, message):
 		targetToken.silence(0, "", userID)
 	else:
 		# user offline, remove islene ofnlt from db
-		userHelper.silence(targetUserID, 0, "", userID)
+		userUtils.silence(targetUserID, 0, "", userID)
 
 	return "{}'s silence reset".format(target)
 
@@ -213,13 +215,13 @@ def ban(fro, chan, message):
 	target = message[0].replace("_", " ")
 
 	# Make sure the user exists
-	targetUserID = userHelper.getID(target)
-	userID = userHelper.getID(fro)
+	targetUserID = userUtils.getID(target)
+	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Set allowed to 0
-	userHelper.ban(targetUserID)
+	userUtils.ban(targetUserID)
 
 	# Send ban packet to the user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(target)
@@ -236,13 +238,13 @@ def unban(fro, chan, message):
 	target = message[0].replace("_", " ")
 
 	# Make sure the user exists
-	targetUserID = userHelper.getID(target)
-	userID = userHelper.getID(fro)
+	targetUserID = userUtils.getID(target)
+	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Set allowed to 1
-	userHelper.unban(targetUserID)
+	userUtils.unban(targetUserID)
 
 	log.rap(userID, "has unbanned {}".format(target), True)
 	return "Welcome back {}!".format(target)
@@ -254,13 +256,13 @@ def restrict(fro, chan, message):
 	target = message[0].replace("_", " ")
 
 	# Make sure the user exists
-	targetUserID = userHelper.getID(target)
-	userID = userHelper.getID(fro)
+	targetUserID = userUtils.getID(target)
+	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Put this user in restricted mode
-	userHelper.restrict(targetUserID)
+	userUtils.restrict(targetUserID)
 
 	# Send restricted mode packet to this user if he's online
 	targetToken = glob.tokens.getTokenFromUsername(target)
@@ -277,13 +279,13 @@ def unrestrict(fro, chan, message):
 	target = message[0].replace("_", " ")
 
 	# Make sure the user exists
-	targetUserID = userHelper.getID(target)
-	userID = userHelper.getID(fro)
+	targetUserID = userUtils.getID(target)
+	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
 
 	# Set allowed to 1
-	userHelper.unrestrict(targetUserID)
+	userUtils.unrestrict(targetUserID)
 
 	log.rap(userID, "has removed restricted mode from {}".format(target), True)
 	return "Welcome back {}!".format(target)
@@ -386,7 +388,7 @@ def getPPMessage(userID, just_data = False):
 		currentAcc = token.tillerino[2]
 
 		# Send request to LETS api
-		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}&a={}".format(currentMap, currentMods, currentAcc), timeout=10).text
+		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}".format(currentMap, currentMods, currentAcc), timeout=10).text
 		data = json.loads(resp)
 
 		# Make sure status is in response data
@@ -405,23 +407,23 @@ def getPPMessage(userID, just_data = False):
 
 		# Return response in chat
 		# Song name and mods
-		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if currentMods > 0 else "", mods=generalFunctions.readableMods(currentMods))
+		msg = "{song}{plus}{mods}  ".format(song=data["song_name"], plus="+" if currentMods > 0 else "", mods=generalUtils.readableMods(currentMods))
 
 		# PP values
 		if currentAcc == -1:
 			msg += "95%: {pp95}pp | 98%: {pp98}pp | 99% {pp99}pp | 100%: {pp100}pp".format(pp100=data["pp"][0], pp99=data["pp"][1], pp98=data["pp"][2], pp95=data["pp"][3])
 		else:
 			msg += "{acc:.2f}%: {pp}pp".format(acc=token.tillerino[2], pp=data["pp"][0])
-
+		
 		originalAR = data["ar"]
 		# calc new AR if HR/EZ is on
-		if (currentMods & mods.Easy) > 0:
+		if (currentMods & mods.EASY) > 0:
 			data["ar"] = max(0, data["ar"] / 2)
-		if (currentMods & mods.HardRock) > 0:
+		if (currentMods & mods.HARDROCK) > 0:
 			data["ar"] = min(10, data["ar"] * 1.4)
-
+		
 		arstr = " ({})".format(originalAR) if originalAR != data["ar"] else ""
-
+		
 		# Beatmap info
 		msg += " | {bpm} BPM | AR {ar}{arstr} | {stars:.2f} stars".format(bpm=data["bpm"], stars=data["stars"], ar=data["ar"], arstr=arstr)
 
@@ -433,10 +435,10 @@ def getPPMessage(userID, just_data = False):
 	except exceptions.apiException:
 		# API error
 		return "Unknown error in LETS API call. Please tell this to a dev."
-	except:
+	#except:
 		# Unknown exception
 		# TODO: print exception
-		return False
+	#	return False
 
 def tillerinoNp(fro, chan, message):
 	try:
@@ -455,15 +457,15 @@ def tillerinoNp(fro, chan, message):
 
 		modsEnum = 0
 		mapping = {
-			"-Easy": mods.Easy,
-			"-NoFail": mods.NoFail,
-			"+Hidden": mods.Hidden,
-			"+HardRock": mods.HardRock,
-			"+Nightcore": mods.Nightcore,
-			"+DoubleTime": mods.DoubleTime,
-			"-HalfTime": mods.HalfTime,
-			"+Flashlight": mods.Flashlight,
-			"-SpunOut": mods.SpunOut
+			"-Easy": mods.EASY,
+			"-NoFail": mods.NOFAIL,
+			"+Hidden": mods.HIDDEN,
+			"+HardRock": mods.HARDROCK,
+			"+Nightcore": mods.NIGHTCORE,
+			"+DoubleTime": mods.DOUBLETIME,
+			"-HalfTime": mods.HALFTIME,
+			"+Flashlight": mods.FLASHLIGHT,
+			"-SpunOut": mods.SPUNOUT
 		}
 
 		if playWatch:
@@ -513,23 +515,23 @@ def tillerinoMods(fro, chan, message):
 				modsEnum = 0
 				break
 			elif i == "NF":
-				modsEnum += mods.NoFail
+				modsEnum += mods.NOFAIL
 			elif i == "EZ":
-				modsEnum += mods.Easy
+				modsEnum += mods.EASY
 			elif i == "HD":
-				modsEnum += mods.Hidden
+				modsEnum += mods.HIDDEN
 			elif i == "HR":
-				modsEnum += mods.HardRock
+				modsEnum += mods.HARDROCK
 			elif i == "DT":
-				modsEnum += mods.DoubleTime
+				modsEnum += mods.DOUBLETIME
 			elif i == "HT":
-				modsEnum += mods.HalfTime
+				modsEnum += mods.HALFTIME
 			elif i == "NC":
-				modsEnum += mods.Nightcore
+				modsEnum += mods.NIGHTCORE
 			elif i == "FL":
-				modsEnum += mods.Flashlight
+				modsEnum += mods.FLASHLIGHT
 			elif i == "SO":
-				modsEnum += mods.SpunOut
+				modsEnum += mods.SPUNOUT
 
 		# Set mods
 		token.tillerino[1] = modsEnum
@@ -582,22 +584,22 @@ def tillerinoLast(fro, chan, message):
 			return False
 
 		diffString = "difficulty_{}".format(gameModes.getGameModeForDB(data["play_mode"]))
-		rank = generalFunctions.getRank(data["play_mode"], data["mods"], data["accuracy"],
-										data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
+		rank = generalUtils.getRank(data["play_mode"], data["mods"], data["accuracy"],
+									data["300_count"], data["100_count"], data["50_count"], data["misses_count"])
 
 		ifPlayer = "{0} | ".format(fro) if chan != "FokaBot" else ""
 		ifFc = " (FC)" if data["max_combo"] == data["fc"] else " {0}x/{1}x".format(data["max_combo"], data["fc"])
 		beatmapLink = "[http://osu.ppy.sh/b/{1} {0}]".format(data["sn"], data["bid"])
 
-		hasPP = data["play_mode"] == gameModes.std or data["play_mode"] == gameModes.mania
+		hasPP = data["play_mode"] == gameModes.STD or data["play_mode"] == gameModes.MANIA
 
 		msg = ifPlayer
 		msg += beatmapLink
-		if data["play_mode"] != gameModes.std:
+		if data["play_mode"] != gameModes.STD:
 			msg += " <{0}>".format(gameModes.getGameModeForPrinting(data["play_mode"]))
 
 		if data["mods"]:
-			msg += ' +' + generalFunctions.readableMods(data["mods"])
+			msg += ' +' + generalUtils.readableMods(data["mods"])
 
 		if not hasPP:
 			msg += " | {0:,}".format(data["score"])
@@ -657,9 +659,9 @@ def pp(fro, chan, message):
 		return False
 	if gameMode is None:
 		gameMode = token.gameMode
-	if gameMode == gameModes.taiko or gameMode == gameModes.ctb:
+	if gameMode == gameModes.TAIKO or gameMode == gameModes.CTB:
 		return "PP for your current game mode is not supported yet."
-	pp = userHelper.getPP(token.userID, gameMode)
+	pp = userUtils.getPP(token.userID, gameMode)
 	return "You have {:,} pp".format(pp)
 
 

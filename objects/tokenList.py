@@ -1,9 +1,11 @@
-from objects import osuToken
-from objects import glob
-import time
 import threading
+import time
+
+from common.ripple import userUtils
 from events import logoutEvent
-from helpers import userHelper
+from objects import glob
+from objects import osuToken
+
 
 class tokenList:
 	"""
@@ -39,7 +41,7 @@ class tokenList:
 		if token in self.tokens:
 			# Delete session from DB
 			if self.tokens[token].ip != "":
-				userHelper.deleteBanchoSessions(self.tokens[token].userID, self.tokens[token].ip)
+				userUtils.deleteBanchoSessions(self.tokens[token].userID, self.tokens[token].ip)
 
 			# Pop token from list
 			self.tokens.pop(token)

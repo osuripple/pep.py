@@ -1,11 +1,11 @@
 """ Contains functions used to write specific server packets to byte streams """
-from helpers import packetHelper
+from common.constants import privileges
+from common.ripple import userUtils
 from constants import dataTypes
-from helpers import userHelper
-from objects import glob
-from constants import userRanks
 from constants import packetIDs
-from constants import privileges
+from constants import userRanks
+from helpers import packetHelper
+from objects import glob
 
 """ Login errors packets """
 def loginFailed():
@@ -56,7 +56,7 @@ def userSupporterGMT(supporter, GMT):
 	return packetHelper.buildPacket(packetIDs.server_supporterGMT, [[result, dataTypes.UINT32]])
 
 def friendList(userID):
-	friends = userHelper.getFriendList(userID)
+	friends = userUtils.getFriendList(userID)
 	return packetHelper.buildPacket(packetIDs.server_friendsList, [[friends, dataTypes.INT_LIST]])
 
 def onlineUsers():
@@ -95,9 +95,9 @@ def userPanel(userID, force = False):
 	# Only admins and normal users are currently supported
 	if username == "FokaBot":
 		userRank = userRanks.MOD
-	elif userHelper.isInPrivilegeGroup(userID, "community manager"):
+	elif userUtils.isInPrivilegeGroup(userID, "community manager"):
 		userRank = userRanks.MOD
-	elif userHelper.isInPrivilegeGroup(userID, "developer"):
+	elif userUtils.isInPrivilegeGroup(userID, "developer"):
 		userRank = userRanks.ADMIN
 	elif (userToken.privileges & privileges.USER_DONOR) > 0:
 		userRank = userRanks.SUPPORTER
@@ -150,7 +150,7 @@ def sendMessage(fro, to, message):
 		[fro, dataTypes.STRING],
 		[message, dataTypes.STRING],
 		[to, dataTypes.STRING],
-		[userHelper.getID(fro), dataTypes.SINT32]
+		[userUtils.getID(fro), dataTypes.SINT32]
 	])
 
 def channelJoinSuccess(userID, chan):

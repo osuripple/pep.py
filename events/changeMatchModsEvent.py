@@ -1,7 +1,8 @@
-from objects import glob
+from common.constants import mods
 from constants import clientPackets
 from constants import matchModModes
-from constants import mods
+from objects import glob
+
 
 def handle(userToken, packetData):
 	# Get token data
@@ -22,13 +23,13 @@ def handle(userToken, packetData):
 		# Host can set global DT/HT
 		if userID == match.hostUserID:
 			# If host has selected DT/HT and Freemod is enabled, set DT/HT as match mod
-			if (packetData["mods"] & mods.DoubleTime) > 0:
-				match.changeMatchMods(mods.DoubleTime)
+			if (packetData["mods"] & mods.DOUBLETIME) > 0:
+				match.changeMatchMods(mods.DOUBLETIME)
 				# Nightcore
-				if (packetData["mods"] & mods.Nightcore) > 0:
-					match.changeMatchMods(match.mods+mods.Nightcore)
-			elif (packetData["mods"] & mods.HalfTime) > 0:
-				match.changeMatchMods(mods.HalfTime)
+				if (packetData["mods"] & mods.NIGHTCORE) > 0:
+					match.changeMatchMods(match.mods + mods.NIGHTCORE)
+			elif (packetData["mods"] & mods.HALFTIME) > 0:
+				match.changeMatchMods(mods.HALFTIME)
 			else:
 				# No DT/HT, set global mods to 0 (we are in freemod mode)
 				match.changeMatchMods(0)

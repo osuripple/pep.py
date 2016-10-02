@@ -1,6 +1,7 @@
+from common.log import logUtils as log
 from constants import clientPackets
 from constants import serverPackets
-from helpers import logHelper as log
+
 
 def handle(userToken, packetData):
 	# Read userIDs list

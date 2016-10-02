@@ -1,9 +1,11 @@
-from helpers import requestHelper
-from constants import exceptions
 import json
+
+from common.web import requestsManager
+from constants import exceptions
 from objects import glob
 
-class handler(requestHelper.asyncRequestHandler):
+
+class handler(requestsManager.asyncRequestHandler):
 	def asyncGet(self):
 		statusCode = 400
 		data = {"message": "unknown error"}

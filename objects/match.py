@@ -1,17 +1,19 @@
 # TODO: Enqueue all
-from constants import gameModes
+import copy
+
+from common import generalUtils
+from common.constants import gameModes
+from common.log import logUtils as log
+from constants import dataTypes
+from constants import matchModModes
 from constants import matchScoringTypes
 from constants import matchTeamTypes
-from constants import matchModModes
-from constants import slotStatuses
-from objects import glob
-from constants import serverPackets
-from constants import dataTypes
 from constants import matchTeams
-from helpers import logHelper as log
+from constants import serverPackets
+from constants import slotStatuses
 from helpers import chatHelper as chat
-from helpers import generalFunctions
-import copy
+from objects import glob
+
 
 class slot:
 	def __init__(self):
@@ -35,7 +37,7 @@ class match:
 	beatmapMD5 = ""
 	slots = []
 	hostUserID = 0
-	gameMode = gameModes.std
+	gameMode = gameModes.STD
 	matchScoringType = matchScoringTypes.score
 	matchTeamType = matchTeamTypes.headToHead
 	matchModMode = matchModModes.normal
@@ -59,7 +61,7 @@ class match:
 		self.mods = 0
 		self.matchName = matchName
 		if matchPassword != "":
-			self.matchPassword = generalFunctions.stringMd5(matchPassword)
+			self.matchPassword = generalUtils.stringMd5(matchPassword)
 		else:
 			self.matchPassword = ""
 		self.beatmapID = beatmapID
@@ -487,7 +489,7 @@ class match:
 		newPassword -- new password string
 		"""
 		if newPassword != "":
-			self.matchPassword = generalFunctions.stringMd5(newPassword)
+			self.matchPassword = generalUtils.stringMd5(newPassword)
 		else:
 			self.matchPassword = ""
 

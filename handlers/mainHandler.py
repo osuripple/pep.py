@@ -1,60 +1,61 @@
 import datetime
 import gzip
-from helpers import requestHelper
-from objects import glob
-from constants import exceptions
-from constants import packetIDs
-from helpers import packetHelper
-from constants import serverPackets
-from events import sendPublicMessageEvent
-from events import sendPrivateMessageEvent
-from events import channelJoinEvent
-from events import channelPartEvent
-from events import changeActionEvent
-from events import cantSpectateEvent
-from events import startSpectatingEvent
-from events import stopSpectatingEvent
-from events import spectateFramesEvent
-from events import friendAddEvent
-from events import friendRemoveEvent
-from events import logoutEvent
-from events import loginEvent
-from events import setAwayMessageEvent
-from events import joinLobbyEvent
-from events import createMatchEvent
-from events import partLobbyEvent
-from events import changeSlotEvent
-from events import joinMatchEvent
-from events import partMatchEvent
-from events import changeMatchSettingsEvent
-from events import changeMatchPasswordEvent
-from events import changeMatchModsEvent
-from events import matchReadyEvent
-from events import matchLockEvent
-from events import matchStartEvent
-from events import matchPlayerLoadEvent
-from events import matchSkipEvent
-from events import matchFramesEvent
-from events import matchCompleteEvent
-from events import matchNoBeatmapEvent
-from events import matchHasBeatmapEvent
-from events import matchTransferHostEvent
-from events import matchFailedEvent
-from events import matchInviteEvent
-from events import matchChangeTeamEvent
-from events import userStatsRequestEvent
-from events import requestStatusUpdateEvent
-from events import userPanelRequestEvent
-
-# Exception tracking
-import tornado.web
-import tornado.gen
 import sys
 import traceback
-from raven.contrib.tornado import SentryMixin
-from helpers import logHelper as log
 
-class handler(SentryMixin, requestHelper.asyncRequestHandler):
+import tornado.gen
+import tornado.web
+from raven.contrib.tornado import SentryMixin
+
+from common.log import logUtils as log
+from common.web import requestsManager
+from constants import exceptions
+from constants import packetIDs
+from constants import serverPackets
+from events import cantSpectateEvent
+from events import changeActionEvent
+from events import changeMatchModsEvent
+from events import changeMatchPasswordEvent
+from events import changeMatchSettingsEvent
+from events import changeSlotEvent
+from events import channelJoinEvent
+from events import channelPartEvent
+from events import createMatchEvent
+from events import friendAddEvent
+from events import friendRemoveEvent
+from events import joinLobbyEvent
+from events import joinMatchEvent
+from events import loginEvent
+from events import logoutEvent
+from events import matchChangeTeamEvent
+from events import matchCompleteEvent
+from events import matchFailedEvent
+from events import matchFramesEvent
+from events import matchHasBeatmapEvent
+from events import matchInviteEvent
+from events import matchLockEvent
+from events import matchNoBeatmapEvent
+from events import matchPlayerLoadEvent
+from events import matchReadyEvent
+from events import matchSkipEvent
+from events import matchStartEvent
+from events import matchTransferHostEvent
+from events import partLobbyEvent
+from events import partMatchEvent
+from events import requestStatusUpdateEvent
+from events import sendPrivateMessageEvent
+from events import sendPublicMessageEvent
+from events import setAwayMessageEvent
+from events import spectateFramesEvent
+from events import startSpectatingEvent
+from events import stopSpectatingEvent
+from events import userPanelRequestEvent
+from events import userStatsRequestEvent
+from helpers import packetHelper
+from objects import glob
+
+
+class handler(SentryMixin, requestsManager.asyncRequestHandler):
 	@tornado.web.asynchronous
 	@tornado.gen.engine
 	def asyncPost(self):

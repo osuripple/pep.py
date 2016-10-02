@@ -1,6 +1,7 @@
 # TODO: Rewrite this shit
+from common import generalUtils
 from objects import glob
-from helpers import generalFunctions
+
 
 class banchoConfig:
 	"""
@@ -26,8 +27,8 @@ class banchoConfig:
 		"""
 		(re)load bancho_settings from DB and set values in config array
 		"""
-		self.config["banchoMaintenance"] = generalFunctions.stringToBool(glob.db.fetch("SELECT value_int FROM bancho_settings WHERE name = 'bancho_maintenance'")["value_int"])
-		self.config["freeDirect"] = generalFunctions.stringToBool(glob.db.fetch("SELECT value_int FROM bancho_settings WHERE name = 'free_direct'")["value_int"])
+		self.config["banchoMaintenance"] = generalUtils.stringToBool(glob.db.fetch("SELECT value_int FROM bancho_settings WHERE name = 'bancho_maintenance'")["value_int"])
+		self.config["freeDirect"] = generalUtils.stringToBool(glob.db.fetch("SELECT value_int FROM bancho_settings WHERE name = 'free_direct'")["value_int"])
 		self.config["menuIcon"] = glob.db.fetch("SELECT value_string FROM bancho_settings WHERE name = 'menu_icon'")["value_string"]
 		self.config["loginNotification"] = glob.db.fetch("SELECT value_string FROM bancho_settings WHERE name = 'login_notification'")["value_string"]
 

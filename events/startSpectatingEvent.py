@@ -1,10 +1,11 @@
+from common.log import logUtils as log
+from common.ripple import userUtils
 from constants import clientPackets
-from constants import serverPackets
 from constants import exceptions
-from objects import glob
-from helpers import userHelper
-from helpers import logHelper as log
+from constants import serverPackets
 from helpers import chatHelper as chat
+from objects import glob
+
 
 def handle(userToken, packetData):
 	try:
@@ -50,7 +51,7 @@ def handle(userToken, packetData):
 				c.enqueue(serverPackets.fellowSpectatorJoined(userID))
 
 		# Console output
-		log.info("{} are spectating {}".format(username, userHelper.getUsername(packetData["userID"])))
+		log.info("{} are spectating {}".format(username, userUtils.getUsername(packetData["userID"])))
 	except exceptions.tokenNotFoundException:
 		# Stop spectating if token not found
 		log.warning("Spectator start: token not found")

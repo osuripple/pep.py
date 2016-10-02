@@ -1,12 +1,14 @@
 """Global objects and variables"""
 
-from objects import tokenList
+import time
+
+from common.ddog import datadogClient
+from common.files import fileBuffer, fileLocks
 from objects import channelList
 from objects import matchList
-from objects import fileLocks
-from objects import fileBuffer
 from objects import streamList
-import time
+from objects import tokenList
+from common.web import schiavo
 
 try:
 	with open("version") as f:
@@ -16,6 +18,7 @@ try:
 except:
 	VERSION = "¯\_(xd)_/¯"
 
+DATADOG_PREFIX = "peppy"
 application = None
 db = None
 conf = None
@@ -26,6 +29,8 @@ matches = matchList.matchList()
 restarting = False
 fLocks = fileLocks.fileLocks()
 fileBuffers = fileBuffer.buffersList()
+schiavo = schiavo.schiavo()
+dog = datadogClient.datadogClient()
 verifiedCache = {}
 cloudflare = False
 chatFilters = None
@@ -36,7 +41,6 @@ busyThreads = 0
 debug = False
 outputRequestTime = False
 outputPackets = False
-discord = False
 gzip = False
 localize = False
 sentry = False

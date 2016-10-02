@@ -1,17 +1,19 @@
-from helpers import requestHelper
-from constants import exceptions
 import json
-from objects import glob
-from helpers import chatHelper
-from helpers import logHelper as log
 
-class handler(requestHelper.asyncRequestHandler):
+from common.log import logUtils as log
+from common.web import requestsManager
+from constants import exceptions
+from helpers import chatHelper
+from objects import glob
+
+
+class handler(requestsManager.asyncRequestHandler):
 	def asyncGet(self):
 		statusCode = 400
 		data = {"message": "unknown error"}
 		try:
 			# Check arguments
-			if not requestHelper.checkArguments(self.request.arguments, ["k", "to", "msg"]):
+			if not requestsManager.checkArguments(self.request.arguments, ["k", "to", "msg"]):
 				raise exceptions.invalidArgumentsException()
 
 			# Check ci key

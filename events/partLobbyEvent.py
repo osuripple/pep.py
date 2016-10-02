@@ -1,6 +1,7 @@
-from objects import glob
-from helpers import logHelper as log
+from common.log import logUtils as log
 from helpers import chatHelper as chat
+from objects import glob
+
 
 def handle(userToken, _):
 	# Get usertoken data

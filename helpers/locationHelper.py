@@ -1,8 +1,9 @@
-import urllib.request
 import json
+import urllib.request
+
+from common.log import logUtils as log
 from objects import glob
 
-from helpers import logHelper as log
 
 def getCountry(ip):
 	"""

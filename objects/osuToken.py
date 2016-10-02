@@ -1,14 +1,15 @@
-from constants import actions
-from constants import gameModes
-from helpers import userHelper
+import threading
+import time
+import uuid
+
+from common.constants import gameModes, actions
+from common.log import logUtils as log
+from common.ripple import userUtils
 from constants import serverPackets
 from events import logoutEvent
-from helpers import logHelper as log
-from objects import glob
-import uuid
-import time
-import threading
 from helpers import chatHelper as chat
+from objects import glob
+
 
 class token:
 
@@ -25,11 +26,11 @@ class token:
 		"""
 		# Set stuff
 		self.userID = userID
-		self.username = userHelper.getUsername(self.userID)
-		self.privileges = userHelper.getPrivileges(self.userID)
-		self.admin = userHelper.isInPrivilegeGroup(self.userID, "developer") or userHelper.isInPrivilegeGroup(self.userID, "community manager")
+		self.username = userUtils.getUsername(self.userID)
+		self.privileges = userUtils.getPrivileges(self.userID)
+		self.admin = userUtils.isInPrivilegeGroup(self.userID, "developer") or userUtils.isInPrivilegeGroup(self.userID, "community manager")
 		self.irc = irc
-		self.restricted = userHelper.isRestricted(self.userID)
+		self.restricted = userUtils.isRestricted(self.userID)
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
 		self.timeOffset = timeOffset
@@ -58,7 +59,7 @@ class token:
 		self.actionText = ""
 		self.actionMd5 = ""
 		self.actionMods = 0
-		self.gameMode = gameModes.std
+		self.gameMode = gameModes.STD
 		self.beatmapID = 0
 		self.rankedScore = 0
 		self.accuracy = 0.0
@@ -78,7 +79,7 @@ class token:
 
 		# If we have a valid ip, save bancho session in DB so we can cache LETS logins
 		if ip != "":
-			userHelper.saveBanchoSession(self.userID, self.ip)
+			userUtils.saveBanchoSession(self.userID, self.ip)
 
 		# Join main stream
 		self.joinStream("main")
@@ -275,7 +276,7 @@ class token:
 		"""
 		# Silence in db and token
 		self.silenceEndTime = int(time.time())+seconds
-		userHelper.silence(self.userID, seconds, reason, author)
+		userUtils.silence(self.userID, seconds, reason, author)
 
 		# Send silence packet to target
 		self.enqueue(serverPackets.silenceEndTime(seconds))
@@ -316,7 +317,7 @@ class token:
 
 	def updateCachedStats(self):
 		"""Update all cached stats for this token"""
-		stats = userHelper.getUserStats(self.userID, self.gameMode)
+		stats = userUtils.getUserStats(self.userID, self.gameMode)
 		log.debug(str(stats))
 		if stats is None:
 			log.warning("Stats query returned None")
@@ -336,7 +337,7 @@ class token:
 					If false, get the cached one. Optional. Default: False
 		"""
 		if force:
-			self.restricted = userHelper.isRestricted(self.userID)
+			self.restricted = userUtils.isRestricted(self.userID)
 		if self.restricted:
 			self.setRestricted()
 

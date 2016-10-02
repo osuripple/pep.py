@@ -1,12 +1,12 @@
-from objects import glob
-from helpers import logHelper as log
+from common.log import logUtils as log
+from common.ripple import userUtils
 from constants import exceptions
-from constants import serverPackets
-from objects import fokabot
-from helpers import discordBotHelper
-from helpers import userHelper
-from events import logoutEvent
 from constants import messageTemplates
+from constants import serverPackets
+from events import logoutEvent
+from objects import fokabot
+from objects import glob
+
 
 def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 	"""
@@ -272,7 +272,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		# File and discord logs (public chat only)
 		if to.startswith("#"):
 			log.chat("{fro} @ {to}: {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))))
-			discordBotHelper.sendChatlog("**{fro} @ {to}:** {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))[2:-1]))
+			glob.schiavo.sendChatlog("**{fro} @ {to}:** {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))[2:-1]))
 		return 0
 	except exceptions.userSilencedException:
 		token.enqueue(serverPackets.silenceEndTime(token.getSilenceSecondsLeft()))
@@ -314,7 +314,7 @@ def fixUsernameForIRC(username):
 	return username.replace(" ", "_")
 
 def IRCConnect(username):
-	userID = userHelper.getID(username)
+	userID = userUtils.getID(username)
 	if not userID:
 		log.warning("{} doesn't exist".format(username))
 		return
@@ -332,7 +332,7 @@ def IRCDisconnect(username):
 	log.info("{} disconnected from IRC".format(username))
 
 def IRCJoinChannel(username, channel):
-	userID = userHelper.getID(username)
+	userID = userUtils.getID(username)
 	if not userID:
 		log.warning("{} doesn't exist".format(username))
 		return
@@ -342,7 +342,7 @@ def IRCJoinChannel(username, channel):
 	return joinChannel(userID, channel)
 
 def IRCPartChannel(username, channel):
-	userID = userHelper.getID(username)
+	userID = userUtils.getID(username)
 	if not userID:
 		log.warning("{} doesn't exist".format(username))
 		return

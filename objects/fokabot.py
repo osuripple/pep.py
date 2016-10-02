@@ -1,11 +1,12 @@
 """FokaBot related functions"""
-from helpers import userHelper
-from objects import glob
-from constants import actions
-from constants import serverPackets
-from constants import fokabotCommands
 import re
-from helpers import generalFunctions
+
+from common import generalUtils
+from common.constants import actions
+from common.ripple import userUtils
+from constants import fokabotCommands
+from constants import serverPackets
+from objects import glob
 
 # Tillerino np regex, compiled only once to increase performance
 npRegex = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
@@ -34,13 +35,13 @@ def fokabotResponse(fro, chan, message):
 	for i in fokabotCommands.commands:
 		# Loop though all commands
 		#if i["trigger"] in message:
-		if generalFunctions.strContains(message, i["trigger"]):
+		if generalUtils.strContains(message, i["trigger"]):
 			# message has triggered a command
 
 			# Make sure the user has right permissions
 			if i["privileges"] is not None:
 				# Rank = x
-				if userHelper.getPrivileges(userHelper.getID(fro)) & i["privileges"] == 0:
+				if userUtils.getPrivileges(userUtils.getID(fro)) & i["privileges"] == 0:
 					return False
 
 			# Check argument number

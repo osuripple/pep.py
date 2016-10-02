@@ -1,15 +1,17 @@
-from helpers import userHelper
-from constants import serverPackets
-from constants import exceptions
-from objects import glob
-from helpers import locationHelper
-from helpers import countryHelper
 import sys
-import traceback
-from helpers import logHelper as log
-from helpers import chatHelper as chat
-from constants import privileges
 import time
+import traceback
+
+from common.constants import privileges
+from common.log import logUtils as log
+from common.ripple import userUtils
+from constants import exceptions
+from constants import serverPackets
+from helpers import chatHelper as chat
+from helpers import countryHelper
+from helpers import locationHelper
+from objects import glob
+
 
 def handle(tornadoRequest):
 	# Data to return
@@ -51,24 +53,24 @@ def handle(tornadoRequest):
 
 		# Try to get the ID from username
 		username = str(loginData[0])
-		userID = userHelper.getID(username)
+		userID = userUtils.getID(username)
 
 		if not userID:
 			# Invalid username
 			raise exceptions.loginFailedException()
-		if not userHelper.checkLogin(userID, loginData[1]):
+		if not userUtils.checkLogin(userID, loginData[1]):
 			# Invalid password
 			raise exceptions.loginFailedException()
 
 		# Make sure we are not banned or locked
-		priv = userHelper.getPrivileges(userID)
-		if userHelper.isBanned(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
+		priv = userUtils.getPrivileges(userID)
+		if userUtils.isBanned(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
 			raise exceptions.loginBannedException()
-		if userHelper.isLocked(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
+		if userUtils.isLocked(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
 			raise exceptions.loginLockedException()
 
 		# 2FA check
-		if userHelper.check2FA(userID, requestIP):
+		if userUtils.check2FA(userID, requestIP):
 			log.warning("Need 2FA check for user {}".format(loginData[0]))
 			raise exceptions.need2FAException()
 
@@ -76,8 +78,8 @@ def handle(tornadoRequest):
 
 		# Verify this user (if pending activation)
 		firstLogin = False
-		if priv & privileges.USER_PENDING_VERIFICATION > 0 or userHelper.hasVerifiedHardware(userID) == False:
-			if userHelper.verifyUser(userID, clientData):
+		if priv & privileges.USER_PENDING_VERIFICATION > 0 or userUtils.hasVerifiedHardware(userID) == False:
+			if userUtils.verifyUser(userID, clientData):
 				# Valid account
 				log.info("Account {} verified successfully!".format(userID))
 				glob.verifiedCache[str(userID)] = 1
@@ -90,7 +92,7 @@ def handle(tornadoRequest):
 
 
 		# Save HWID in db for multiaccount detection
-		hwAllowed = userHelper.logHardware(userID, clientData, firstLogin)
+		hwAllowed = userUtils.logHardware(userID, clientData, firstLogin)
 
 		# This is false only if HWID is empty
 		# if HWID is banned, we get restricted so there's no
@@ -99,7 +101,7 @@ def handle(tornadoRequest):
 			raise exceptions.haxException()
 
 		# Log user IP
-		userHelper.logIP(userID, requestIP)
+		userUtils.logIP(userID, requestIP)
 
 		# Delete old tokens for that user and generate a new one
 		glob.tokens.deleteOldTokens(userID)
@@ -111,7 +113,7 @@ def handle(tornadoRequest):
 
 		# Send message if donor expires soon
 		if responseToken.privileges & privileges.USER_DONOR > 0:
-			expireDate = userHelper.getDonorExpire(responseToken.userID)
+			expireDate = userUtils.getDonorExpire(responseToken.userID)
 			if expireDate-int(time.time()) <= 86400*3:
 				expireDays = round((expireDate-int(time.time()))/86400)
 				expireIn = "{} days".format(expireDays) if expireDays > 1 else "less than 24 hours"
@@ -119,7 +121,7 @@ def handle(tornadoRequest):
 
 
 		# Set silence end UNIX time in token
-		responseToken.silenceEndTime = userHelper.getSilenceEnd(userID)
+		responseToken.silenceEndTime = userUtils.getSilenceEnd(userID)
 
 		# Get only silence remaining seconds
 		silenceSeconds = responseToken.getSilenceSecondsLeft()
@@ -193,15 +195,15 @@ def handle(tornadoRequest):
 			log.warning("Location skipped")
 			location = [0,0]
 			countryLetters = "XX"
-			country = countryHelper.getCountryID(userHelper.getCountry(userID))
+			country = countryHelper.getCountryID(userUtils.getCountry(userID))
 
 		# Set location and country
 		responseToken.setLocation(location)
 		responseToken.setCountry(country)
 
 		# Set country in db if user has no country (first bancho login)
-		if userHelper.getCountry(userID) == "XX":
-			userHelper.setCountry(userID, countryLetters)
+		if userUtils.getCountry(userID) == "XX":
+			userUtils.setCountry(userID, countryLetters)
 
 		# Send to everyone our userpanel if we are not restricted
 		if not responseToken.restricted:

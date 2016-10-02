@@ -2,39 +2,36 @@
 import os
 import sys
 import threading
+from multiprocessing.pool import ThreadPool
 
 import tornado.gen
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
-from multiprocessing.pool import ThreadPool
-
-# Raven
 from raven.contrib.tornado import AsyncSentryClient
 
-# pep.py files
-from constants import bcolors
-from helpers import configHelper
-from objects import glob
-from objects import fokabot
-from objects import banchoConfig
-from objects import chatFilters
-from helpers import consoleHelper
-from helpers import databaseHelperNew
-from helpers import generalFunctions
-from helpers import logHelper as log
-from helpers import userHelper
-from helpers import systemHelper as system
-
-from handlers import mainHandler
+from common import generalUtils
+from common.constants import bcolors
+from common.db import dbConnector
+from common.log import logUtils as log
+from common.ripple import userUtils
+from common.web import schiavo
+from handlers import apiFokabotMessageHandler
 from handlers import apiIsOnlineHandler
 from handlers import apiOnlineUsersHandler
 from handlers import apiServerStatusHandler
-from handlers import ciTriggerHandler
 from handlers import apiVerifiedStatusHandler
-from handlers import apiFokabotMessageHandler
-
+from handlers import ciTriggerHandler
+from handlers import mainHandler
+from helpers import configHelper
+from helpers import consoleHelper
+from helpers import systemHelper as system
 from irc import ircserver
+from objects import banchoConfig
+from objects import chatFilters
+from objects import fokabot
+from objects import glob
+
 
 def make_app():
 	return tornado.web.Application([
@@ -83,7 +80,7 @@ if __name__ == "__main__":
 		# Connect to db
 		try:
 			consoleHelper.printNoNl("> Connecting to MySQL database...")
-			glob.db = databaseHelperNew.db(glob.conf.config["db"]["host"], glob.conf.config["db"]["username"], glob.conf.config["db"]["password"], glob.conf.config["db"]["database"], int(glob.conf.config["db"]["workers"]))
+			glob.db = dbConnector.db(glob.conf.config["db"]["host"], glob.conf.config["db"]["username"], glob.conf.config["db"]["password"], glob.conf.config["db"]["database"], int(glob.conf.config["db"]["workers"]))
 			consoleHelper.printNoNl(" ")
 			consoleHelper.printDone()
 		except:
@@ -152,29 +149,30 @@ if __name__ == "__main__":
 
 		# Cache user ids
 		consoleHelper.printNoNl("> Caching user IDs... ")
-		userHelper.cacheUserIDs()
+		userUtils.cacheUserIDs()
 		consoleHelper.printDone()
 
 		# Localize warning
-		glob.localize = generalFunctions.stringToBool(glob.conf.config["localize"]["enable"])
+		glob.localize = generalUtils.stringToBool(glob.conf.config["localize"]["enable"])
 		if not glob.localize:
 			consoleHelper.printColored("[!] Warning! Users localization is disabled!", bcolors.YELLOW)
 
 		# Discord
-		glob.discord = generalFunctions.stringToBool(glob.conf.config["discord"]["enable"])
-		if not glob.discord:
+		if generalUtils.stringToBool(glob.conf.config["discord"]["enable"]):
+			glob.schiavo = schiavo.schiavo(glob.conf.config["discord"]["boturl"])
+		else:
 			consoleHelper.printColored("[!] Warning! Discord logging is disabled!", bcolors.YELLOW)
 
 		# Gzip
-		glob.gzip = generalFunctions.stringToBool(glob.conf.config["server"]["gzip"])
+		glob.gzip = generalUtils.stringToBool(glob.conf.config["server"]["gzip"])
 		glob.gziplevel = int(glob.conf.config["server"]["gziplevel"])
 		if not glob.gzip:
 			consoleHelper.printColored("[!] Warning! Gzip compression is disabled!", bcolors.YELLOW)
 
 		# Debug mode
-		glob.debug = generalFunctions.stringToBool(glob.conf.config["debug"]["enable"])
-		glob.outputPackets = generalFunctions.stringToBool(glob.conf.config["debug"]["packets"])
-		glob.outputRequestTime = generalFunctions.stringToBool(glob.conf.config["debug"]["time"])
+		glob.debug = generalUtils.stringToBool(glob.conf.config["debug"]["enable"])
+		glob.outputPackets = generalUtils.stringToBool(glob.conf.config["debug"]["packets"])
+		glob.outputRequestTime = generalUtils.stringToBool(glob.conf.config["debug"]["time"])
 		if glob.debug:
 			consoleHelper.printColored("[!] Warning! Server running in debug mode!", bcolors.YELLOW)
 
@@ -183,7 +181,7 @@ if __name__ == "__main__":
 
 		# Set up sentry
 		try:
-			glob.sentry = generalFunctions.stringToBool(glob.conf.config["sentry"]["enable"])
+			glob.sentry = generalUtils.stringToBool(glob.conf.config["sentry"]["enable"])
 			if glob.sentry:
 				glob.application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
 			else:
@@ -192,10 +190,10 @@ if __name__ == "__main__":
 			consoleHelper.printColored("[!] Error while starting sentry client! Please check your config.ini and run the server again", bcolors.RED)
 
 		# Cloudflare memes
-		glob.cloudflare = generalFunctions.stringToBool(glob.conf.config["server"]["cloudflare"])
+		glob.cloudflare = generalUtils.stringToBool(glob.conf.config["server"]["cloudflare"])
 
 		# IRC start message and console output
-		glob.irc = generalFunctions.stringToBool(glob.conf.config["irc"]["enable"])
+		glob.irc = generalUtils.stringToBool(glob.conf.config["irc"]["enable"])
 		if glob.irc:
 			# IRC port
 			try:

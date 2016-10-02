@@ -1,10 +1,11 @@
+from common import generalUtils
+from common.log import logUtils as log
 from constants import clientPackets
-from constants import serverPackets
-from objects import glob
 from constants import exceptions
-from helpers import logHelper as log
+from constants import serverPackets
 from helpers import chatHelper as chat
-from helpers import generalFunctions
+from objects import glob
+
 
 def handle(userToken, packetData):
 	# read packet data
@@ -34,7 +35,7 @@ def joinMatch(userToken, matchID, password, isPasswordHashed = False):
 
 		# Hash password if needed
 		if isPasswordHashed == False and password != "":
-			password = generalFunctions.stringMd5(password)
+			password = generalUtils.stringMd5(password)
 
 		# Check password
 		# TODO: Admins can enter every match

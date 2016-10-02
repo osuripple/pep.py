@@ -1,12 +1,14 @@
-from objects import glob
+import random
+
+from common import generalUtils
+from common.log import logUtils as log
 from constants import clientPackets
 from constants import matchModModes
-import random
 from constants import matchTeamTypes
 from constants import matchTeams
 from constants import slotStatuses
-from helpers import logHelper as log
-from helpers import generalFunctions
+from objects import glob
+
 
 def handle(userToken, packetData):
 	# Read new settings
@@ -59,7 +61,7 @@ def handle(userToken, packetData):
 	# Update match settings
 	match.inProgress = packetData["inProgress"]
 	if packetData["matchPassword"] != "":
-		match.matchPassword = generalFunctions.stringMd5(packetData["matchPassword"])
+		match.matchPassword = generalUtils.stringMd5(packetData["matchPassword"])
 	else:
 		match.matchPassword = ""
 	match.beatmapName = packetData["beatmapName"]

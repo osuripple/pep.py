@@ -1,6 +1,7 @@
+from common.log import logUtils as log
 from constants import serverPackets
 from objects import glob
-from helpers import logHelper as log
+
 
 def handle(userToken, _):
 	# Get userToken data

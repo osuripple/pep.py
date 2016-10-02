@@ -1,6 +1,7 @@
-from objects import glob
+from common.log import logUtils as log
 from objects import channel
-from helpers import logHelper as log
+from objects import glob
+
 
 class channelList:
 	"""

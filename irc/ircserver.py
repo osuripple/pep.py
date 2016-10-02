@@ -6,18 +6,20 @@ by Joel Rosdahl, licensed under the GNU GPL 2 License.
 Most of the reference code from miniircd was used for the low-level logic.
 The high-level code has been rewritten to make it compatible with pep.py.
 """
-import sys
-import traceback
-import socket
-import select
-import time
-import re
 import hashlib
-from helpers import logHelper as log
+import re
+import select
+import socket
+import sys
+import time
+import traceback
 
-from objects import glob
-from helpers import chatHelper as chat
 import raven
+
+from common.log import logUtils as log
+from helpers import chatHelper as chat
+from objects import glob
+
 
 class Client:
 	"""

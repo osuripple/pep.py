@@ -1,16 +1,17 @@
-from helpers import requestHelper
-from helpers import logHelper as log
 import json
-from objects import glob
-from constants import exceptions
 
-class handler(requestHelper.asyncRequestHandler):
+from common.web import requestsManager
+from constants import exceptions
+from objects import glob
+
+
+class handler(requestsManager.asyncRequestHandler):
 	def asyncGet(self):
 		statusCode = 400
 		data = {"message": "unknown error"}
 		try:
 			# Check arguments
-			if not requestHelper.checkArguments(self.request.arguments, ["u"]):
+			if not requestsManager.checkArguments(self.request.arguments, ["u"]):
 				raise exceptions.invalidArgumentsException()
 
 			# Get userID and its verified cache thing

@@ -1,9 +1,10 @@
-from constants import serverPackets
+from common.log import logUtils as log
 from constants import clientPackets
-from objects import glob
-from events import joinMatchEvent
 from constants import exceptions
-from helpers import logHelper as log
+from constants import serverPackets
+from events import joinMatchEvent
+from objects import glob
+
 
 def handle(userToken, packetData):
 	try:
