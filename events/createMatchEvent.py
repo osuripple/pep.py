@@ -2,7 +2,6 @@ from common.log import logUtils as log
 from constants import clientPackets
 from constants import exceptions
 from constants import serverPackets
-from events import joinMatchEvent
 from objects import glob
 
 
@@ -26,7 +25,7 @@ def handle(userToken, packetData):
 		match = glob.matches.matches[matchID]
 
 		# Join that match
-		joinMatchEvent.joinMatch(userToken, matchID, packetData["matchPassword"])
+		userToken.joinMatch(matchID)
 
 		# Give host to match creator
 		match.setHost(userID)

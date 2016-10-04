@@ -1,5 +1,5 @@
-# TODO: Enqueue all
 import copy
+import dill
 
 from common import generalUtils
 from common.constants import gameModes
@@ -20,6 +20,7 @@ class slot:
 		self.status = slotStatuses.free
 		self.team = 0
 		self.userID = -1
+		self.user = None
 		self.mods = 0
 		self.loaded = False
 		self.skip = False
@@ -27,22 +28,6 @@ class slot:
 
 class match:
 	"""Multiplayer match object"""
-	matchID = 0
-	inProgress = False
-	mods = 0
-	matchName = ""
-	matchPassword = ""
-	beatmapName = ""
-	beatmapID = 0
-	beatmapMD5 = ""
-	slots = []
-	hostUserID = 0
-	gameMode = gameModes.STD
-	matchScoringType = matchScoringTypes.score
-	matchTeamType = matchTeamTypes.headToHead
-	matchModMode = matchModModes.normal
-	seed = 0
-
 	def __init__(self, matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID):
 		"""
 		Create a new match object
@@ -57,6 +42,8 @@ class match:
 		hostUserID -- user id of the host
 		"""
 		self.matchID = matchID
+		self.streamName = "multi/{}".format(self.matchID)
+		self.playingStreamName = "{}/playing".format(self.streamName)
 		self.inProgress = False
 		self.mods = 0
 		self.matchName = matchName
@@ -69,7 +56,7 @@ class match:
 		self.beatmapMD5 = beatmapMD5
 		self.hostUserID = hostUserID
 		self.gameMode = gameMode
-		self.matchScoringTypes = matchScoringTypes.score	# default values
+		self.matchScoringType = matchScoringTypes.score	# default values
 		self.matchTeamType = matchTeamTypes.headToHead		# default value
 		self.matchModMode = matchModModes.normal			# default value
 		self.seed = 0
@@ -78,6 +65,10 @@ class match:
 		self.slots = []
 		for _ in range(0,16):
 			self.slots.append(slot())
+
+		# Create streams
+		glob.streams.add(self.streamName)
+		glob.streams.add(self.playingStreamName)
 
 		# Create #multiplayer channel
 		glob.channels.addTempChannel("#multi_{}".format(self.matchID))
@@ -109,9 +100,8 @@ class match:
 
 		# Slot user ID. Write only if slot is occupied
 		for i in range(0,16):
-			uid = self.slots[i].userID
-			if uid > -1:
-				struct.append([uid, dataTypes.UINT32])
+			if self.slots[i].user is not None:
+				struct.append([self.slots[i].user.userID, dataTypes.UINT32])
 
 		# Other match data
 		struct.extend([
@@ -138,50 +128,37 @@ class match:
 
 		newHost -- new host userID
 		"""
+		slotID = self.getUserSlotID(newHost)
+		if slotID is None:
+			return
+		token = self.slots[slotID].user
 		self.hostUserID = newHost
+		token.enqueue(serverPackets.matchTransferHost())
+		self.sendUpdates()
+		log.info("MPROOM{}: {} is now the host".format(self.matchID, token.username))
 
-		# Send host packet to new host
-		token = glob.tokens.getTokenFromUserID(newHost)
-		if token is not None:
-			token.enqueue(serverPackets.matchTransferHost())
+	def setSlot(self, slotID, status = None, team = None, user = -1, mods = None, loaded = None, skip = None, complete = None):
+		#self.setSlot(i, slotStatuses.notReady, 0, user, 0)
+		if status is not None:
+			self.slots[slotID].status = status
 
-		log.info("MPROOM{}: {} is now the host".format(self.matchID, newHost))
+		if team is not None:
+			self.slots[slotID].team = team
 
-	def setSlot(self, slotID, slotStatus = None, slotTeam = None, slotUserID = None, slotMods = None, slotLoaded = None, slotSkip = None, slotComplete = None):
-		"""
-		Set a slot to a specific userID and status
+		if user is not -1:
+			self.slots[slotID].user = user
 
-		slotID -- id of that slot (0-15)
-		slotStatus -- see slotStatuses.py
-		slotTeam -- team id
-		slotUserID -- user ID of user in that slot
-		slotMods -- mods enabled in that slot. 0 if not free mod.
-		slotLoaded -- loaded status True/False
-		slotSkip -- skip status True/False
-		slotComplete -- completed status True/False
+		if mods is not -1:
+			self.slots[slotID].mods = mods
 
-		If Null is passed, that value won't be edited
-		"""
-		if slotStatus is not None:
-			self.slots[slotID].status = slotStatus
+		if loaded is not None:
+			self.slots[slotID].loaded = loaded
 
-		if slotTeam is not None:
-			self.slots[slotID].team = slotTeam
+		if skip is not None:
+			self.slots[slotID].skip = skip
 
-		if slotUserID is not None:
-			self.slots[slotID].userID = slotUserID
-
-		if slotMods is not None:
-			self.slots[slotID].mods = slotMods
-
-		if slotLoaded is not None:
-			self.slots[slotID].loaded = slotLoaded
-
-		if slotSkip is not None:
-			self.slots[slotID].skip = slotSkip
-
-		if slotComplete is not None:
-			self.slots[slotID].complete = slotComplete
+		if complete is not None:
+			self.slots[slotID].complete = complete
 
 	def setSlotMods(self, slotID, mods):
 		"""
@@ -191,8 +168,8 @@ class match:
 		mods -- new mods
 		"""
 		# Set new slot data and send update
-		self.setSlot(slotID, None, None, None, mods)
-		self.sendUpdate()
+		self.setSlot(slotID, mods=mods)
+		self.sendUpdates()
 		log.info("MPROOM{}: Slot{} mods changed to {}".format(self.matchID, slotID, mods))
 
 	def toggleSlotReady(self, slotID):
@@ -208,8 +185,8 @@ class match:
 			newStatus = slotStatuses.notReady
 		else:
 			newStatus = slotStatuses.ready
-		self.setSlot(slotID, newStatus, None, None, None)
-		self.sendUpdate()
+		self.setSlot(slotID, newStatus)
+		self.sendUpdates()
 		log.info("MPROOM{}: Slot{} changed ready status to {}".format(self.matchID, slotID, self.slots[slotID].status))
 
 	def toggleSlotLock(self, slotID):
@@ -219,26 +196,21 @@ class match:
 
 		slotID -- slot number
 		"""
-		# Get token of user in that slot (if there's someone)
-		if self.slots[slotID].userID > -1:
-			token = glob.tokens.getTokenFromUserID(self.slots[slotID].userID)
-		else:
-			token = None
-
 		# Check if slot is already locked
 		if self.slots[slotID].status == slotStatuses.locked:
 			newStatus = slotStatuses.free
 		else:
 			newStatus = slotStatuses.locked
 
+		# Send updated settings to kicked user, so he returns to lobby
+		if self.slots[slotID].user is not None:
+			self.slots[slotID].user.enqueue(serverPackets.updateMatch(self.matchID))
+
 		# Set new slot status
 		self.setSlot(slotID, newStatus, 0, -1, 0)
-		if token is not None:
-			# Send updated settings to kicked user, so he returns to lobby
-			token.enqueue(serverPackets.updateMatch(self.matchID))
 
 		# Send updates to everyone else
-		self.sendUpdate()
+		self.sendUpdates()
 		log.info("MPROOM{}: Slot{} {}".format(self.matchID, slotID, "locked" if newStatus == slotStatuses.locked else "unlocked"))
 
 	def playerLoaded(self, userID):
@@ -269,12 +241,7 @@ class match:
 
 	def allPlayersLoaded(self):
 		"""Send allPlayersLoaded packet to every playing usr in match"""
-		for i in range(0,16):
-			if self.slots[i].userID > -1 and self.slots[i].status == slotStatuses.playing:
-				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token is not None:
-					token.enqueue(serverPackets.allPlayersLoaded())
-
+		glob.streams.broadcast(self.playingStreamName, serverPackets.allPlayersLoaded())
 		log.info("MPROOM{}: All players loaded! Match starting...".format(self.matchID))
 
 	def playerSkip(self, userID):
@@ -292,12 +259,7 @@ class match:
 		log.info("MPROOM{}: User {} skipped".format(self.matchID, userID))
 
 		# Send skip packet to every playing user
-		for i in range(0,16):
-			uid = self.slots[i].userID
-			if (self.slots[i].status & slotStatuses.playing > 0) and uid > -1:
-				token = glob.tokens.getTokenFromUserID(uid)
-				if token is not None:
-					token.enqueue(serverPackets.playerSkipped(uid))
+		glob.streams.broadcast(self.playingStreamName, serverPackets.playerSkipped(self.slots[slotID].user.userID))
 
 		# Check all skipped
 		total = 0
@@ -313,12 +275,7 @@ class match:
 
 	def allPlayersSkipped(self):
 		"""Send allPlayersSkipped packet to every playing usr in match"""
-		for i in range(0,16):
-			if self.slots[i].userID > -1 and self.slots[i].status == slotStatuses.playing:
-				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token is not None:
-					token.enqueue(serverPackets.allPlayersSkipped())
-
+		glob.streams.broadcast(self.playingStreamName, serverPackets.allPlayersSkipped())
 		log.info("MPROOM{}: All players have skipped!".format(self.matchID))
 
 	def playerCompleted(self, userID):
@@ -330,7 +287,7 @@ class match:
 		slotID = self.getUserSlotID(userID)
 		if slotID is None:
 			return
-		self.setSlot(slotID, None, None, None, None, None, None, True)
+		self.setSlot(slotID, complete=True)
 
 		# Console output
 		log.info("MPROOM{}: User {} has completed his play".format(self.matchID, userID))
@@ -355,21 +312,20 @@ class match:
 
 		# Reset slots
 		for i in range(0,16):
-			if self.slots[i].userID > -1 and self.slots[i].status == slotStatuses.playing:
+			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.playing:
 				self.slots[i].status = slotStatuses.notReady
 				self.slots[i].loaded = False
 				self.slots[i].skip = False
 				self.slots[i].complete = False
 
 		# Send match update
-		self.sendUpdate()
+		self.sendUpdates()
 
 		# Send match complete
-		for i in range(0,16):
-			if self.slots[i].userID > -1:
-				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token is not None:
-					token.enqueue(serverPackets.matchComplete())
+		glob.streams.broadcast(self.streamName, serverPackets.matchComplete())
+
+		# Destroy playing stream
+		glob.streams.remove(self.playingStreamName)
 
 		# Console output
 		log.info("MPROOM{}: Match completed".format(self.matchID))
@@ -381,11 +337,11 @@ class match:
 		return -- slot id if found, None if user is not in room
 		"""
 		for i in range(0,16):
-			if self.slots[i].userID == userID:
+			if self.slots[i].user is not None and self.slots[i].user.userID == userID:
 				return i
 		return None
 
-	def userJoin(self, userID):
+	def userJoin(self, user):
 		"""
 		Add someone to users in match
 
@@ -395,39 +351,38 @@ class match:
 
 		# Make sure we're not in this match
 		for i in range(0,16):
-			if self.slots[i].userID == userID:
+			if self.slots[i].user == user:
 				# Set bugged slot to free
-				self.setSlot(i, slotStatuses.free, 0, -1, 0)
+				self.setSlot(i, slotStatuses.free, 0, None, 0)
 
 		# Find first free slot
 		for i in range(0,16):
 			if self.slots[i].status == slotStatuses.free:
 				# Occupy slot
-				self.setSlot(i, slotStatuses.notReady, 0, userID, 0)
+				self.setSlot(i, slotStatuses.notReady, 0, user, 0)
 
 				# Send updated match data
-				self.sendUpdate()
+				self.sendUpdates()
 
 				# Console output
-				log.info("MPROOM{}: {} joined the room".format(self.matchID, userID))
-
+				log.info("MPROOM{}: {} joined the room".format(self.matchID, user.username))
 				return True
 
 		return False
 
-	def userLeft(self, userID):
+	def userLeft(self, user):
 		"""
 		Remove someone from users in match
 
 		userID -- user if of the user
 		"""
 		# Make sure the user is in room
-		slotID = self.getUserSlotID(userID)
+		slotID = self.getUserSlotID(user.userID)
 		if slotID is None:
 			return
 
 		# Set that slot to free
-		self.setSlot(slotID, slotStatuses.free, 0, -1, 0)
+		self.setSlot(slotID, slotStatuses.free, 0, None, 0)
 
 		# Check if everyone left
 		if self.countUsers() == 0:
@@ -437,19 +392,18 @@ class match:
 			return
 
 		# Check if host left
-		if userID == self.hostUserID:
+		if user.userID == self.hostUserID:
 			# Give host to someone else
 			for i in range(0,16):
-				uid = self.slots[i].userID
-				if uid > -1:
-					self.setHost(uid)
+				if self.slots[i].user is not None:
+					self.setHost(self.slots[i].user.userID)
 					break
 
 		# Send updated match data
-		self.sendUpdate()
+		self.sendUpdates()
 
 		# Console output
-		log.info("MPROOM{}: {} left the room".format(self.matchID, userID))
+		log.info("MPROOM{}: {} left the room".format(self.matchID, user.username))
 
 	def userChangeSlot(self, userID, newSlotID):
 		"""
@@ -464,20 +418,21 @@ class match:
 			return
 
 		# Make sure there is no one inside new slot
-		if self.slots[newSlotID].userID > -1 and self.slots[newSlotID].status != slotStatuses.free:
+		if self.slots[newSlotID].user is not None and self.slots[newSlotID].status != slotStatuses.free:
 			return
 
 		# Get old slot data
-		oldData = copy.deepcopy(self.slots[oldSlotID])
+		oldData = dill.copy(self.slots[oldSlotID])
+		#oldData = copy.deepcopy(self.slots[oldSlotID])
 
 		# Free old slot
-		self.setSlot(oldSlotID, slotStatuses.free, 0, -1, 0)
+		self.setSlot(oldSlotID, slotStatuses.free, 0, None, 0)
 
 		# Occupy new slot
-		self.setSlot(newSlotID, oldData.status, oldData.team, oldData.userID, oldData.mods)
+		self.setSlot(newSlotID, oldData.status, oldData.team, oldData.user, oldData.mods)
 
 		# Send updated match data
-		self.sendUpdate()
+		self.sendUpdates()
 
 		# Console output
 		log.info("MPROOM{}: {} moved to slot {}".format(self.matchID, userID, newSlotID))
@@ -494,14 +449,10 @@ class match:
 			self.matchPassword = ""
 
 		# Send password change to every user in match
-		for i in range(0,16):
-			if self.slots[i].userID > -1:
-				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token is not None:
-					token.enqueue(serverPackets.changeMatchPassword(self.matchPassword))
+		glob.streams.broadcast(self.streamName, serverPackets.changeMatchPassword(self.matchPassword))
 
 		# Send new match settings too
-		self.sendUpdate()
+		self.sendUpdates()
 
 		# Console output
 		log.info("MPROOM{}: Password changed to {}".format(self.matchID, self.matchPassword))
@@ -514,7 +465,7 @@ class match:
 		"""
 		# Set new mods and send update
 		self.mods = mods
-		self.sendUpdate()
+		self.sendUpdates()
 		log.info("MPROOM{}: Mods changed to {}".format(self.matchID, self.mods))
 
 	def userHasBeatmap(self, userID, has = True):
@@ -533,7 +484,7 @@ class match:
 		self.setSlot(slotID, slotStatuses.noMap if not has else slotStatuses.notReady)
 
 		# Send updates
-		self.sendUpdate()
+		self.sendUpdates()
 
 	def transferHost(self, slotID):
 		"""
@@ -542,15 +493,14 @@ class match:
 		slotID -- ID of slot
 		"""
 		# Make sure there is someone in that slot
-		uid = self.slots[slotID].userID
-		if uid == -1:
+		if self.slots[slotID].user is None:
 			return
 
 		# Transfer host
-		self.setHost(uid)
+		self.setHost(self.slots[slotID].user.userID)
 
 		# Send updates
-		self.sendUpdate()
+		self.sendUpdates()
 
 	def playerFailed(self, userID):
 		"""
@@ -564,12 +514,7 @@ class match:
 			return
 
 		# Send packet to everyone
-		for i in range(0,16):
-			uid = self.slots[i].userID
-			if uid > -1:
-				token = glob.tokens.getTokenFromUserID(uid)
-				if token is not None:
-					token.enqueue(serverPackets.playerFailed(slotID))
+		glob.streams.broadcast(self.playingStreamName, serverPackets.playerFailed(slotID))
 
 		# Console output
 		log.info("MPROOM{}: {} has failed!".format(self.matchID, userID))
@@ -604,7 +549,7 @@ class match:
 		"""
 		c = 0
 		for i in range(0,16):
-			if self.slots[i].userID > -1:
+			if self.slots[i].user is not None:
 				c+=1
 		return c
 
@@ -622,17 +567,10 @@ class match:
 		# Update slot and send update
 		newTeam = matchTeams.blue if self.slots[slotID].team == matchTeams.red else matchTeams.red
 		self.setSlot(slotID, None, newTeam)
-		self.sendUpdate()
+		self.sendUpdates()
 
-	def sendUpdate(self):
-		# Send to users in room
-		for i in range(0,16):
-			if self.slots[i].userID > -1:
-				token = glob.tokens.getTokenFromUserID(self.slots[i].userID)
-				if token is not None:
-					token.enqueue(serverPackets.updateMatch(self.matchID))
-
-		# Send to users in lobby
+	def sendUpdates(self):
+		glob.streams.broadcast(self.streamName, serverPackets.updateMatch(self.matchID))
 		glob.streams.broadcast("lobby", serverPackets.updateMatch(self.matchID))
 
 	def checkTeams(self):
@@ -641,14 +579,14 @@ class match:
 
 		return -- True if valid, False if invalid
 		"""
-		if match.matchTeamType != matchTeamTypes.teamVs or matchTeamTypes != matchTeamTypes.tagTeamVs:
+		if self.matchTeamType != matchTeamTypes.teamVs or self.matchTeamType != matchTeamTypes.tagTeamVs:
 			# Teams are always valid if we have no teams
 			return True
 
 		# We have teams, check if they are valid
 		firstTeam = -1
 		for i in range(0,16):
-			if self.slots[i].userID > -1 and (self.slots[i].status&slotStatuses.noMap) == 0:
+			if self.slots[i].user is not None and (self.slots[i].status&slotStatuses.noMap) == 0:
 				if firstTeam == -1:
 					firstTeam = self.slots[i].team
 				elif firstTeam != self.slots[i].team:
@@ -657,3 +595,30 @@ class match:
 
 		log.warning("MPROOM{}: Invalid teams!".format(self.matchID))
 		return False
+
+	def start(self):
+		# Make sure we have enough players
+		if self.countUsers() < 2 or not self.checkTeams():
+			return
+
+		# Create playing channel
+		glob.streams.add(self.playingStreamName)
+
+		# Change inProgress value
+		match.inProgress = True
+
+		# Set playing to ready players and set load, skip and complete to False
+		# Make clients join playing stream
+		for i in range(0, 16):
+			if (self.slots[i].status & slotStatuses.ready) > 0:
+				self.slots[i].status = slotStatuses.playing
+				self.slots[i].loaded = False
+				self.slots[i].skip = False
+				self.slots[i].complete = False
+				self.slots[i].user.joinStream(self.playingStreamName)
+
+		# Send match start packet
+		glob.streams.broadcast(self.playingStreamName, serverPackets.matchStart(self.matchID))
+
+		# Send updates
+		self.sendUpdates()

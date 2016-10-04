@@ -111,7 +111,7 @@ def handle(userToken, packetData):
 		match.matchModMode = matchModModes.normal
 
 	# Send updated settings
-	match.sendUpdate()
+	match.sendUpdates()
 
 	# Console output
 	log.info("MPROOM{}: Updated room settings".format(match.matchID))

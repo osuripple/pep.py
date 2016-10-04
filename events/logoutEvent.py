@@ -21,7 +21,7 @@ def handle(userToken, _=None):
 		userToken.stopSpectating()
 
 		# Part matches
-		userToken.partMatch()
+		userToken.leaveMatch()
 		
 		# Part all joined channels
 		for i in userToken.joinedChannels:

@@ -40,4 +40,5 @@ class stream:
 		:return:
 		"""
 		for i in self.clients:
-			i.enqueue(data)
+			if i is not None:
+				i.enqueue(data)

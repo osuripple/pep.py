@@ -13,7 +13,6 @@ class streamList:
 		"""
 		if name not in self.streams:
 			self.streams[name] = stream.stream(name)
-		print(str(self.streams))
 
 	def remove(self, name):
 		"""

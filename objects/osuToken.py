@@ -216,47 +216,6 @@ class token:
 		# Set our spectating user to 0
 		self.spectating = None
 
-	def partMatch(self):
-		# Make sure we are in a match
-		if self.matchID == -1:
-			return
-
-		# Part #multiplayer channel
-		chat.partChannel(token=self, channel="#multi_{}".format(self.matchID), kick=True)
-
-		# Make sure the match exists
-		if self.matchID not in glob.matches.matches:
-			return
-
-		# The match exists, get object
-		match = glob.matches.matches[self.matchID]
-
-		# Set slot to free
-		match.userLeft(self.userID)
-
-		# Set usertoken match to -1
-		self.matchID = -1
-
-	'''def addSpectator(self, user):
-		"""
-		Add userID to our spectators
-
-		user -- user object
-		"""
-		# Add userID to spectators if not already in
-		if user not in self.spectators:
-			self.spectators.append(user)
-
-	def removeSpectator(self, userID):
-		"""
-		Remove userID from our spectators
-
-		userID -- old spectator userID
-		"""
-		# Remove spectator
-		if userID in self.spectators:
-			self.spectators.remove(userID)'''
-
 	def setCountry(self, countryID):
 		"""
 		Set country to countryID
@@ -281,13 +240,66 @@ class token:
 		"""Set a new away message"""
 		self.awayMessage = __awayMessage
 
+
 	def joinMatch(self, matchID):
 		"""
-		Set match to matchID
+		Set match to matchID, join match stream and channel
 
 		matchID -- new match ID
 		"""
+		# Make sure the match exists
+		if matchID not in glob.matches.matches:
+			return
+
+		# Match exists, get object
+		match = glob.matches.matches[matchID]
+
+		# Stop spectating
+		self.stopSpectating()
+
+		# Leave other matches
+		if self.matchID > -1 and self.matchID != matchID:
+			self.leaveMatch()
+
+		# Try to join match
+		joined = match.userJoin(self)
+		if not joined:
+			self.enqueue(serverPackets.matchJoinFail())
+			return
+
+		# Set matchID, join stream, channel and send packet
 		self.matchID = matchID
+		self.joinStream(match.streamName)
+		chat.joinChannel(token=self, channel="#multi_{}".format(self.matchID))
+		self.enqueue(serverPackets.matchJoinSuccess(matchID))
+
+	def leaveMatch(self):
+		"""
+		Leave joined match, match stream and match channel
+
+		:return:
+		"""
+		# Make sure we are in a match
+		if self.matchID == -1:
+			return
+
+		# Part #multiplayer channel and streams (/ and /playing)
+		chat.partChannel(token=self, channel="#multi_{}".format(self.matchID), kick=True)
+		self.leaveStream("multi/{}".format(self.matchID))
+		self.leaveStream("multi/{}/playing".format(self.matchID))	# optional
+
+		# Make sure the match exists
+		if self.matchID not in glob.matches.matches:
+			return
+
+		# The match exists, get object
+		match = glob.matches.matches[self.matchID]
+
+		# Set slot to free
+		match.userLeft(self)
+
+		# Set usertoken match to -1
+		self.matchID = -1
 
 	def kick(self, message="You have been kicked from the server. Please login again."):
 		"""

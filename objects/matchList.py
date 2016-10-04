@@ -21,33 +21,11 @@ class matchList:
 		hostUserID -- user id of who created the match
 		return -- match ID
 		"""
-		# Add a new match to matches list
+		# Add a new match to matches list and create its stream
 		matchID = self.lastID
 		self.lastID+=1
 		self.matches[matchID] = match.match(matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID)
 		return matchID
-
-	'''def lobbyUserJoin(self, userID):
-		"""
-		Add userID to users in lobby
-
-		userID -- user who joined mp lobby
-		"""
-		# Make sure the user is not already in mp lobby
-		if userID not in self.usersInLobby:
-			# We don't need to join #lobby, client will automatically send a packet for it
-			self.usersInLobby.append(userID)
-
-	def lobbyUserPart(self, userID):
-		"""
-		Remove userID from users in lobby
-
-		userID -- user who left mp lobby
-		"""
-		# Make sure the user is in mp lobby
-		if userID in self.usersInLobby:
-			# Part lobby and #lobby channel
-			self.usersInLobby.remove(userID)'''
 
 	def disposeMatch(self, matchID):
 		"""
@@ -59,8 +37,10 @@ class matchList:
 		if matchID not in self.matches:
 			return
 
-		# Remove match object
-		self.matches.pop(matchID)
+		# Remove match object and stream
+		match = self.matches.pop(matchID)
+		glob.streams.remove(match.streamName)
+		glob.streams.remove(match.playingStreamName)
 
 		# Send match dispose packet to everyone in lobby
 		glob.streams.broadcast("lobby", serverPackets.disposeMatch(matchID))
