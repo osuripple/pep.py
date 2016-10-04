@@ -48,22 +48,16 @@ if userToken.matchID != -1 and userToken.actionID != actions.MULTIPLAYING and us
 	userToken.beatmapID = packetData["beatmapID"]
 
 	# Enqueue our new user panel and stats to us and our spectators
-	recipients = [userID]
+	recipients = [userToken]
 	if len(userToken.spectators) > 0:
 		recipients += userToken.spectators
 
 	for i in recipients:
-		if i == userID:
-			# Save some loops
-			token = userToken
-		else:
-			token = glob.tokens.getTokenFromUserID(i)
-
-		if token is not None:
+		if i is not None:
 			# Force our own packet
-			force = True if token.userID == userID else False
-			token.enqueue(serverPackets.userPanel(userID, force))
-			token.enqueue(serverPackets.userStats(userID, force))
+			force = True if i == userToken else False
+			i.enqueue(serverPackets.userPanel(userID, force))
+			i.enqueue(serverPackets.userStats(userID, force))
 
 	# Console output
 	log.info("{} changed action: {} [{}][{}][{}]".format(username, str(userToken.actionID), userToken.actionText, userToken.actionMd5, userToken.beatmapID))

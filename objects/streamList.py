@@ -13,6 +13,7 @@ class streamList:
 		"""
 		if name not in self.streams:
 			self.streams[name] = stream.stream(name)
+		print(str(self.streams))
 
 	def remove(self, name):
 		"""
@@ -37,6 +38,17 @@ class streamList:
 		if streamName not in self.streams:
 			return
 		self.streams[streamName].broadcast(data)
+
+	def getClients(self, streamName):
+		"""
+		Get all clients in a stream
+
+		:param streamName: name of the stream
+		:return:
+		"""
+		if streamName not in self.streams:
+			return
+		return self.streams[streamName].clients
 
 	def join(self, streamName, client):
 		"""

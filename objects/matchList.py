@@ -3,14 +3,9 @@ from objects import glob
 from constants import serverPackets
 
 class matchList:
-	matches = {}
-	usersInLobby = []
-	lastID = 1
-
 	def __init__(self):
 		"""Initialize a matchList object"""
 		self.matches = {}
-		self.usersInLobby = []
 		self.lastID = 1
 
 	def createMatch(self, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID):
@@ -32,7 +27,7 @@ class matchList:
 		self.matches[matchID] = match.match(matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID)
 		return matchID
 
-	def lobbyUserJoin(self, userID):
+	'''def lobbyUserJoin(self, userID):
 		"""
 		Add userID to users in lobby
 
@@ -52,7 +47,7 @@ class matchList:
 		# Make sure the user is in mp lobby
 		if userID in self.usersInLobby:
 			# Part lobby and #lobby channel
-			self.usersInLobby.remove(userID)
+			self.usersInLobby.remove(userID)'''
 
 	def disposeMatch(self, matchID):
 		"""
@@ -68,7 +63,4 @@ class matchList:
 		self.matches.pop(matchID)
 
 		# Send match dispose packet to everyone in lobby
-		for i in self.usersInLobby:
-			token = glob.tokens.getTokenFromUserID(i)
-			if token is not None:
-				token.enqueue(serverPackets.disposeMatch(matchID))
+		glob.streams.broadcast("lobby", serverPackets.disposeMatch(matchID))

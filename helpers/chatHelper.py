@@ -105,10 +105,10 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 		# (toclient is used clientwise for #multiplayer and #spectator channels)
 		channelClient = channel
 		if channel == "#spectator":
-			if token.spectating == 0:
+			if token.spectating is None:
 				s = userID
 			else:
-				s = token.spectating
+				s = token.spectating.userID
 			channel = "#spect_{}".format(s)
 		elif channel == "#multiplayer":
 			channel = "#multi_{}".format(token.matchID)
@@ -189,10 +189,10 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		# (toclient is used clientwise for #multiplayer and #spectator channels)
 		toClient = to
 		if to == "#spectator":
-			if token.spectating == 0:
+			if token.spectating is None:
 				s = userID
 			else:
-				s = token.spectating
+				s = token.spectating.userID
 			to = "#spect_{}".format(s)
 		elif to == "#multiplayer":
 			to = "#multi_{}".format(token.matchID)

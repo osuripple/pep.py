@@ -39,7 +39,7 @@ class token:
 
 		# Default variables
 		self.spectators = []
-		self.spectating = 0
+		self.spectating = None
 		self.location = [0,0]
 		self.joinedChannels = []
 		self.ip = ip
@@ -141,42 +141,80 @@ class token:
 		"""
 		return self.location[1]
 
-	def startSpectating(self, userID):
+	def startSpectating(self, host):
 		"""
 		Set the spectating user to userID
 
-		userID -- target userID
+		user -- user object
 		"""
-		self.spectating = userID
+		# Stop spectating old client
+		self.stopSpectating()
+
+		# Set new spectator host
+		self.spectating = host
+
+		# Add us to host's spectator list
+		host.spectators.append(self)
+
+		# Create and join spectator stream
+		streamName = "spect/{}".format(self.spectating.userID)
+		glob.streams.add(streamName)
+		self.joinStream(streamName)
+		host.joinStream(streamName)
+
+		# Send spectator join packet to host
+		host.enqueue(serverPackets.addSpectator(self.userID))
+
+		# Create and join #spectator (#spect_userid) channel
+		glob.channels.addTempChannel("#spect_{}".format(host.userID))
+		chat.joinChannel(token=self, channel="#spect_{}".format(host.userID))
+		if len(host.spectators) == 1:
+			# First spectator, send #spectator join to host too
+			chat.joinChannel(token=host, channel="#spect_{}".format(host.userID))
+
+		# Send fellow spectator join to all clients
+		glob.streams.broadcast(streamName, serverPackets.fellowSpectatorJoined(self.userID))
+
+		# Get current spectators list
+		for i in host.spectators:
+			if i != self:
+				self.enqueue(serverPackets.fellowSpectatorJoined(i.userID))
+
+		# Log
+		log.info("{} are spectating {}".format(self.username, userUtils.getUsername(host.username)))
 
 	def stopSpectating(self):
 		# Remove our userID from host's spectators
-		target = self.spectating
-		if self.spectating == 0:
+		if self.spectating == None:
 			return
-		targetToken = glob.tokens.getTokenFromUserID(target)
-		if targetToken is not None:
-			# Remove us from host's spectators list
-			targetToken.removeSpectator(self.userID)
+		streamName = "spect/{}".format(self.spectating.userID)
 
-			# Send the spectator left packet to host
-			targetToken.enqueue(serverPackets.removeSpectator(self.userID))
-			for c in targetToken.spectators:
-				spec = glob.tokens.getTokenFromUserID(c)
-				spec.enqueue(serverPackets.fellowSpectatorLeft(self.userID))
+		# Remove us from host's spectators list
+		# and leave spectator stream
+		self.leaveStream(streamName)
+		self.spectating.spectators.remove(self)
 
-			# If nobody is spectating the host anymore, close #spectator channel
-			if len(targetToken.spectators) == 0:
-				chat.partChannel(token=targetToken, channel="#spect_{}".format(target), kick=True)
+		# Send the spectator left packet to host
+		self.spectating.enqueue(serverPackets.removeSpectator(self.userID))
+
+		# and to all other spectators
+		for i in self.spectating.spectators:
+			i.enqueue(serverPackets.fellowSpectatorLeft(self.userID))
+
+		# If nobody is spectating the host anymore, close #spectator channel
+		# and remove host from spect stream too
+		if len(self.spectating.spectators) == 0:
+			chat.partChannel(token=self.spectating, channel="#spect_{}".format(self.spectating.userID), kick=True)
+			self.spectating.leaveStream(streamName)
 
 		# Part #spectator channel
-		chat.partChannel(token=self, channel="#spect_{}".format(target), kick=True)
-
-		# Set our spectating user to 0
-		self.spectating = 0
+		chat.partChannel(token=self, channel="#spect_{}".format(self.spectating.userID), kick=True)
 
 		# Console output
-		log.info("{} are no longer spectating {}".format(self.username, target))
+		log.info("{} are no longer spectating {}".format(self.username, self.spectating.userID))
+
+		# Set our spectating user to 0
+		self.spectating = None
 
 	def partMatch(self):
 		# Make sure we are in a match
@@ -199,15 +237,15 @@ class token:
 		# Set usertoken match to -1
 		self.matchID = -1
 
-	def addSpectator(self, userID):
+	'''def addSpectator(self, user):
 		"""
 		Add userID to our spectators
 
-		userID -- new spectator userID
+		user -- user object
 		"""
 		# Add userID to spectators if not already in
-		if userID not in self.spectators:
-			self.spectators.append(userID)
+		if user not in self.spectators:
+			self.spectators.append(user)
 
 	def removeSpectator(self, userID):
 		"""
@@ -217,7 +255,7 @@ class token:
 		"""
 		# Remove spectator
 		if userID in self.spectators:
-			self.spectators.remove(userID)
+			self.spectators.remove(userID)'''
 
 	def setCountry(self, countryID):
 		"""

@@ -1,3 +1,5 @@
+from common.log import logUtils as log
+
 class stream:
 	def __init__(self, name):
 		"""
@@ -16,6 +18,7 @@ class stream:
 		:return:
 		"""
 		if client not in self.clients:
+			log.info("{} has joined stream {}".format(client.username, self.name))
 			self.clients.append(client)
 
 	def removeClient(self, client):
@@ -26,6 +29,7 @@ class stream:
 		:return:
 		"""
 		if client in self.clients:
+			log.info("{} has left stream {}".format(client.username, self.name))
 			self.clients.remove(client)
 
 	def broadcast(self, data):

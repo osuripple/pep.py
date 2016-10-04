@@ -32,11 +32,7 @@ def handle(userToken, packetData):
 		match.setHost(userID)
 
 		# Send match create packet to everyone in lobby
-		for i in glob.matches.usersInLobby:
-			# Make sure this user is still connected
-			token = glob.tokens.getTokenFromUserID(i)
-			if token is not None:
-				token.enqueue(serverPackets.createMatch(matchID))
+		glob.streams.broadcast("lobby", serverPackets.createMatch(matchID))
 
 		# Console output
 		log.info("MPROOM{}: Room created!".format(matchID))

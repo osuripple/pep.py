@@ -9,7 +9,7 @@ def handle(userToken, _):
 	username = userToken.username
 
 	# Remove user from users in lobby
-	glob.matches.lobbyUserPart(userID)
+	userToken.leaveStream("lobby")
 
 	# Part lobby channel
 	chat.partChannel(channel="#lobby", token=userToken, kick=True)

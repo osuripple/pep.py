@@ -128,8 +128,9 @@ if __name__ == "__main__":
 		consoleHelper.printDone()
 
 		# Initialize stremas
-		consoleHelper.printNoNl("> Creating main stream... ")
+		consoleHelper.printNoNl("> Creating packets streams... ")
 		glob.streams.add("main")
+		glob.streams.add("lobby")
 		consoleHelper.printDone()
 
 		# Start fokabot

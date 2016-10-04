@@ -7,7 +7,8 @@ def handle(userToken, packetData):
 	userID = userToken.userID
 
 	# Send spectator frames to every spectator
-	for i in userToken.spectators:
+	glob.streams.broadcast("spect/{}".format(userID), serverPackets.spectatorFrames(packetData[7:]))
+	'''for i in userToken.spectators:
 		# Send to every user but host
 		if i != userID:
 			try:
@@ -27,4 +28,4 @@ def handle(userToken, packetData):
 			except exceptions.stopSpectating:
 				# Remove this user from spectators
 				userToken.removeSpectator(i)
-				userToken.enqueue(serverPackets.removeSpectator(i))
+				userToken.enqueue(serverPackets.removeSpectator(i))'''

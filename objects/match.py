@@ -633,10 +633,7 @@ class match:
 					token.enqueue(serverPackets.updateMatch(self.matchID))
 
 		# Send to users in lobby
-		for i in glob.matches.usersInLobby:
-			token = glob.tokens.getTokenFromUserID(i)
-			if token is not None:
-				token.enqueue(serverPackets.updateMatch(self.matchID))
+		glob.streams.broadcast("lobby", serverPackets.updateMatch(self.matchID))
 
 	def checkTeams(self):
 		"""
