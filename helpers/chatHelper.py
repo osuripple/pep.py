@@ -177,13 +177,17 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		userID = token.userID
 		username = token.username
 
+		# Make sure this is not a tournament client
+		if token.tournament:
+			raise exceptions.userTournamentException()
+
 		# Make sure the user is not in restricted mode
 		if token.restricted:
-			raise exceptions.userRestrictedException
+			raise exceptions.userRestrictedException()
 
 		# Make sure the user is not silenced
 		if token.isSilenced():
-			raise exceptions.userSilencedException
+			raise exceptions.userSilencedException()
 
 		# Determine internal name if needed
 		# (toclient is used clientwise for #multiplayer and #spectator channels)
@@ -242,9 +246,13 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			if recipientToken is None:
 				raise exceptions.userNotFoundException
 
+			# Make sure the recipient is not a tournament client
+			if recipientToken.tournament:
+				raise exceptions.userTournamentException()
+
 			# Make sure the recipient is not restricted or we are FokaBot
 			if recipientToken.restricted == True and fro.lower() != "fokabot":
-				raise exceptions.userRestrictedException
+				raise exceptions.userRestrictedException()
 
 			# TODO: Make sure the recipient has not disabled PMs for non-friends or he's our friend
 
@@ -289,6 +297,9 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		return 404
 	except exceptions.userRestrictedException:
 		log.warning("{} tried to send a message {}, but the recipient is in restricted mode".format(username, to))
+		return 404
+	except exceptions.userTournamentException:
+		log.warning("{} tried to send a message {}, but the recipient is a tournament client".format(username, to))
 		return 404
 	except exceptions.userNotFoundException:
 		log.warning("User not connected to IRC/Bancho")

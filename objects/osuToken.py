@@ -13,7 +13,7 @@ from objects import glob
 
 class token:
 
-	def __init__(self, userID, token_ = None, ip ="", irc = False, timeOffset = 0):
+	def __init__(self, userID, token_ = None, ip ="", irc = False, timeOffset = 0, tournament = False):
 		"""
 		Create a token object and set userID and token
 
@@ -36,6 +36,7 @@ class token:
 		self.timeOffset = timeOffset
 		self.lock = threading.Lock()	# Sync primitive
 		self.streams = []
+		self.tournament = tournament
 
 		# Default variables
 		self.spectators = []

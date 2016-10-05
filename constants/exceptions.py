@@ -89,3 +89,6 @@ class loginLockedException(Exception):
 
 class unknownStreamException(Exception):
 	pass
+
+class userTournamentException(Exception):
+	pass

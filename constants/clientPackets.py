@@ -143,3 +143,12 @@ def transferHost(stream):
 
 def matchInvite(stream):
 	return packetHelper.readPacketData(stream, [["userID", dataTypes.UINT32]])
+
+def tournamentMatchInfoRequest(stream):
+	return packetHelper.readPacketData(stream, [["matchID", dataTypes.UINT32]])
+
+def tournamentJoinMatchChannel(stream):
+	return packetHelper.readPacketData(stream, [["matchID", dataTypes.UINT32]])
+
+def tournamentLeaveMatchChannel(stream):
+	return packetHelper.readPacketData(stream, [["matchID", dataTypes.UINT32]])

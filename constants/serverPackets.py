@@ -50,9 +50,10 @@ def mainMenuIcon(icon):
 def userSupporterGMT(supporter, GMT):
 	result = 1
 	if supporter:
-		result += 4
+		result |= userRanks.SUPPORTER
 	if GMT:
-		result += 2
+		result |= userRanks.BAT
+		result |= userRanks.TOURNAMENT_STAFF
 	return packetHelper.buildPacket(packetIDs.server_supporterGMT, [[result, dataTypes.UINT32]])
 
 def friendList(userID):
@@ -78,9 +79,7 @@ def userLogout(userID):
 def userPanel(userID, force = False):
 	# Connected and restricted check
 	userToken = glob.tokens.getTokenFromUserID(userID)
-	if userToken is None:
-		return bytes()
-	if userToken.restricted == True and force == False:
+	if userToken is None or ((userToken.restricted) and not force):
 		return bytes()
 
 	# Get user data
@@ -93,16 +92,17 @@ def userPanel(userID, force = False):
 
 	# Get username color according to rank
 	# Only admins and normal users are currently supported
+	userRank = 0
 	if username == "FokaBot":
-		userRank = userRanks.MOD
+		userRank |= userRanks.MOD
 	elif userUtils.isInPrivilegeGroup(userID, "community manager"):
-		userRank = userRanks.MOD
+		userRank |= userRanks.MOD
 	elif userUtils.isInPrivilegeGroup(userID, "developer"):
-		userRank = userRanks.ADMIN
+		userRank |= userRanks.ADMIN
 	elif (userToken.privileges & privileges.USER_DONOR) > 0:
-		userRank = userRanks.SUPPORTER
+		userRank |= userRanks.SUPPORTER
 	else:
-		userRank = userRanks.NORMAL
+		userRank |= userRanks.NORMAL
 
 	return packetHelper.buildPacket(packetIDs.server_userPanel,
 	[
@@ -120,10 +120,7 @@ def userPanel(userID, force = False):
 def userStats(userID, force = False):
 	# Get userID's token from tokens list
 	userToken = glob.tokens.getTokenFromUserID(userID)
-
-	if userToken is None:
-		return bytes()
-	if (userToken.restricted == True or userToken.irc == True) and force == False:
+	if userToken is None or ((userToken.restricted or userToken.irc or userToken.tournament) and not force):
 		return bytes()
 
 	return packetHelper.buildPacket(packetIDs.server_userStats,
@@ -204,6 +201,7 @@ def createMatch(matchID):
 	match = glob.matches.matches[matchID]
 	return packetHelper.buildPacket(packetIDs.server_newMatch, match.getMatchData())
 
+# TODO: Add match object argument to save some CPU
 def updateMatch(matchID):
 	# Make sure the match exists
 	if matchID not in glob.matches.matches:

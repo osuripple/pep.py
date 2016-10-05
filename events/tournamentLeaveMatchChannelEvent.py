@@ -1,0 +1,11 @@
+from constants import clientPackets
+from objects import glob
+from helpers import chatHelper as chat
+
+def handle(userToken, packetData):
+	packetData = clientPackets.tournamentLeaveMatchChannel(packetData)
+	matchID = packetData["matchID"]
+	if matchID not in glob.matches.matches:
+		return
+	chat.partChannel(token=userToken, channel="#multi_{}".format(matchID))
+	userToken.matchID = 0

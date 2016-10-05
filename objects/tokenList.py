@@ -20,7 +20,7 @@ class tokenList:
 		"""
 		self.tokens = {}
 
-	def addToken(self, userID, ip = "", irc = False, timeOffset=0):
+	def addToken(self, userID, ip = "", irc = False, timeOffset=0, tournament=False):
 		"""
 		Add a token object to tokens list
 
@@ -28,7 +28,7 @@ class tokenList:
 		irc -- if True, set this token as IRC client
 		return -- token object
 		"""
-		newToken = osuToken.token(userID, ip=ip, irc=irc, timeOffset=timeOffset)
+		newToken = osuToken.token(userID, ip=ip, irc=irc, timeOffset=timeOffset, tournament=tournament)
 		self.tokens[newToken.token] = newToken
 		return newToken
 

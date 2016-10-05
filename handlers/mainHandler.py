@@ -51,6 +51,9 @@ from events import startSpectatingEvent
 from events import stopSpectatingEvent
 from events import userPanelRequestEvent
 from events import userStatsRequestEvent
+from events import tournamentMatchInfoRequestEvent
+from events import tournamentJoinMatchChannelEvent
+from events import tournamentLeaveMatchChannelEvent
 from helpers import packetHelper
 from objects import glob
 
@@ -156,6 +159,10 @@ class handler(SentryMixin, requestsManager.asyncRequestHandler):
 							packetIDs.client_matchFailed: handleEvent(matchFailedEvent),
 							packetIDs.client_matchChangeTeam: handleEvent(matchChangeTeamEvent),
 							packetIDs.client_invite: handleEvent(matchInviteEvent),
+
+							packetIDs.client_tournamentMatchInfoRequest: handleEvent(tournamentMatchInfoRequestEvent),
+							packetIDs.client_tournamentJoinMatchChannel: handleEvent(tournamentJoinMatchChannelEvent),
+							packetIDs.client_tournamentLeaveMatchChannel: handleEvent(tournamentLeaveMatchChannelEvent),
 						}
 
 						# Packets processed if in restricted mode.

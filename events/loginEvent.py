@@ -104,8 +104,10 @@ def handle(tornadoRequest):
 		userUtils.logIP(userID, requestIP)
 
 		# Delete old tokens for that user and generate a new one
-		glob.tokens.deleteOldTokens(userID)
-		responseToken = glob.tokens.addToken(userID, requestIP, timeOffset=timeOffset)
+		isTournament = "tourney" in osuVersion
+		if not isTournament:
+			glob.tokens.deleteOldTokens(userID)
+		responseToken = glob.tokens.addToken(userID, requestIP, timeOffset=timeOffset, tournament=isTournament)
 		responseTokenString = responseToken.token
 
 		# Check restricted mode (and eventually send message)
@@ -205,7 +207,7 @@ def handle(tornadoRequest):
 		if userUtils.getCountry(userID) == "XX":
 			userUtils.setCountry(userID, countryLetters)
 
-		# Send to everyone our userpanel if we are not restricted
+		# Send to everyone our userpanel if we are not restricted or tournament
 		if not responseToken.restricted:
 			glob.streams.broadcast("main", serverPackets.userPanel(userID))
 
