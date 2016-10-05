@@ -423,10 +423,13 @@ class match:
 
 		# Get old slot data
 		oldData = dill.copy(self.slots[oldSlotID])
-		#oldData = copy.deepcopy(self.slots[oldSlotID])
+
+		# Oh no we have a huge meme here.
+		# Get pointer to right token and DON'T copy it
+		oldData.user = glob.tokens.tokens[oldData.user.token]
 
 		# Free old slot
-		self.setSlot(oldSlotID, slotStatuses.free, 0, None, 0)
+		self.setSlot(oldSlotID, slotStatuses.free, 0, None, 0, False, False, False)
 
 		# Occupy new slot
 		self.setSlot(newSlotID, oldData.status, oldData.team, oldData.user, oldData.mods)
