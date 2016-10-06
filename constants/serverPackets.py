@@ -47,12 +47,13 @@ def protocolVersion(version = 19):
 def mainMenuIcon(icon):
 	return packetHelper.buildPacket(packetIDs.server_mainMenuIcon, [[icon, dataTypes.STRING]])
 
-def userSupporterGMT(supporter, GMT):
+def userSupporterGMT(supporter, GMT, tournamentStaff):
 	result = 1
 	if supporter:
 		result |= userRanks.SUPPORTER
 	if GMT:
 		result |= userRanks.BAT
+	if tournamentStaff:
 		result |= userRanks.TOURNAMENT_STAFF
 	return packetHelper.buildPacket(packetIDs.server_supporterGMT, [[result, dataTypes.UINT32]])
 

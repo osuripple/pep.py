@@ -131,8 +131,11 @@ def handle(tornadoRequest):
 		# Get supporter/GMT
 		userGMT = False
 		userSupporter = True
+		userTournament = False
 		if responseToken.admin:
 			userGMT = True
+		if responseToken.privileges & privileges.USER_TOURNAMENT_STAFF > 0:
+			userTournament = True
 
 		# Server restarting check
 		if glob.restarting:
@@ -156,7 +159,7 @@ def handle(tornadoRequest):
 		responseToken.enqueue(serverPackets.silenceEndTime(silenceSeconds))
 		responseToken.enqueue(serverPackets.userID(userID))
 		responseToken.enqueue(serverPackets.protocolVersion())
-		responseToken.enqueue(serverPackets.userSupporterGMT(userSupporter, userGMT))
+		responseToken.enqueue(serverPackets.userSupporterGMT(userSupporter, userGMT, userTournament))
 		responseToken.enqueue(serverPackets.userPanel(userID, True))
 		responseToken.enqueue(serverPackets.userStats(userID, True))
 
