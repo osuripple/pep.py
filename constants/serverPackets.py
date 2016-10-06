@@ -16,7 +16,7 @@ def forceUpdate():
 
 def loginBanned():
 	packets = packetHelper.buildPacket(packetIDs.server_userID, [[-1, dataTypes.SINT32]])
-	packets += notification("You are banned. You can appeal after one month since your ban by sending an email to support@ripple.moe> from the email address you've used to sign up.")
+	packets += notification("You are banned. You can appeal after one month since your ban by sending an email to support@ripple.moe from the email address you've used to sign up.")
 	return packets
 
 def loginLocked():
