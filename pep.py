@@ -13,6 +13,7 @@ from raven.contrib.tornado import AsyncSentryClient
 from common import generalUtils
 from common.constants import bcolors
 from common.db import dbConnector
+from common.ddog import datadogClient
 from common.log import logUtils as log
 from common.ripple import userUtils
 from common.web import schiavo
@@ -189,6 +190,21 @@ if __name__ == "__main__":
 				consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
 		except:
 			consoleHelper.printColored("[!] Error while starting sentry client! Please check your config.ini and run the server again", bcolors.RED)
+
+		# Set up datadog
+		try:
+			if generalUtils.stringToBool(glob.conf.config["datadog"]["enable"]):
+				glob.dog = datadogClient.datadogClient(
+					glob.conf.config["datadog"]["apikey"],
+					glob.conf.config["datadog"]["appkey"],
+					[
+						datadogClient.periodicCheck("online_users", lambda: len(glob.tokens.tokens)),
+						datadogClient.periodicCheck("multiplayer_matches", lambda: len(glob.matches.matches)),
+					])
+			else:
+				consoleHelper.printColored("[!] Warning! Datadog stats tracking is disabled!", bcolors.YELLOW)
+		except:
+			consoleHelper.printColored("[!] Error while starting Datadog client! Please check your config.ini and run the server again", bcolors.RED)
 
 		# Cloudflare memes
 		glob.cloudflare = generalUtils.stringToBool(glob.conf.config["server"]["cloudflare"])

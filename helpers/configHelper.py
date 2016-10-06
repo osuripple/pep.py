@@ -56,6 +56,10 @@ class config:
 			self.config.get("discord","boturl")
 			self.config.get("discord","devgroup")
 
+			self.config.get("datadog", "enable")
+			self.config.get("datadog", "apikey")
+			self.config.get("datadog", "appkey")
+
 			self.config.get("irc","enable")
 			self.config.get("irc","port")
 			self.config.get("irc","hostname")
@@ -103,6 +107,11 @@ class config:
 		self.config.set("discord", "enable", "0")
 		self.config.set("discord", "boturl", "")
 		self.config.set("discord", "devgroup", "")
+
+		self.config.add_section("datadog")
+		self.config.set("datadog", "enable")
+		self.config.set("datadog", "apikey")
+		self.config.set("datadog", "appkey")
 
 		self.config.add_section("irc")
 		self.config.set("irc", "enable", "1")
