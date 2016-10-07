@@ -8,7 +8,7 @@ def handle(userToken, _):
 	try:
 		# We don't have the beatmap, we can't spectate
 		if userToken.spectating not in glob.tokens.tokens:
-			raise exceptions.tokenNotFoundException
+			raise exceptions.tokenNotFoundException()
 
 		# Send the packet to host
 		glob.tokens.tokens[userToken.spectating].enqueue(serverPackets.noSongSpectator(userToken.userID))
