@@ -494,7 +494,7 @@ class match:
 		slotID -- ID of slot
 		"""
 		# Make sure there is someone in that slot
-		if self.slots[slotID].user is None or self.slots[slotID].user not in glob.tokens.token:
+		if self.slots[slotID].user is None or self.slots[slotID].user not in glob.tokens.tokens:
 			return
 
 		# Transfer host
