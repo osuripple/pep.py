@@ -16,7 +16,7 @@ def handle(userToken, _=None):
 	# the old logout packet will still be in the queue and will be sent to
 	# the server, so we accept logout packets sent at least 5 seconds after login
 	# if the user logs out before 5 seconds, he will be disconnected later with timeout check
-	if int(time.time()-userToken.loginTime) >= 5 or userToken.irc == True:
+	if (int(time.time()-userToken.loginTime) >= 5 or userToken.irc) or userToken.tournament:
 		# Stop spectating
 		userToken.stopSpectating()
 

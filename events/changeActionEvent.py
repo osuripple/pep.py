@@ -50,7 +50,9 @@ if userToken.matchID != -1 and userToken.actionID != actions.MULTIPLAYING and us
 	# Enqueue our new user panel and stats to us and our spectators
 	recipients = [userToken]
 	if len(userToken.spectators) > 0:
-		recipients += userToken.spectators
+		for i in userToken.spectators:
+			if i in glob.tokens.tokens:
+				recipients.append(glob.tokens.tokens[i])
 
 	for i in recipients:
 		if i is not None:

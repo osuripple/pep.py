@@ -40,7 +40,11 @@ class token:
 
 		# Default variables
 		self.spectators = []
+
+		# TODO: Move those two vars to a class
 		self.spectating = None
+		self.spectatingUserID = 0	# we need this in case we the host gets DCed
+
 		self.location = [0,0]
 		self.joinedChannels = []
 		self.ip = ip
@@ -152,13 +156,14 @@ class token:
 		self.stopSpectating()
 
 		# Set new spectator host
-		self.spectating = host
+		self.spectating = host.token
+		self.spectatingUserID = host.userID
 
 		# Add us to host's spectator list
-		host.spectators.append(self)
+		host.spectators.append(self.token)
 
 		# Create and join spectator stream
-		streamName = "spect/{}".format(self.spectating.userID)
+		streamName = "spect/{}".format(host.userID)
 		glob.streams.add(streamName)
 		self.joinStream(streamName)
 		host.joinStream(streamName)
@@ -178,44 +183,50 @@ class token:
 
 		# Get current spectators list
 		for i in host.spectators:
-			if i != self:
-				self.enqueue(serverPackets.fellowSpectatorJoined(i.userID))
+			if i != self.token and i in glob.tokens.tokens:
+				self.enqueue(serverPackets.fellowSpectatorJoined(glob.tokens.tokens[i].userID))
 
 		# Log
-		log.info("{} are spectating {}".format(self.username, userUtils.getUsername(host.username)))
+		log.info("{} is spectating {}".format(self.username, userUtils.getUsername(host.username)))
 
 	def stopSpectating(self):
 		# Remove our userID from host's spectators
-		if self.spectating == None:
+		if self.spectating is None:
 			return
-		streamName = "spect/{}".format(self.spectating.userID)
+		if self.spectating in glob.tokens.tokens:
+			hostToken = glob.tokens.tokens[self.spectating]
+		else:
+			hostToken = None
+		streamName = "spect/{}".format(self.spectatingUserID)
 
-		# Remove us from host's spectators list
-		# and leave spectator stream
+		# Remove us from host's spectators list,
+		# leave spectator stream
+		# and end the spectator left packet to host
 		self.leaveStream(streamName)
-		self.spectating.spectators.remove(self)
+		if hostToken is not None:
+			hostToken.spectators.remove(self.token)
+			hostToken.enqueue(serverPackets.removeSpectator(self.userID))
 
-		# Send the spectator left packet to host
-		self.spectating.enqueue(serverPackets.removeSpectator(self.userID))
+			# and to all other spectators
+			for i in hostToken.spectators:
+				if i in glob.tokens.tokens:
+					glob.tokens.tokens[i].enqueue(serverPackets.fellowSpectatorLeft(self.userID))
 
-		# and to all other spectators
-		for i in self.spectating.spectators:
-			i.enqueue(serverPackets.fellowSpectatorLeft(self.userID))
-
-		# If nobody is spectating the host anymore, close #spectator channel
-		# and remove host from spect stream too
-		if len(self.spectating.spectators) == 0:
-			chat.partChannel(token=self.spectating, channel="#spect_{}".format(self.spectating.userID), kick=True)
-			self.spectating.leaveStream(streamName)
+			# If nobody is spectating the host anymore, close #spectator channel
+			# and remove host from spect stream too
+			if len(hostToken.spectators) == 0:
+				chat.partChannel(token=hostToken, channel="#spect_{}".format(hostToken.userID), kick=True)
+				hostToken.leaveStream(streamName)
 
 		# Part #spectator channel
-		chat.partChannel(token=self, channel="#spect_{}".format(self.spectating.userID), kick=True)
+		chat.partChannel(token=self, channel="#spect_{}".format(self.spectatingUserID), kick=True)
 
 		# Console output
-		log.info("{} are no longer spectating {}".format(self.username, self.spectating.userID))
+		log.info("{} is no longer spectating {}".format(self.username, self.spectatingUserID))
 
 		# Set our spectating user to 0
 		self.spectating = None
+		self.spectatingUserID = 0
 
 	def setCountry(self, countryID):
 		"""
@@ -401,12 +412,12 @@ class token:
 		chat.sendMessage("FokaBot",self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information.")
 
 	def joinStream(self, name):
-		glob.streams.join(name, self)
+		glob.streams.join(name, token=self.token)
 		if name not in self.streams:
 			self.streams.append(name)
 
 	def leaveStream(self, name):
-		glob.streams.leave(name, self)
+		glob.streams.leave(name, token=self.token)
 		if name in self.streams:
 			self.streams.remove(name)
 

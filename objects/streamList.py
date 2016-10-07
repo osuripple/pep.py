@@ -26,6 +26,33 @@ class streamList:
 				i.leaveStream(name)
 			self.streams.pop(name)
 
+
+	def join(self, streamName, client=None, token=None):
+		"""
+		Add a client to a stream
+
+		:param streamName: stream name
+		:param client: client (osuToken) object
+		:param token: client uuid string
+		:return:
+		"""
+		if streamName not in self.streams:
+			return
+		self.streams[streamName].addClient(client=client, token=token)
+
+	def leave(self, streamName, client=None, token=None):
+		"""
+		Remove a client from a stream
+
+		:param streamName: stream name
+		:param client: client (osuToken) object
+		:param token: client uuid string
+		:return:
+		"""
+		if streamName not in self.streams:
+			return
+		self.streams[streamName].removeClient(client=client, token=token)
+
 	def broadcast(self, streamName, data):
 		"""
 		Send some data to all clients in a stream
@@ -38,7 +65,7 @@ class streamList:
 			return
 		self.streams[streamName].broadcast(data)
 
-	def getClients(self, streamName):
+	'''def getClients(self, streamName):
 		"""
 		Get all clients in a stream
 
@@ -47,28 +74,4 @@ class streamList:
 		"""
 		if streamName not in self.streams:
 			return
-		return self.streams[streamName].clients
-
-	def join(self, streamName, client):
-		"""
-		Add a client to a stream
-
-		:param streamName: stream name
-		:param client: client (osuToken) object
-		:return:
-		"""
-		if streamName not in self.streams:
-			return
-		self.streams[streamName].addClient(client)
-
-	def leave(self, streamName, client):
-		"""
-		Remove a client from a stream
-
-		:param streamName: stream name
-		:param client: client (osuToken) object
-		:return:
-		"""
-		if streamName not in self.streams:
-			return
-		self.streams[streamName].removeClient(client)
+		return self.streams[streamName].clients'''
