@@ -108,7 +108,7 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 			if token.spectating is None:
 				s = userID
 			else:
-				s = token.spectating.userID
+				s = token.spectatingUserID
 			channel = "#spect_{}".format(s)
 		elif channel == "#multiplayer":
 			channel = "#multi_{}".format(token.matchID)
@@ -196,7 +196,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			if token.spectating is None:
 				s = userID
 			else:
-				s = token.spectating.userID
+				s = token.spectatingUserID
 			to = "#spect_{}".format(s)
 		elif to == "#multiplayer":
 			to = "#multi_{}".format(token.matchID)
