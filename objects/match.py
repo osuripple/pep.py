@@ -78,47 +78,48 @@ class match:
 		Return binary match data structure for packetHelper
 		"""
 		# General match info
+		safeMatch = copy.deepcopy(self)
 		struct = [
-			[self.matchID, dataTypes.UINT16],
-			[int(self.inProgress), dataTypes.BYTE],
+			[safeMatch.matchID, dataTypes.UINT16],
+			[int(safeMatch.inProgress), dataTypes.BYTE],
 			[0, dataTypes.BYTE],
-			[self.mods, dataTypes.UINT32],
-			[self.matchName, dataTypes.STRING],
-			[self.matchPassword, dataTypes.STRING],
-			[self.beatmapName, dataTypes.STRING],
-			[self.beatmapID, dataTypes.UINT32],
-			[self.beatmapMD5, dataTypes.STRING],
+			[safeMatch.mods, dataTypes.UINT32],
+			[safeMatch.matchName, dataTypes.STRING],
+			[safeMatch.matchPassword, dataTypes.STRING],
+			[safeMatch.beatmapName, dataTypes.STRING],
+			[safeMatch.beatmapID, dataTypes.UINT32],
+			[safeMatch.beatmapMD5, dataTypes.STRING],
 		]
 
 		# Slots status IDs, always 16 elements
 		for i in range(0,16):
-			struct.append([self.slots[i].status, dataTypes.BYTE])
+			struct.append([safeMatch.slots[i].status, dataTypes.BYTE])
 
 		# Slot teams, always 16 elements
 		for i in range(0,16):
-			struct.append([self.slots[i].team, dataTypes.BYTE])
+			struct.append([safeMatch.slots[i].team, dataTypes.BYTE])
 
 		# Slot user ID. Write only if slot is occupied
 		for i in range(0,16):
-			if self.slots[i].user is not None and self.slots[i].user in glob.tokens.tokens:
-				struct.append([glob.tokens.tokens[self.slots[i].user].userID, dataTypes.UINT32])
+			if safeMatch.slots[i].user is not None and safeMatch.slots[i].user in glob.tokens.tokens:
+				struct.append([glob.tokens.tokens[safeMatch.slots[i].user].userID, dataTypes.UINT32])
 
 		# Other match data
 		struct.extend([
-			[self.hostUserID, dataTypes.SINT32],
-			[self.gameMode, dataTypes.BYTE],
-			[self.matchScoringType, dataTypes.BYTE],
-			[self.matchTeamType, dataTypes.BYTE],
-			[self.matchModMode, dataTypes.BYTE],
+			[safeMatch.hostUserID, dataTypes.SINT32],
+			[safeMatch.gameMode, dataTypes.BYTE],
+			[safeMatch.matchScoringType, dataTypes.BYTE],
+			[safeMatch.matchTeamType, dataTypes.BYTE],
+			[safeMatch.matchModMode, dataTypes.BYTE],
 		])
 
 		# Slot mods if free mod is enabled
-		if self.matchModMode == matchModModes.freeMod:
+		if safeMatch.matchModMode == matchModModes.freeMod:
 			for i in range(0,16):
-				struct.append([self.slots[i].mods, dataTypes.UINT32])
+				struct.append([safeMatch.slots[i].mods, dataTypes.UINT32])
 
 		# Seed idk
-		struct.append([self.seed, dataTypes.UINT32])
+		struct.append([safeMatch.seed, dataTypes.UINT32])
 
 		return struct
 
