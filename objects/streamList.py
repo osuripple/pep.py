@@ -1,4 +1,5 @@
 from objects import stream
+from objects import glob
 
 class streamList:
 	def __init__(self):
@@ -23,7 +24,8 @@ class streamList:
 		"""
 		if name in self.streams:
 			for i in self.streams[name].clients:
-				i.leaveStream(name)
+				if i in glob.tokens.tokens:
+					glob.tokens.tokens[i].leaveStream(name)
 			self.streams.pop(name)
 
 
