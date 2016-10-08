@@ -34,7 +34,7 @@ if userToken.matchID != -1 and userToken.actionID != actions.MULTIPLAYING and us
 	userToken.partMatch()
 		'''
 
-	# Update cached stats if our pp changedm if we've just submitted a score or we've changed gameMode
+	# Update cached stats if our pp changed if we've just submitted a score or we've changed gameMode
 	if (userToken.actionID == actions.PLAYING or userToken.actionID == actions.MULTIPLAYING) or (userToken.pp != userUtils.getPP(userID, userToken.gameMode)) or (userToken.gameMode != packetData["gameMode"]):
 		# Always update game mode, or we'll cache stats from the wrong game mode if we've changed it
 		userToken.gameMode = packetData["gameMode"]

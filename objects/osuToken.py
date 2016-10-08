@@ -96,7 +96,10 @@ class token:
 		bytes -- (packet) bytes to enqueue
 		"""
 		if not self.irc:
-			self.queue += bytes_
+			if len(bytes_) < 10 * 10 ** 6:
+				self.queue += bytes_
+			else:
+				log.warning("{}'s packets buffer is above 10M!! Lost some data!".format(self.username))
 
 
 	def resetQueue(self):
