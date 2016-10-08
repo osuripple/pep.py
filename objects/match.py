@@ -1,8 +1,4 @@
 import copy
-import dill
-
-from common import generalUtils
-from common.constants import gameModes
 from common.log import logUtils as log
 from constants import dataTypes
 from constants import matchModModes
@@ -48,6 +44,7 @@ class match:
 		self.mods = 0
 		self.matchName = matchName
 		self.matchPassword = matchPassword
+		log.debug("Password: {}".format(self.matchPassword))
 		# NOTE: Password used to be md5-hashed, but the client doesn't like that.
 		# So we're back to plain text passwords, like in normal osu!
 		#if matchPassword != "":
@@ -73,6 +70,7 @@ class match:
 		# Create streams
 		glob.streams.add(self.streamName)
 		glob.streams.add(self.playingStreamName)
+		self.sendUpdates()
 
 		# Create #multiplayer channel
 		glob.channels.addTempChannel("#multi_{}".format(self.matchID))
@@ -578,8 +576,11 @@ class match:
 
 	def sendUpdates(self):
 		self.matchDataCache = serverPackets.updateMatch(self.matchID)
-		glob.streams.broadcast(self.streamName, self.matchDataCache)
-		glob.streams.broadcast("lobby", self.matchDataCache)
+		if self.matchDataCache is not None:
+			glob.streams.broadcast(self.streamName, self.matchDataCache)
+			glob.streams.broadcast("lobby", self.matchDataCache)
+		else:
+			log.error("MPROOM{}: Can't send match update packet, match data is None!!!".format(self.matchID))
 
 	def checkTeams(self):
 		"""
