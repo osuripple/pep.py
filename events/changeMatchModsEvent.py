@@ -24,15 +24,15 @@ def handle(userToken, packetData):
 		if userID == match.hostUserID:
 			# If host has selected DT/HT and Freemod is enabled, set DT/HT as match mod
 			if (packetData["mods"] & mods.DOUBLETIME) > 0:
-				match.changeMatchMods(mods.DOUBLETIME)
+				match.changeMods(mods.DOUBLETIME)
 				# Nightcore
 				if (packetData["mods"] & mods.NIGHTCORE) > 0:
-					match.changeMatchMods(match.mods + mods.NIGHTCORE)
+					match.changeMods(match.mods + mods.NIGHTCORE)
 			elif (packetData["mods"] & mods.HALFTIME) > 0:
-				match.changeMatchMods(mods.HALFTIME)
+				match.changeMods(mods.HALFTIME)
 			else:
 				# No DT/HT, set global mods to 0 (we are in freemod mode)
-				match.changeMatchMods(0)
+				match.changeMods(0)
 
 		# Set slot mods
 		slotID = match.getUserSlotID(userID)
@@ -40,4 +40,4 @@ def handle(userToken, packetData):
 			match.setSlotMods(slotID, packetData["mods"])
 	else:
 		# Not freemod, set match mods
-		match.changeMatchMods(packetData["mods"])
+		match.changeMods(packetData["mods"])
