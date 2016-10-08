@@ -4,4 +4,3 @@ mysqlclient
 psutil
 raven
 bcrypt
-dill

@@ -13,7 +13,6 @@ This is Ripple's bancho server. It handles:
 - Tornado
 - Bcrypt
 - Raven
-- Dill
 
 ## How to set up pep.py
 First of all, initialize and update the submodules
