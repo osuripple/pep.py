@@ -29,9 +29,8 @@ def handle(userToken, packetData):
 
 		# Give host to match creator
 		match.setHost(userID)
-
-		# Send match create packet to everyone in lobby
-		glob.streams.broadcast("lobby", serverPackets.createMatch(matchID))
+		match.sendUpdates()
+		match.changePassword(packetData["matchPassword"])
 
 		# Console output
 		log.info("MPROOM{}: Room created!".format(matchID))

@@ -44,13 +44,6 @@ class match:
 		self.mods = 0
 		self.matchName = matchName
 		self.matchPassword = matchPassword
-		log.debug("Password: {}".format(self.matchPassword))
-		# NOTE: Password used to be md5-hashed, but the client doesn't like that.
-		# So we're back to plain text passwords, like in normal osu!
-		#if matchPassword != "":
-		#	self.matchPassword = generalUtils.stringMd5(matchPassword)
-		#else:
-		#	self.matchPassword = ""
 		self.beatmapID = beatmapID
 		self.beatmapName = beatmapName
 		self.beatmapMD5 = beatmapMD5
@@ -70,7 +63,6 @@ class match:
 		# Create streams
 		glob.streams.add(self.streamName)
 		glob.streams.add(self.playingStreamName)
-		self.sendUpdates()
 
 		# Create #multiplayer channel
 		glob.channels.addTempChannel("#multi_{}".format(self.matchID))
@@ -80,6 +72,7 @@ class match:
 		Return binary match data structure for packetHelper
 		"""
 		# General match info
+		# TODO: Test without safe copy, the error might have been caused by outdated python bytecode cache
 		safeMatch = copy.deepcopy(self)
 		struct = [
 			[safeMatch.matchID, dataTypes.UINT16],
@@ -121,6 +114,7 @@ class match:
 				struct.append([safeMatch.slots[i].mods, dataTypes.UINT32])
 
 		# Seed idk
+		# TODO: Implement this, it should be used for mania "random" mod
 		struct.append([safeMatch.seed, dataTypes.UINT32])
 
 		return struct
@@ -462,7 +456,7 @@ class match:
 		# Console output
 		log.info("MPROOM{}: Password changed to {}".format(self.matchID, self.matchPassword))
 
-	def changeMatchMods(self, mods):
+	def changeMods(self, mods):
 		"""
 		Set match global mods
 
