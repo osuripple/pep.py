@@ -47,10 +47,13 @@ class match:
 		self.inProgress = False
 		self.mods = 0
 		self.matchName = matchName
-		if matchPassword != "":
-			self.matchPassword = generalUtils.stringMd5(matchPassword)
-		else:
-			self.matchPassword = ""
+		self.matchPassword = matchPassword
+		# NOTE: Password used to be md5-hashed, but the client doesn't like that.
+		# So we're back to plain text passwords, like in normal osu!
+		#if matchPassword != "":
+		#	self.matchPassword = generalUtils.stringMd5(matchPassword)
+		#else:
+		#	self.matchPassword = ""
 		self.beatmapID = beatmapID
 		self.beatmapName = beatmapName
 		self.beatmapMD5 = beatmapMD5
@@ -446,10 +449,11 @@ class match:
 
 		newPassword -- new password string
 		"""
-		if newPassword != "":
-			self.matchPassword = generalUtils.stringMd5(newPassword)
-		else:
-			self.matchPassword = ""
+		self.matchPassword = newPassword
+		#if newPassword != "":
+		#	self.matchPassword = generalUtils.stringMd5(newPassword)
+		#else:
+		#	self.matchPassword = ""
 
 		# Send password change to every user in match
 		glob.streams.broadcast(self.streamName, serverPackets.changeMatchPassword(self.matchPassword))

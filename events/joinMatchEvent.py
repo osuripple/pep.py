@@ -22,8 +22,8 @@ def handle(userToken, packetData):
 		match = glob.matches.matches[matchID]
 
 		# Hash password if needed
-		if password != "":
-			password = generalUtils.stringMd5(password)
+		#if password != "":
+		#	password = generalUtils.stringMd5(password)
 
 		# Check password
 		# TODO: Admins can enter every match
