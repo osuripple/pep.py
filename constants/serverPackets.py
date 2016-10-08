@@ -196,7 +196,7 @@ def fellowSpectatorLeft(userID):
 def createMatch(matchID):
 	# Make sure the match exists
 	if matchID not in glob.matches.matches:
-		return None
+		return bytes()
 
 	# Get match binary data and build packet
 	match = glob.matches.matches[matchID]
@@ -206,7 +206,7 @@ def createMatch(matchID):
 def updateMatch(matchID):
 	# Make sure the match exists
 	if matchID not in glob.matches.matches:
-		return None
+		return bytes()
 
 	# Get match binary data and build packet
 	match = glob.matches.matches[matchID]
@@ -215,7 +215,7 @@ def updateMatch(matchID):
 def matchStart(matchID):
 	# Make sure the match exists
 	if matchID not in glob.matches.matches:
-		return None
+		return bytes()
 
 	# Get match binary data and build packet
 	match = glob.matches.matches[matchID]
@@ -227,7 +227,7 @@ def disposeMatch(matchID):
 def matchJoinSuccess(matchID):
 	# Make sure the match exists
 	if matchID not in glob.matches.matches:
-		return None
+		return bytes()
 
 	# Get match binary data and build packet
 	match = glob.matches.matches[matchID]
