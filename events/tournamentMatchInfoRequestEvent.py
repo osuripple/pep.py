@@ -7,4 +7,4 @@ def handle(userToken, packetData):
 	matchID = packetData["matchID"]
 	if matchID not in glob.matches.matches:
 		return
-	userToken.enqueue(serverPackets.updateMatch(matchID))
+	userToken.enqueue(glob.matches.matches[matchID].matchDataCache)

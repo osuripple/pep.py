@@ -60,6 +60,7 @@ class match:
 		self.matchTeamType = matchTeamTypes.headToHead		# default value
 		self.matchModMode = matchModModes.normal			# default value
 		self.seed = 0
+		self.matchDataCache = bytes()
 
 		# Create all slots and reset them
 		self.slots = []
@@ -572,8 +573,9 @@ class match:
 		self.sendUpdates()
 
 	def sendUpdates(self):
-		glob.streams.broadcast(self.streamName, serverPackets.updateMatch(self.matchID))
-		glob.streams.broadcast("lobby", serverPackets.updateMatch(self.matchID))
+		self.matchDataCache = serverPackets.updateMatch(self.matchID)
+		glob.streams.broadcast(self.streamName, self.matchDataCache)
+		glob.streams.broadcast("lobby", self.matchDataCache)
 
 	def checkTeams(self):
 		"""
