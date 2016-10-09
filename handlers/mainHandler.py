@@ -195,9 +195,6 @@ class handler(SentryMixin, requestsManager.asyncRequestHandler):
 					responseTokenString = userToken.token
 					responseData = userToken.queue
 					userToken.resetQueue()
-
-					# Update ping time for timeout
-					userToken.updatePingTime()
 				except exceptions.tokenNotFoundException:
 					# Token not found. Disconnect that user
 					responseData = serverPackets.loginError()
@@ -207,6 +204,9 @@ class handler(SentryMixin, requestsManager.asyncRequestHandler):
 				finally:
 					# Unlock token
 					if userToken is not None:
+						# Update ping time for timeout
+						userToken.updatePingTime()
+						# Release token lock
 						userToken.lock.release()
 
 			if glob.outputRequestTime:

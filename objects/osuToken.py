@@ -190,7 +190,7 @@ class token:
 				self.enqueue(serverPackets.fellowSpectatorJoined(glob.tokens.tokens[i].userID))
 
 		# Log
-		log.info("{} is spectating {}".format(self.username, userUtils.getUsername(host.username)))
+		log.info("{} is spectating {}".format(self.username, host.username))
 
 	def stopSpectating(self):
 		# Remove our userID from host's spectators
@@ -316,14 +316,14 @@ class token:
 		# Set usertoken match to -1
 		self.matchID = -1
 
-	def kick(self, message="You have been kicked from the server. Please login again."):
+	def kick(self, message="You have been kicked from the server. Please login again.", reason="kick"):
 		"""
 		Kick this user from the server
 		
 		message -- Notification message to send to this user. Optional.
 		"""
 		# Send packet to target
-		log.info("{} has been disconnected. (kick)".format(self.username))
+		log.info("{} has been disconnected. ({})".format(self.username, reason))
 		if message != "":
 			self.enqueue(serverPackets.notification(message))
 		self.enqueue(serverPackets.loginFailed())

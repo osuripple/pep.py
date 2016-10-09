@@ -2,6 +2,8 @@ import threading
 import time
 
 from common.ripple import userUtils
+from common.log import logUtils as log
+from constants import serverPackets
 from events import logoutEvent
 from objects import glob
 from objects import osuToken
@@ -108,7 +110,7 @@ class tokenList:
 		for key, value in list(self.tokens.items()):
 			if value.userID == userID:
 				# Delete this token from the dictionary
-				self.tokens[key].kick("You have logged in from somewhere else. You can't connect to Bancho/IRC from more than one device at the same time.")
+				self.tokens[key].kick("You have logged in from somewhere else. You can't connect to Bancho/IRC from more than one device at the same time.", "kicked, multiple clients")
 
 	def multipleEnqueue(self, packet, who, but = False):
 		"""
@@ -146,11 +148,12 @@ class tokenList:
 		timeoutTime - seconds of inactivity required to disconnect someone (Default: 100)
 		checkTime - seconds between loops (Default: 100)
 		"""
+		log.debug("Checking timed out clients")
 		timedOutTokens = []		# timed out users
-		timeoutLimit = time.time()-timeoutTime
+		timeoutLimit = int(time.time())-timeoutTime
 		for key, value in self.tokens.items():
 			# Check timeout (fokabot is ignored)
-			if value.pingTime < timeoutLimit and value.userID != 999 and value.irc == False:
+			if value.pingTime < timeoutLimit and value.userID != 999 and value.irc == False and value.tournament == False:
 				# That user has timed out, add to disconnected tokens
 				# We can't delete it while iterating or items() throws an error
 				timedOutTokens.append(key)
@@ -158,6 +161,8 @@ class tokenList:
 		# Delete timed out users from self.tokens
 		# i is token string (dictionary key)
 		for i in timedOutTokens:
+			log.debug("{} timed out!!".format(self.tokens[i].username))
+			self.tokens[i].enqueue(serverPackets.notification("Your connection to the server timed out."))
 			logoutEvent.handle(self.tokens[i], None)
 
 		# Schedule a new check (endless loop)
