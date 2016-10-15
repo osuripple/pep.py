@@ -664,6 +664,40 @@ def pp(fro, chan, message):
 	pp = userUtils.getPP(token.userID, gameMode)
 	return "You have {:,} pp".format(pp)
 
+def updateBeatmap(fro, chan, to):
+	try:
+		# Run the command in PM only
+		if chan.startswith("#"):
+			return False
+
+		# Get token and user ID
+		token = glob.tokens.getTokenFromUsername(fro)
+		if token is None:
+			return False
+
+		# Make sure the user has triggered the bot with /np command
+		if token.tillerino[0] == 0:
+			return "Please give me a beatmap first with /np command."
+
+		# Send request
+		beatmapData = glob.db.fetch("SELECT beatmapset_id, song_name FROM beatmaps WHERE beatmap_id = %s LIMIT 1", [token.tillerino[0]])
+		if beatmapData is None:
+			return "Couldn't find beatmap data in database. Please load the beatmap's leaderboard and try again."
+
+		response = requests.post("{}/api/v1/update_beatmap".format(glob.conf.config["mirror"]["apiurl"]), {
+			"beatmap_set_id": beatmapData["beatmapset_id"],
+			"beatmap_name": beatmapData["song_name"],
+			"username": token.username,
+			"key": glob.conf.config["mirror"]["apikey"]
+		})
+		if response.status_code == 200:
+			return "An update request for that beatmap has been queued. You'll receive a message once the beatmap has been updated on our mirror!"
+		elif response.status_code == 429:
+			return "You are sending too many beatmaps update requests. Wait a bit and retry later."
+		else:
+			return "Error in beatmap mirror API request. Tell this to a dev: {}".format(response.text)
+	except:
+		return False
 
 """
 Commands list
@@ -801,6 +835,10 @@ commands = [
 	}, {
 		"trigger": "!pp",
 		"callback": pp
+	}, {
+		"trigger": "!update",
+		"callback": updateBeatmap,
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,	# TODO: Remove privileges for !update
 	}
 	#
 	#	"trigger": "!acc",
