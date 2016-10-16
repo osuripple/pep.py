@@ -44,7 +44,7 @@ class config:
 			self.config.get("server","cikey")
 			self.config.get("server","cloudflare")
 
-			self.config.get("mirror","apiurl")
+			self.config.get("mirror","url")
 			self.config.get("mirror","apikey")
 
 			self.config.get("debug","enable")
@@ -97,7 +97,7 @@ class config:
 		self.config.set("server", "cloudflare", "0")
 
 		self.config.add_section("mirror")
-		self.config.set("mirror", "apiurl", "http://storage.ripple.moe")
+		self.config.set("mirror", "url", "http://storage.ripple.moe")
 		self.config.set("mirror", "apikey", "anotherkey")
 
 		self.config.add_section("debug")

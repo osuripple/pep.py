@@ -684,7 +684,7 @@ def updateBeatmap(fro, chan, to):
 		if beatmapData is None:
 			return "Couldn't find beatmap data in database. Please load the beatmap's leaderboard and try again."
 
-		response = requests.post("{}/api/v1/update_beatmap".format(glob.conf.config["mirror"]["apiurl"]), {
+		response = requests.post("{}/api/v1/update_beatmap".format(glob.conf.config["mirror"]["url"]), {
 			"beatmap_set_id": beatmapData["beatmapset_id"],
 			"beatmap_name": beatmapData["song_name"],
 			"username": token.username,
