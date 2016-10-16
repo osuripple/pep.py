@@ -837,8 +837,7 @@ commands = [
 		"callback": pp
 	}, {
 		"trigger": "!update",
-		"callback": updateBeatmap,
-		"privileges": privileges.ADMIN_MANAGE_SERVERS,	# TODO: Remove privileges for !update
+		"callback": updateBeatmap
 	}
 	#
 	#	"trigger": "!acc",
