@@ -42,7 +42,6 @@ class config:
 			self.config.get("server","gzip")
 			self.config.get("server","gziplevel")
 			self.config.get("server","cikey")
-			self.config.get("server","cloudflare")
 
 			self.config.get("mirror","url")
 			self.config.get("mirror","apikey")
@@ -94,7 +93,6 @@ class config:
 		self.config.set("server", "gzip", "1")
 		self.config.set("server", "gziplevel", "6")
 		self.config.set("server", "cikey", "changeme")
-		self.config.set("server", "cloudflare", "0")
 
 		self.config.add_section("mirror")
 		self.config.set("mirror", "url", "http://storage.ripple.moe")

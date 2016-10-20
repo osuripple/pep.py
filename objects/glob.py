@@ -32,7 +32,6 @@ fileBuffers = fileBuffer.buffersList()
 schiavo = schiavo.schiavo()
 dog = datadogClient.datadogClient()
 verifiedCache = {}
-cloudflare = False
 chatFilters = None
 userIDCache = {}
 pool = None

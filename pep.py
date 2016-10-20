@@ -208,9 +208,6 @@ if __name__ == "__main__":
 		except:
 			consoleHelper.printColored("[!] Error while starting Datadog client! Please check your config.ini and run the server again", bcolors.RED)
 
-		# Cloudflare memes
-		glob.cloudflare = generalUtils.stringToBool(glob.conf.config["server"]["cloudflare"])
-
 		# IRC start message and console output
 		glob.irc = generalUtils.stringToBool(glob.conf.config["irc"]["enable"])
 		if glob.irc:
