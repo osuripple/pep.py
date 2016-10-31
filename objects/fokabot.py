@@ -1,12 +1,18 @@
 """FokaBot related functions"""
 import re
 
+import time
+
 from common import generalUtils
 from common.constants import actions
 from common.ripple import userUtils
 from constants import fokabotCommands
-from constants import serverPackets
 from objects import glob
+from common.log import logUtils as log
+
+import threading
+from helpers import chatHelper as chat
+from constants import serverPackets
 
 # Tillerino np regex, compiled only once to increase performance
 npRegex = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
@@ -57,3 +63,22 @@ def fokabotResponse(fro, chan, message):
 
 	# No commands triggered
 	return False
+
+def zingheriLoop():
+	log.debug("SONO STATI I ZINGHERI, I ZINGHERI!")
+	clients = glob.streams.getClients("zingheri")
+	for i in clients:
+		log.debug(str(i))
+		if i not in glob.tokens.tokens:
+			continue
+		token = glob.tokens.tokens[i]
+		if token.userID == 999:
+			continue
+		if token.zingheri == -1:
+			chat.sendMessage("FokaBot", token.username, "Trick or treat?")
+			token.zingheri = 0
+		elif token.zingheri == 1:
+			if token.actionID == actions.PLAYING and (int(time.time()) - token.actionLatestUpdate >= 25):
+				token.enqueue(serverPackets.zingheri("You'd better give me a treat next time ;)"))
+				token.leaveStream("zingheri")
+	threading.Timer(30, zingheriLoop).start()

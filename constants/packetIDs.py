@@ -80,3 +80,5 @@ client_userPanelRequest = 97
 client_tournamentMatchInfoRequest = 93
 client_tournamentJoinMatchChannel = 108
 client_tournamentLeaveMatchChannel = 109
+
+server_zingheri = 105

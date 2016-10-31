@@ -64,6 +64,7 @@ class token:
 		self.actionText = ""
 		self.actionMd5 = ""
 		self.actionMods = 0
+		self.actionLatestUpdate = self.pingTime
 		self.gameMode = gameModes.STD
 		self.beatmapID = 0
 		self.rankedScore = 0
@@ -72,6 +73,11 @@ class token:
 		self.totalScore = 0
 		self.gameRank = 0
 		self.pp = 0
+
+		# -1: Non sa dell'esistenza dei zingheri
+		# 0: In attesa di risposta al messaggiomem
+		# 1: zingheri soonTM
+		self.zingheri = -1
 
 		# Generate/set token
 		if token_ is not None:
@@ -88,6 +94,7 @@ class token:
 
 		# Join main stream
 		self.joinStream("main")
+		self.joinStream("zingheri")
 
 	def enqueue(self, bytes_):
 		"""

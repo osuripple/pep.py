@@ -67,7 +67,7 @@ class streamList:
 			return
 		self.streams[streamName].broadcast(data)
 
-	'''def getClients(self, streamName):
+	def getClients(self, streamName):
 		"""
 		Get all clients in a stream
 
@@ -76,4 +76,4 @@ class streamList:
 		"""
 		if streamName not in self.streams:
 			return
-		return self.streams[streamName].clients'''
+		return self.streams[streamName].clients

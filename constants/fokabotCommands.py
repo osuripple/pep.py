@@ -4,6 +4,7 @@ import random
 import requests
 
 from common import generalUtils
+from common.constants import actions
 from common.constants import mods
 from common.log import logUtils as log
 from common.ripple import userUtils
@@ -664,7 +665,7 @@ def pp(fro, chan, message):
 	pp = userUtils.getPP(token.userID, gameMode)
 	return "You have {:,} pp".format(pp)
 
-def updateBeatmap(fro, chan, to):
+def updateBeatmap(fro, chan, message):
 	try:
 		# Run the command in PM only
 		if chan.startswith("#"):
@@ -698,6 +699,42 @@ def updateBeatmap(fro, chan, to):
 			return "Error in beatmap mirror API request. Tell this to a dev: {}".format(response.text)
 	except:
 		return False
+
+def trick(fro, chan, message):
+	if chan.startswith("#"):
+		return False
+	token = glob.tokens.getTokenFromUsername(fro)
+	if token is None or token.zingheri != 0:
+		return False
+	token.zingheri = 1
+	return "As you want..."
+
+def treat(fro, chan, message):
+	if chan.startswith("#"):
+		return False
+	token = glob.tokens.getTokenFromUsername(fro)
+	if token is None or token.zingheri != 0:
+		return False
+	if token.actionID != actions.IDLE and token.actionID != actions.AFK:
+		log.warning(str(token.actionID))
+		return "You must be in the main menu to give me a treat :3"
+	token.zingheri = -2
+	token.leaveStream("zingheri")
+	usePP = token.gameMode == gameModes.STD or token.gameMode == gameModes.MANIA
+	if usePP:
+		currentPP = userUtils.getPP(token.userID, token.gameMode)
+		gift = currentPP/3
+		userUtils.setPP(token.userID, token.gameMode, currentPP - gift)
+		userUtils.setPP(999, token.gameMode, userUtils.getPP(999, token.gameMode) + gift)
+	else:
+		currentScore = userUtils.getRankedScore(token.userID, token.gameMode)
+		gift = currentScore/3
+		userUtils.setRankedScore(token.userID, token.gameMode, currentScore - gift)
+		userUtils.setRankedScore(999, token.gameMode, userUtils.getRankedScore(999, token.gameMode) + gift)
+	token.updateCachedStats()
+	token.enqueue(serverPackets.userStats(token.userID))
+	token.enqueue(serverPackets.userStats(999, True))
+	return "You just gave me {num:.2f} {type} as a treat, thanks! ^.^".format(num=gift, type="pp" if usePP else "score")
 
 """
 Commands list
@@ -838,6 +875,12 @@ commands = [
 	}, {
 		"trigger": "!update",
 		"callback": updateBeatmap
+	}, {
+		"trigger": "trick",
+		"callback": trick
+	}, {
+		"trigger": "treat",
+		"callback": treat
 	}
 	#
 	#	"trigger": "!acc",

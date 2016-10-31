@@ -268,3 +268,6 @@ def notification(message):
 
 def banchoRestart(msUntilReconnection):
 	return packetHelper.buildPacket(packetIDs.server_restart, [[msUntilReconnection, dataTypes.UINT32]])
+
+def zingheri(message):
+	return packetHelper.buildPacket(packetIDs.server_zingheri, [[message, dataTypes.STRING]])

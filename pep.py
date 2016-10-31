@@ -134,6 +134,7 @@ if __name__ == "__main__":
 		consoleHelper.printNoNl("> Creating packets streams... ")
 		glob.streams.add("main")
 		glob.streams.add("lobby")
+		glob.streams.add("zingheri")
 		consoleHelper.printDone()
 
 		# Start fokabot
@@ -149,6 +150,11 @@ if __name__ == "__main__":
 		# Initialize spam protection reset loop
 		consoleHelper.printNoNl("> Initializing spam protection reset loop... ")
 		glob.tokens.spamProtectionResetLoop()
+		consoleHelper.printDone()
+
+		# Initialize zingheri loop
+		consoleHelper.printNoNl("> WOO WOO... ")
+		fokabot.zingheriLoop()
 		consoleHelper.printDone()
 
 		# Cache user ids
