@@ -1,4 +1,5 @@
 """FokaBot related functions"""
+import random
 import re
 
 import time
@@ -41,7 +42,7 @@ def fokabotResponse(fro, chan, message):
 	for i in fokabotCommands.commands:
 		# Loop though all commands
 		#if i["trigger"] in message:
-		if generalUtils.strContains(message, i["trigger"]):
+		if generalUtils.strContains(message.lower(), i["trigger"].lower()):
 			# message has triggered a command
 
 			# Make sure the user has right permissions
@@ -75,7 +76,7 @@ def zingheriLoop():
 		if token.userID == 999:
 			continue
 		if token.zingheri == -1:
-			chat.sendMessage("FokaBot", token.username, "Trick or treat?")
+			chat.sendMessage("FokaBot", token.username, "Knock knock, trick or treat?\nWho are you?\nI'm a {meme}. I'm a little {meme}.\n(reply with 'trick' or 'treat')".format(meme=random.choice(["shavit", "loctaf", "peppy", "foka", "elfo", "nano", "cupola autoportante"])))
 			token.zingheri = 0
 		elif token.zingheri == 1:
 			if token.actionID == actions.PLAYING and (int(time.time()) - token.actionLatestUpdate >= 25):
