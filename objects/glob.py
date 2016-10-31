@@ -4,6 +4,7 @@ import time
 
 from common.ddog import datadogClient
 from common.files import fileBuffer, fileLocks
+from common.web.api import rateLimit
 from objects import channelList
 from objects import matchList
 from objects import streamList
@@ -50,3 +51,4 @@ startTime = int(time.time())
 
 
 streams = streamList.streamList()
+rateLimits = rateLimit.rateLimiters(60, 60)
