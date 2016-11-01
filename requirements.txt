@@ -3,4 +3,4 @@ tornado
 mysqlclient
 psutil
 raven
-bcrypt=3.1.1
+bcrypt>=3.1.1
