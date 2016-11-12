@@ -622,7 +622,7 @@ class Server:
 					[x.socket for x in self.clients.values()
 					 if x.writeBufferSize() > 0],
 					[],
-					2)
+					1)
 
 				# Handle incoming connections
 				for x in iwtd:
