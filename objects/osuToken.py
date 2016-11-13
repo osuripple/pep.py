@@ -51,6 +51,7 @@ class token:
 		self.country = 0
 		self.location = [0,0]
 		self.awayMessage = ""
+		self.sentAway = []
 		self.matchID = -1
 		self.tillerino = [0,0,-1.0]	# beatmap, mods, acc
 		self.silenceEndTime = 0
@@ -427,3 +428,16 @@ class token:
 	def leaveAllStreams(self):
 		for i in self.streams:
 			self.leaveStream(i)
+
+	def awayCheck(self, userID):
+		"""
+		Returns True if userID doesn't know that we are away
+		Returns False if we are not away or if userID already knows we are away
+
+		:param userID: original sender userID
+		:return:
+		"""
+		if self.awayMessage == "" or userID in self.sentAway:
+			return False
+		self.sentAway.append(userID)
+		return True

@@ -256,6 +256,10 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 			# TODO: Make sure the recipient has not disabled PMs for non-friends or he's our friend
 
+			# Away check
+			if recipientToken.awayCheck(userID):
+				sendMessage(to, fro, "{code}ACTION is away: {message}{code}".format(code=chr(int(1)), message=recipientToken.awayMessage))
+
 			# Check message templates (mods/admins only)
 			if message in messageTemplates.templates and token.admin == True:
 				sendMessage(fro, to, messageTemplates.templates[message])
@@ -358,3 +362,11 @@ def IRCPartChannel(username, channel):
 		log.warning("{} doesn't exist".format(username))
 		return
 	return partChannel(userID, channel)
+
+def IRCAway(username, message):
+	userID = userUtils.getID(username)
+	if not userID:
+		log.warning("{} doesn't exist".format(username))
+		return
+	glob.tokens.getTokenFromUserID(userID).setAwayMessage(message)
+	return 305 if message == "" else 306

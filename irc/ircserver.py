@@ -296,7 +296,6 @@ class Client:
 			# Disconnect other IRC clients from the same user
 			for _, value in self.server.clients.items():
 				if value.IRCUsername.lower() == self.IRCUsername.lower() and value != self:
-					print("DISCONNECTERINOOOOOOOOOOOOOOOOOOOOO")
 					value.disconnect(quitmsg="Connected from another client")
 					return
 		elif command == "USER":
@@ -440,7 +439,6 @@ class Client:
 
 		# Send the message to bancho and reply
 		if not recipientIRC.startswith("#"):
-			print("PMPMPM!!!!!!!!!!")
 			recipientBancho = chat.fixUsernameForBancho(recipientIRC)
 		else:
 			recipientBancho = recipientIRC
@@ -489,10 +487,14 @@ class Client:
 		"""(fake) PONG command handler"""
 		pass
 
+	def awayHandler(self, command, arguments):
+		response = chat.IRCAway(self.banchoUsername, " ".join(arguments))
+		self.replyCode(response, "You are no longer marked as being away" if response == 305 else "You have been marked as being away")
+
 	def mainHandler(self, command, arguments):
 		"""Handler for post-login commands"""
 		handlers = {
-			#"AWAY": away_handler,
+			"AWAY": self.awayHandler,
 			#"ISON": ison_handler,
 			"JOIN": self.joinHandler,
 			#"LIST": list_handler,
@@ -516,11 +518,6 @@ class Client:
 			handlers[command](command, arguments)
 		except KeyError:
 			self.replyCode(421, "Unknown command ({})".format(command))
-
-
-
-
-
 
 
 class Server:
