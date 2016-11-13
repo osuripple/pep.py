@@ -202,6 +202,19 @@ if __name__ == "__main__":
 					[
 						datadogClient.periodicCheck("online_users", lambda: len(glob.tokens.tokens)),
 						datadogClient.periodicCheck("multiplayer_matches", lambda: len(glob.matches.matches)),
+
+						datadogClient.periodicCheck("ram_clients", lambda: generalUtils.getTotalSize(glob.tokens)),
+						datadogClient.periodicCheck("ram_matches", lambda: generalUtils.getTotalSize(glob.matches)),
+						datadogClient.periodicCheck("ram_channels", lambda: generalUtils.getTotalSize(glob.channels)),
+						datadogClient.periodicCheck("ram_file_buffers", lambda: generalUtils.getTotalSize(glob.fileBuffers)),
+						datadogClient.periodicCheck("ram_file_locks", lambda: generalUtils.getTotalSize(glob.fLocks)),
+						datadogClient.periodicCheck("ram_datadog", lambda: generalUtils.getTotalSize(glob.datadogClient)),
+						datadogClient.periodicCheck("ram_verified_cache", lambda: generalUtils.getTotalSize(glob.verifiedCache)),
+						datadogClient.periodicCheck("ram_userid_cache", lambda: generalUtils.getTotalSize(glob.userIDCache)),
+						#datadogClient.periodicCheck("ram_pool", lambda: generalUtils.getTotalSize(glob.pool)),
+						datadogClient.periodicCheck("ram_irc", lambda: generalUtils.getTotalSize(glob.ircServer)),
+						datadogClient.periodicCheck("ram_tornado", lambda: generalUtils.getTotalSize(glob.application)),
+						datadogClient.periodicCheck("ram_db", lambda: generalUtils.getTotalSize(glob.db)),
 					])
 			else:
 				consoleHelper.printColored("[!] Warning! Datadog stats tracking is disabled!", bcolors.YELLOW)

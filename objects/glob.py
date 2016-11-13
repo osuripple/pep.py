@@ -1,7 +1,6 @@
 """Global objects and variables"""
 
 import time
-
 from common.ddog import datadogClient
 from common.files import fileBuffer, fileLocks
 from objects import channelList
@@ -26,7 +25,6 @@ banchoConf = None
 tokens = tokenList.tokenList()
 channels = channelList.channelList()
 matches = matchList.matchList()
-restarting = False
 fLocks = fileLocks.fileLocks()
 fileBuffers = fileBuffer.buffersList()
 schiavo = schiavo.schiavo()
@@ -45,8 +43,8 @@ gzip = False
 localize = False
 sentry = False
 irc = False
+restarting = False
 
 startTime = int(time.time())
-
 
 streams = streamList.streamList()
