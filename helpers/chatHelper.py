@@ -258,7 +258,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 			# Away check
 			if recipientToken.awayCheck(userID):
-				sendMessage(to, fro, "{code}ACTION is away: {message}{code}".format(code=chr(int(1)), message=recipientToken.awayMessage))
+				sendMessage(to, fro, "\x01ACTION is away: {message}\x01".format(code=chr(int(1)), message=recipientToken.awayMessage))
 
 			# Check message templates (mods/admins only)
 			if message in messageTemplates.templates and token.admin == True:
@@ -282,7 +282,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 				sendMessage("FokaBot", to if isChannel else fro, fokaMessage)
 
 		# File and discord logs (public chat only)
-		if to.startswith("#"):
+		if to.startswith("#") and not (message.startswith("\x01ACTION is playing") and to.startswith("#spect_")):
 			log.chat("{fro} @ {to}: {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))))
 			glob.schiavo.sendChatlog("**{fro} @ {to}:** {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))[2:-1]))
 		return 0
