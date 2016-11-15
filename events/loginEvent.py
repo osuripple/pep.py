@@ -64,9 +64,9 @@ def handle(tornadoRequest):
 
 		# Make sure we are not banned or locked
 		priv = userUtils.getPrivileges(userID)
-		if userUtils.isBanned(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
+		if userUtils.isBanned(priv=priv) == True and not userUtils.isPending(priv=priv):
 			raise exceptions.loginBannedException()
-		if userUtils.isLocked(userID) == True and priv & privileges.USER_PENDING_VERIFICATION == 0:
+		if userUtils.isLocked(priv=priv) == True and not userUtils.isPending(priv=priv):
 			raise exceptions.loginLockedException()
 
 		# 2FA check
@@ -195,6 +195,10 @@ def handle(tornadoRequest):
 			location = locationHelper.getLocation(requestIP)
 			countryLetters = locationHelper.getCountry(requestIP)
 			country = countryHelper.getCountryID(countryLetters)
+
+			# Set country in db if user has no country (first bancho login)
+			if userUtils.getCountry(userID) == "XX":
+				userUtils.setCountry(userID, countryLetters)
 		else:
 			# Set location to 0,0 and get country from db
 			log.warning("Location skipped")
@@ -205,10 +209,6 @@ def handle(tornadoRequest):
 		# Set location and country
 		responseToken.setLocation(location)
 		responseToken.setCountry(country)
-
-		# Set country in db if user has no country (first bancho login)
-		if userUtils.getCountry(userID) == "XX":
-			userUtils.setCountry(userID, countryLetters)
 
 		# Send to everyone our userpanel if we are not restricted or tournament
 		if not responseToken.restricted:

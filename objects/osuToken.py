@@ -30,7 +30,7 @@ class token:
 		self.privileges = userUtils.getPrivileges(self.userID)
 		self.admin = userUtils.isInPrivilegeGroup(self.userID, "developer") or userUtils.isInPrivilegeGroup(self.userID, "community manager")
 		self.irc = irc
-		self.restricted = userUtils.isRestricted(self.userID)
+		self.restricted = userUtils.isRestricted(priv=self.privileges)
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
 		self.timeOffset = timeOffset
@@ -441,3 +441,10 @@ class token:
 			return False
 		self.sentAway.append(userID)
 		return True
+
+	def updatePrivileges(self):
+		"""
+		Force updating self.privileges from db
+		:return:
+		"""
+		self.privileges = userUtils.getPrivileges(self.userID)
