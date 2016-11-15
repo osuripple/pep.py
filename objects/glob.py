@@ -20,6 +20,7 @@ except:
 DATADOG_PREFIX = "peppy"
 application = None
 db = None
+redis = None
 conf = None
 banchoConf = None
 tokens = tokenList.tokenList()
@@ -31,7 +32,6 @@ schiavo = schiavo.schiavo()
 dog = datadogClient.datadogClient()
 verifiedCache = {}
 chatFilters = None
-userIDCache = {}
 pool = None
 ircServer = None
 busyThreads = 0

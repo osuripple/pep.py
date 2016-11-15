@@ -9,6 +9,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 from raven.contrib.tornado import AsyncSentryClient
+import redis
 
 from common import generalUtils
 from common.constants import bcolors
@@ -82,7 +83,7 @@ if __name__ == "__main__":
 
 		# Connect to db
 		try:
-			consoleHelper.printNoNl("> Connecting to MySQL database...")
+			consoleHelper.printNoNl("> Connecting to MySQL database... ")
 			glob.db = dbConnector.db(glob.conf.config["db"]["host"], glob.conf.config["db"]["username"], glob.conf.config["db"]["password"], glob.conf.config["db"]["database"], int(glob.conf.config["db"]["workers"]))
 			consoleHelper.printNoNl(" ")
 			consoleHelper.printDone()
@@ -91,6 +92,26 @@ if __name__ == "__main__":
 			consoleHelper.printError()
 			consoleHelper.printColored("[!] Error while connection to database. Please check your config.ini and run the server again", bcolors.RED)
 			raise
+
+		# Connect to redis
+		try:
+			consoleHelper.printNoNl("> Connecting to redis... ")
+			glob.redis = redis.Redis(glob.conf.config["redis"]["host"], glob.conf.config["redis"]["port"], glob.conf.config["redis"]["database"], glob.conf.config["redis"]["password"])
+			glob.redis.ping()
+			consoleHelper.printNoNl(" ")
+			consoleHelper.printDone()
+		except:
+			# Exception while connecting to db
+			consoleHelper.printError()
+			consoleHelper.printColored("[!] Error while connection to redis. Please check your config.ini and run the server again", bcolors.RED)
+			raise
+
+		# Empty redis cache
+		try:
+			glob.redis.eval("return redis.call('del', unpack(redis.call('keys', ARGV[1])))", 0, "peppy:*")
+		except redis.exceptions.ResponseError:
+			# Script returns error if there are no keys starting with peppy:*
+			pass
 
 		# Load bancho_settings
 		try:
@@ -151,11 +172,6 @@ if __name__ == "__main__":
 		glob.tokens.spamProtectionResetLoop()
 		consoleHelper.printDone()
 
-		# Cache user ids
-		consoleHelper.printNoNl("> Caching user IDs... ")
-		userUtils.cacheUserIDs()
-		consoleHelper.printDone()
-
 		# Localize warning
 		glob.localize = generalUtils.stringToBool(glob.conf.config["localize"]["enable"])
 		if not glob.localize:
@@ -210,7 +226,7 @@ if __name__ == "__main__":
 						datadogClient.periodicCheck("ram_file_locks", lambda: generalUtils.getTotalSize(glob.fLocks)),
 						datadogClient.periodicCheck("ram_datadog", lambda: generalUtils.getTotalSize(glob.datadogClient)),
 						datadogClient.periodicCheck("ram_verified_cache", lambda: generalUtils.getTotalSize(glob.verifiedCache)),
-						datadogClient.periodicCheck("ram_userid_cache", lambda: generalUtils.getTotalSize(glob.userIDCache)),
+						#datadogClient.periodicCheck("ram_userid_cache", lambda: generalUtils.getTotalSize(glob.userIDCache)),
 						#datadogClient.periodicCheck("ram_pool", lambda: generalUtils.getTotalSize(glob.pool)),
 						datadogClient.periodicCheck("ram_irc", lambda: generalUtils.getTotalSize(glob.ircServer)),
 						datadogClient.periodicCheck("ram_tornado", lambda: generalUtils.getTotalSize(glob.application)),

@@ -5,3 +5,4 @@ psutil
 raven
 bcrypt>=3.1.1
 dill
+redis

@@ -37,6 +37,11 @@ class config:
 			self.config.get("db","database")
 			self.config.get("db","workers")
 
+			self.config.get("redis","host")
+			self.config.get("redis","port")
+			self.config.get("redis","database")
+			self.config.get("redis","password")
+
 			self.config.get("server","port")
 			self.config.get("server","threads")
 			self.config.get("server","gzip")
@@ -86,6 +91,12 @@ class config:
 		self.config.set("db", "password", "")
 		self.config.set("db", "database", "ripple")
 		self.config.set("db", "workers", "4")
+
+		self.config.add_section("redis")
+		self.config.set("redis", "host", "localhost")
+		self.config.set("redis", "port", "6379")
+		self.config.set("redis", "database", "0")
+		self.config.set("redis", "password", "")
 
 		self.config.add_section("server")
 		self.config.set("server", "port", "5001")
