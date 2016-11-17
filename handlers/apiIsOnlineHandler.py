@@ -18,7 +18,7 @@ class handler(requestsManager.asyncRequestHandler):
 			username = None
 			userID = None
 			if "u" in self.request.arguments:
-				username = self.get_argument("u")
+				username = self.get_argument("u").lower().replace(" ", "_")
 			else:
 				try:
 					userID = int(self.get_argument("id"))
@@ -29,7 +29,7 @@ class handler(requestsManager.asyncRequestHandler):
 				data["result"] = False
 			else:
 				if username is not None:
-					data["result"] = True if glob.tokens.getTokenFromUsername(username) is not None else False
+					data["result"] = True if glob.tokens.getTokenFromUsername(username, safe=True) is not None else False
 				else:
 					data["result"] = True if glob.tokens.getTokenFromUserID(userID) is not None else False
 

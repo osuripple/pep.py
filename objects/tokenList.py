@@ -79,19 +79,22 @@ class tokenList:
 		# Return none if not found
 		return None
 
-	def getTokenFromUsername(self, username, ignoreIRC=False):
+	def getTokenFromUsername(self, username, ignoreIRC=False, safe=False):
 		"""
-		Get token from a username
+		Get an osuToken object from an username
 
-		username -- username to find
-		return -- False if not found, token object if found
+		:param username: normal username or safe username
+		:param ignoreIRC: if True, consider bancho clients only and skip IRC clients
+		:param safe: if True, username is a safe username,
+		compare it with token's safe username rather than normal username
+		:return: osuToken object or None
 		"""
 		# lowercase
-		who  = username.lower()
+		who = username.lower() if not safe else username
 
 		# Make sure the token exists
 		for _, value in self.tokens.items():
-			if value.username.lower() == who:
+			if (not safe and value.username.lower() == who) or (safe and value.safeUsername == who):
 				if ignoreIRC and value.irc:
 					continue
 				return value
@@ -105,7 +108,6 @@ class tokenList:
 
 		userID -- tokens associated to this user will be deleted
 		"""
-
 		# Delete older tokens
 		for key, value in list(self.tokens.items()):
 			if value.userID == userID:

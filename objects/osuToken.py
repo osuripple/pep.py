@@ -27,6 +27,7 @@ class token:
 		# Set stuff
 		self.userID = userID
 		self.username = userUtils.getUsername(self.userID)
+		self.safeUsername = userUtils.getSafeUsername(self.userID)
 		self.privileges = userUtils.getPrivileges(self.userID)
 		self.admin = userUtils.isInPrivilegeGroup(self.userID, "developer") or userUtils.isInPrivilegeGroup(self.userID, "community manager")
 		self.irc = irc
