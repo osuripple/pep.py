@@ -15,7 +15,7 @@ try:
 	if VERSION == "":
 		raise Exception
 except:
-	VERSION = "¯\_(xd)_/¯"
+	VERSION = "Unknown"
 
 DATADOG_PREFIX = "peppy"
 application = None
