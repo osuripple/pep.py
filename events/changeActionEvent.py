@@ -17,9 +17,8 @@ def handle(userToken, packetData):
 		return
 
 	# Send restricted message if needed
-	if not userToken.restricted:
-		if userUtils.isRestricted(userID):
-			userToken.setRestricted()
+	if userToken.restricted:
+		userToken.checkRestricted(True)
 
 	# Change action packet
 	packetData = clientPackets.userActionChange(packetData)

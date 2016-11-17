@@ -5,9 +5,9 @@ class config:
 	# Check if config.ini exists and load/generate it
 	def __init__(self, file):
 		"""
-		Initialize a config object
+		Initialize a config file object
 
-		file -- filename
+		:param file: file name
 		"""
 		self.config = configparser.ConfigParser()
 		self.default = True
@@ -25,9 +25,9 @@ class config:
 	# Check if config.ini has all needed the keys
 	def checkConfig(self):
 		"""
-		Check if this config has the required keys
+		Check is the config file has all required keys
 
-		return -- True if valid, False if not
+		:return: True if valid, False if not valid
 		"""
 		try:
 			# Try to get all the required keys
@@ -79,7 +79,9 @@ class config:
 
 	def generateDefaultConfig(self):
 		"""
-		Open and set default keys for that config file
+		Write a default config file to disk
+
+		:return:
 		"""
 		# Open config.ini in write mode
 		f = open(self.fileName, "w")

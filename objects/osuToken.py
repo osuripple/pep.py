@@ -12,17 +12,17 @@ from objects import glob
 
 
 class token:
-
 	def __init__(self, userID, token_ = None, ip ="", irc = False, timeOffset = 0, tournament = False):
 		"""
 		Create a token object and set userID and token
 
-		userID -- user associated to this token
-		token -- 	if passed, set token to that value
-					if not passed, token will be generated
-		ip		--	client ip. optional.
-		irc 	--	if True, set this token as IRC client. optional.
-		timeOffset -- the time offset from UTC for this user. optional.
+		:param userID: user associated to this token
+		:param token_: 	if passed, set token to that value
+						if not passed, token will be generated
+		:param ip: client ip. optional.
+		:param irc: if True, set this token as IRC client. Default: False.
+		:param timeOffset: the time offset from UTC for this user. Default: 0.
+		:param tournament: if True, flag this client as a tournement client. Default: True.
 		"""
 		# Set stuff
 		self.userID = userID
@@ -95,25 +95,23 @@ class token:
 		"""
 		Add bytes (packets) to queue
 
-		bytes -- (packet) bytes to enqueue
+		:param bytes: (packet) bytes to enqueue
 		"""
-		if not self.irc:
-			if len(bytes_) < 10 * 10 ** 6:
-				self.queue += bytes_
-			else:
-				log.warning("{}'s packets buffer is above 10M!! Lost some data!".format(self.username))
-
+		# TODO: reduce max queue size
+		if len(bytes_) < 10 * 10 ** 6:
+			self.queue += bytes_
+		else:
+			log.warning("{}'s packets buffer is above 10M!! Lost some data!".format(self.username))
 
 	def resetQueue(self):
 		"""Resets the queue. Call when enqueued packets have been sent"""
 		self.queue = bytes()
 
-
 	def joinChannel(self, channel):
 		"""
 		Add channel to joined channels list
 
-		channel -- channel name
+		:param channel: channel name
 		"""
 		if channel not in self.joinedChannels:
 			self.joinedChannels.append(channel)
@@ -122,24 +120,24 @@ class token:
 		"""
 		Remove channel from joined channels list
 
-		channel -- channel name
+		:param channel: channel name
 		"""
 		if channel in self.joinedChannels:
 			self.joinedChannels.remove(channel)
 
-	def setLocation(self, location):
+	def setLocation(self, latitude, longitude):
 		"""
-		Set location (latitude and longitude)
+		Set client location
 
-		location -- [latitude, longitude]
+		:param location: [latitude, longitude]
 		"""
-		self.location = location
+		self.location = (latitude, longitude)
 
 	def getLatitude(self):
 		"""
 		Get latitude
 
-		return -- latitude
+		:return: latitude
 		"""
 		return self.location[0]
 
@@ -147,15 +145,16 @@ class token:
 		"""
 		Get longitude
 
-		return -- longitude
+		:return: longitude
 		"""
 		return self.location[1]
 
 	def startSpectating(self, host):
 		"""
-		Set the spectating user to userID
+		Set the spectating user to userID, join spectator stream and chat channel
+		and send required packets to host
 
-		user -- user object
+		:param host: host osuToken object
 		"""
 		# Stop spectating old client
 		self.stopSpectating()
@@ -195,6 +194,12 @@ class token:
 		log.info("{} is spectating {}".format(self.username, host.username))
 
 	def stopSpectating(self):
+		"""
+		Stop spectating, leave spectator stream and channel
+		and send required packets to host
+
+		:return:
+		"""
 		# Remove our userID from host's spectators
 		if self.spectating is None:
 			return
@@ -233,36 +238,20 @@ class token:
 		self.spectating = None
 		self.spectatingUserID = 0
 
-	def setCountry(self, countryID):
-		"""
-		Set country to countryID
-
-		countryID -- numeric country ID. See countryHelper.py
-		"""
-		self.country = countryID
-
-	def getCountry(self):
-		"""
-		Get numeric country ID
-
-		return -- numeric country ID. See countryHelper.py
-		"""
-		return self.country
-
 	def updatePingTime(self):
-		"""Update latest ping time"""
+		"""
+		Update latest ping time to current time
+
+		:return:
+		"""
 		self.pingTime = int(time.time())
-
-	def setAwayMessage(self, __awayMessage):
-		"""Set a new away message"""
-		self.awayMessage = __awayMessage
-
 
 	def joinMatch(self, matchID):
 		"""
 		Set match to matchID, join match stream and channel
 
-		matchID -- new match ID
+		:param matchID: new match ID
+		:return:
 		"""
 		# Make sure the match exists
 		if matchID not in glob.matches.matches:
@@ -322,7 +311,10 @@ class token:
 		"""
 		Kick this user from the server
 		
-		message -- Notification message to send to this user. Optional.
+		:param message: Notification message to send to this user.
+						Default: "You have been kicked from the server. Please login again."
+		:param reason: Kick reason, used in logs. Default: "kick"
+		:return:
 		"""
 		# Send packet to target
 		log.info("{} has been disconnected. ({})".format(self.username, reason))
@@ -337,9 +329,10 @@ class token:
 		"""
 		Silences this user (db, packet and token)
 
-		seconds -- silence length in seconds
-		reason -- silence reason
-		author -- userID of who has silenced the target. Optional. Default: 999 (fokabot)
+		:param seconds: silence length in seconds
+		:param reason: silence reason
+		:param author: userID of who has silenced the user. Default: 999 (FokaBot)
+		:return:
 		"""
 		# Silence in db and token
 		self.silenceEndTime = int(time.time())+seconds
@@ -355,7 +348,8 @@ class token:
 		"""
 		Silences the user if is spamming.
 
-		increaseSpamRate -- pass True if the user has sent a new message. Optional. Default: True
+		:param increaseSpamRate: set to True if the user has sent a new message. Default: True
+		:return:
 		"""
 		# Increase the spam rate if needed
 		if increaseSpamRate:
@@ -369,7 +363,7 @@ class token:
 		"""
 		Returns True if this user is silenced, otherwise False
 
-		return -- True/False
+		:return: True if this user is silenced, otherwise False
 		"""
 		return self.silenceEndTime-int(time.time()) > 0
 
@@ -378,12 +372,16 @@ class token:
 		Returns the seconds left for this user's silence
 		(0 if user is not silenced)
 
-		return -- silence seconds left
+		:return: silence seconds left (or 0)
 		"""
 		return max(0, self.silenceEndTime-int(time.time()))
 
 	def updateCachedStats(self):
-		"""Update all cached stats for this token"""
+		"""
+		Update all cached stats for this token
+
+		:return:
+		"""
 		stats = userUtils.getUserStats(self.userID, self.gameMode)
 		log.debug(str(stats))
 		if stats is None:
@@ -400,8 +398,9 @@ class token:
 		"""
 		Check if this token is restricted. If so, send fokabot message
 
-		force --	If True, get restricted value from db.
-					If false, get the cached one. Optional. Default: False
+		:param force:	If True, get restricted value from db.
+						If False, get the cached one. Default: False
+		:return:
 		"""
 		if force:
 			self.restricted = userUtils.isRestricted(self.userID)
@@ -412,21 +411,40 @@ class token:
 		"""
 		Set this token as restricted, send FokaBot message to user
 		and send offline packet to everyone
+
+		:return:
 		"""
 		self.restricted = True
 		chat.sendMessage("FokaBot",self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information.")
 
 	def joinStream(self, name):
+		"""
+		Join a packet stream, or create it if the stream doesn't exist.
+
+		:param name: stream name
+		:return:
+		"""
 		glob.streams.join(name, token=self.token)
 		if name not in self.streams:
 			self.streams.append(name)
 
 	def leaveStream(self, name):
+		"""
+		Leave a packets stream
+
+		:param name: stream name
+		:return:
+		"""
 		glob.streams.leave(name, token=self.token)
 		if name in self.streams:
 			self.streams.remove(name)
 
 	def leaveAllStreams(self):
+		"""
+		Leave all joined packet streams
+
+		:return:
+		"""
 		for i in self.streams:
 			self.leaveStream(i)
 

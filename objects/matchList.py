@@ -13,14 +13,14 @@ class matchList:
 		"""
 		Add a new match to matches list
 
-		matchName -- match name, string
-		matchPassword -- match md5 password. Leave empty for no password
-		beatmapID -- beatmap ID
-		beatmapName -- beatmap name, string
-		beatmapMD5 -- beatmap md5 hash, string
-		gameMode -- game mode ID. See gameModes.py
-		hostUserID -- user id of who created the match
-		return -- match ID
+		:param matchName: match name, string
+		:param matchPassword: match md5 password. Leave empty for no password
+		:param beatmapID: beatmap ID
+		:param beatmapName: beatmap name, string
+		:param beatmapMD5: beatmap md5 hash, string
+		:param gameMode: game mode ID. See gameModes.py
+		:param hostUserID: user id of who created the match
+		:return: match ID
 		"""
 		# Add a new match to matches list and create its stream
 		matchID = self.lastID
@@ -32,7 +32,8 @@ class matchList:
 		"""
 		Destroy match object with id = matchID
 
-		matchID -- ID of match to dispose
+		:param matchID: ID of match to dispose
+		:return:
 		"""
 		# Make sure the match exists
 		if matchID not in self.matches:

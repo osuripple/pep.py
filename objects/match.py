@@ -13,7 +13,7 @@ from objects import glob
 
 class slot:
 	def __init__(self):
-		self.status = slotStatuses.free
+		self.status = slotStatuses.FREE
 		self.team = 0
 		self.userID = -1
 		self.user = None
@@ -23,19 +23,18 @@ class slot:
 		self.complete = False
 
 class match:
-	"""Multiplayer match object"""
 	def __init__(self, matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID):
 		"""
 		Create a new match object
 
-		matchID -- match progressive identifier
-		matchName -- match name, string
-		matchPassword -- match md5 password. Leave empty for no password
-		beatmapID -- beatmap ID
-		beatmapName -- beatmap name, string
-		beatmapMD5 -- beatmap md5 hash, string
-		gameMode -- game mode ID. See gameModes.py
-		hostUserID -- user id of the host
+		:param matchID: match progressive identifier
+		:param matchName: match name, string
+		:param matchPassword: match md5 password. Leave empty for no password
+		:param beatmapID: beatmap ID
+		:param beatmapName: beatmap name, string
+		:param beatmapMD5: beatmap md5 hash, string
+		:param gameMode: game mode ID. See gameModes.py
+		:param hostUserID: user id of the host
 		"""
 		self.matchID = matchID
 		self.streamName = "multi/{}".format(self.matchID)
@@ -49,9 +48,9 @@ class match:
 		self.beatmapMD5 = beatmapMD5
 		self.hostUserID = hostUserID
 		self.gameMode = gameMode
-		self.matchScoringType = matchScoringTypes.score	# default values
-		self.matchTeamType = matchTeamTypes.headToHead		# default value
-		self.matchModMode = matchModModes.normal			# default value
+		self.matchScoringType = matchScoringTypes.SCORE	# default values
+		self.matchTeamType = matchTeamTypes.HEAD_TO_HEAD		# default value
+		self.matchModMode = matchModModes.NORMAL			# default value
 		self.seed = 0
 		self.matchDataCache = bytes()
 
@@ -70,6 +69,8 @@ class match:
 	def getMatchData(self):
 		"""
 		Return binary match data structure for packetHelper
+
+		:return:
 		"""
 		# General match info
 		# TODO: Test without safe copy, the error might have been caused by outdated python bytecode cache
@@ -109,7 +110,7 @@ class match:
 		])
 
 		# Slot mods if free mod is enabled
-		if safeMatch.matchModMode == matchModModes.freeMod:
+		if safeMatch.matchModMode == matchModModes.FREE_MOD:
 			for i in range(0,16):
 				struct.append([safeMatch.slots[i].mods, dataTypes.UINT32])
 
@@ -123,7 +124,8 @@ class match:
 		"""
 		Set room host to newHost and send him host packet
 
-		newHost -- new host userID
+		:param newHost: new host userID
+		:return:
 		"""
 		slotID = self.getUserSlotID(newHost)
 		if slotID is None or self.slots[slotID].user not in glob.tokens.tokens:
@@ -135,7 +137,21 @@ class match:
 		log.info("MPROOM{}: {} is now the host".format(self.matchID, token.username))
 
 	def setSlot(self, slotID, status = None, team = None, user = "", mods = None, loaded = None, skip = None, complete = None):
-		#self.setSlot(i, slotStatuses.notReady, 0, user, 0)
+		"""
+		Set data for a specific slot.
+		All fields but slotID are optional.
+		Skipped fields won't be edited.
+
+		:param slotID: slot ID
+		:param status: new status
+		:param team: new team
+		:param user: new user id
+		:param mods: new mods
+		:param loaded: new loaded status
+		:param skip: new skip value
+		:param complete: new completed value
+		:return:
+		"""
 		if status is not None:
 			self.slots[slotID].status = status
 
@@ -161,8 +177,9 @@ class match:
 		"""
 		Set slotID mods. Same as calling setSlot and then sendUpdate
 
-		slotID -- slot number
-		mods -- new mods
+		:param slotID: slot number
+		:param mods: new mods
+		:return:
 		"""
 		# Set new slot data and send update
 		self.setSlot(slotID, mods=mods)
@@ -174,14 +191,15 @@ class match:
 		Switch slotID ready/not ready status
 		Same as calling setSlot and then sendUpdate
 
-		slotID -- slot number
+		:param slotID: slot number
+		:return:
 		"""
 		# Update ready status and setnd update
 		oldStatus = self.slots[slotID].status
-		if oldStatus == slotStatuses.ready:
-			newStatus = slotStatuses.notReady
+		if oldStatus == slotStatuses.READY:
+			newStatus = slotStatuses.NOT_READY
 		else:
-			newStatus = slotStatuses.ready
+			newStatus = slotStatuses.READY
 		self.setSlot(slotID, newStatus)
 		self.sendUpdates()
 		log.info("MPROOM{}: Slot{} changed ready status to {}".format(self.matchID, slotID, self.slots[slotID].status))
@@ -191,13 +209,14 @@ class match:
 		Lock a slot
 		Same as calling setSlot and then sendUpdate
 
-		slotID -- slot number
+		:param slotID: slot number
+		:return:
 		"""
 		# Check if slot is already locked
-		if self.slots[slotID].status == slotStatuses.locked:
-			newStatus = slotStatuses.free
+		if self.slots[slotID].status == slotStatuses.LOCKED:
+			newStatus = slotStatuses.FREE
 		else:
-			newStatus = slotStatuses.locked
+			newStatus = slotStatuses.LOCKED
 
 		# Send updated settings to kicked user, so he returns to lobby
 		if self.slots[slotID].user is not None and self.slots[slotID].user in glob.tokens.tokens:
@@ -208,13 +227,14 @@ class match:
 
 		# Send updates to everyone else
 		self.sendUpdates()
-		log.info("MPROOM{}: Slot{} {}".format(self.matchID, slotID, "locked" if newStatus == slotStatuses.locked else "unlocked"))
+		log.info("MPROOM{}: Slot{} {}".format(self.matchID, slotID, "locked" if newStatus == slotStatuses.LOCKED else "unlocked"))
 
 	def playerLoaded(self, userID):
 		"""
 		Set a player loaded status to True
 
-		userID -- ID of user
+		:param userID: ID of user
+		:return:
 		"""
 		slotID = self.getUserSlotID(userID)
 		if slotID is None:
@@ -228,7 +248,7 @@ class match:
 		total = 0
 		loaded = 0
 		for i in range(0,16):
-			if self.slots[i].status == slotStatuses.playing:
+			if self.slots[i].status == slotStatuses.PLAYING:
 				total+=1
 				if self.slots[i].loaded:
 					loaded+=1
@@ -237,7 +257,11 @@ class match:
 			self.allPlayersLoaded()
 
 	def allPlayersLoaded(self):
-		"""Send allPlayersLoaded packet to every playing usr in match"""
+		"""
+		Send allPlayersLoaded packet to every playing usr in match
+
+		:return:
+		"""
 		glob.streams.broadcast(self.playingStreamName, serverPackets.allPlayersLoaded())
 		log.info("MPROOM{}: All players loaded! Match starting...".format(self.matchID))
 
@@ -245,7 +269,8 @@ class match:
 		"""
 		Set a player skip status to True
 
-		userID -- ID of user
+		:param userID: ID of user
+		:return:
 		"""
 		slotID = self.getUserSlotID(userID)
 		if slotID is None:
@@ -263,7 +288,7 @@ class match:
 		total = 0
 		skipped = 0
 		for i in range(0,16):
-			if self.slots[i].status == slotStatuses.playing:
+			if self.slots[i].status == slotStatuses.PLAYING:
 				total+=1
 				if self.slots[i].skip:
 					skipped+=1
@@ -272,7 +297,11 @@ class match:
 			self.allPlayersSkipped()
 
 	def allPlayersSkipped(self):
-		"""Send allPlayersSkipped packet to every playing usr in match"""
+		"""
+		Send allPlayersSkipped packet to every playing usr in match
+
+		:return:
+		"""
 		glob.streams.broadcast(self.playingStreamName, serverPackets.allPlayersSkipped())
 		log.info("MPROOM{}: All players have skipped!".format(self.matchID))
 
@@ -280,7 +309,7 @@ class match:
 		"""
 		Set userID's slot completed to True
 
-		userID -- ID of user
+		:param userID: ID of user
 		"""
 		slotID = self.getUserSlotID(userID)
 		if slotID is None:
@@ -294,7 +323,7 @@ class match:
 		total = 0
 		completed = 0
 		for i in range(0,16):
-			if self.slots[i].status == slotStatuses.playing:
+			if self.slots[i].status == slotStatuses.PLAYING:
 				total+=1
 				if self.slots[i].complete:
 					completed+=1
@@ -303,15 +332,18 @@ class match:
 			self.allPlayersCompleted()
 
 	def allPlayersCompleted(self):
-		"""Cleanup match stuff and send match end packet to everyone"""
+		"""
+		Cleanup match stuff and send match end packet to everyone
 
+		:return:
+		"""
 		# Reset inProgress
 		self.inProgress = False
 
 		# Reset slots
 		for i in range(0,16):
-			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.playing:
-				self.slots[i].status = slotStatuses.notReady
+			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
+				self.slots[i].status = slotStatuses.NOT_READY
 				self.slots[i].loaded = False
 				self.slots[i].skip = False
 				self.slots[i].complete = False
@@ -332,7 +364,7 @@ class match:
 		"""
 		Get slot ID occupied by userID
 
-		return -- slot id if found, None if user is not in room
+		:return: slot id if found, None if user is not in room
 		"""
 		for i in range(0,16):
 			if self.slots[i].user is not None and self.slots[i].user in glob.tokens.tokens and glob.tokens.tokens[self.slots[i].user].userID == userID:
@@ -343,21 +375,20 @@ class match:
 		"""
 		Add someone to users in match
 
-		userID -- user id of the user
-		return -- True if join success, False if fail (room is full)
+		:param userID: user id of the user
+		:return: True if join success, False if fail (room is full)
 		"""
-
 		# Make sure we're not in this match
 		for i in range(0,16):
 			if self.slots[i].user == user.token:
 				# Set bugged slot to free
-				self.setSlot(i, slotStatuses.free, 0, None, 0)
+				self.setSlot(i, slotStatuses.FREE, 0, None, 0)
 
 		# Find first free slot
 		for i in range(0,16):
-			if self.slots[i].status == slotStatuses.free:
+			if self.slots[i].status == slotStatuses.FREE:
 				# Occupy slot
-				self.setSlot(i, slotStatuses.notReady, 0, user.token, 0)
+				self.setSlot(i, slotStatuses.NOT_READY, 0, user.token, 0)
 
 				# Send updated match data
 				self.sendUpdates()
@@ -372,7 +403,8 @@ class match:
 		"""
 		Remove someone from users in match
 
-		userID -- user if of the user
+		:param userID: user if of the user
+		:return:
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(user.userID)
@@ -380,7 +412,7 @@ class match:
 			return
 
 		# Set that slot to free
-		self.setSlot(slotID, slotStatuses.free, 0, None, 0)
+		self.setSlot(slotID, slotStatuses.FREE, 0, None, 0)
 
 		# Check if everyone left
 		if self.countUsers() == 0:
@@ -407,8 +439,9 @@ class match:
 		"""
 		Change userID slot to newSlotID
 
-		userID -- user that changed slot
-		newSlotID -- slot id of new slot
+		:param userID: user that changed slot
+		:param newSlotID: slot id of new slot
+		:return:
 		"""
 		# Make sure the user is in room
 		oldSlotID = self.getUserSlotID(userID)
@@ -416,7 +449,7 @@ class match:
 			return
 
 		# Make sure there is no one inside new slot
-		if self.slots[newSlotID].user is not None and self.slots[newSlotID].status != slotStatuses.free:
+		if self.slots[newSlotID].user is not None and self.slots[newSlotID].status != slotStatuses.FREE:
 			return
 
 		# Get old slot data
@@ -424,7 +457,7 @@ class match:
 		oldData = copy.deepcopy(self.slots[oldSlotID])
 
 		# Free old slot
-		self.setSlot(oldSlotID, slotStatuses.free, 0, None, 0, False, False, False)
+		self.setSlot(oldSlotID, slotStatuses.FREE, 0, None, 0, False, False, False)
 
 		# Occupy new slot
 		self.setSlot(newSlotID, oldData.status, oldData.team, oldData.user, oldData.mods)
@@ -439,13 +472,10 @@ class match:
 		"""
 		Change match password to newPassword
 
-		newPassword -- new password string
+		:param newPassword: new password string
+		:return:
 		"""
 		self.matchPassword = newPassword
-		#if newPassword != "":
-		#	self.matchPassword = generalUtils.stringMd5(newPassword)
-		#else:
-		#	self.matchPassword = ""
 
 		# Send password change to every user in match
 		glob.streams.broadcast(self.streamName, serverPackets.changeMatchPassword(self.matchPassword))
@@ -460,7 +490,8 @@ class match:
 		"""
 		Set match global mods
 
-		mods -- mods bitwise int thing
+		:param mods: mods bitwise int thing
+		:return:
 		"""
 		# Set new mods and send update
 		self.mods = mods
@@ -471,8 +502,9 @@ class match:
 		"""
 		Set no beatmap status for userID
 
-		userID -- ID of user
-		has -- True if has beatmap, false if not
+		:param userID: ID of user
+		:param has: True if has beatmap, false if not
+		:return:
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
@@ -480,7 +512,7 @@ class match:
 			return
 
 		# Set slot
-		self.setSlot(slotID, slotStatuses.noMap if not has else slotStatuses.notReady)
+		self.setSlot(slotID, slotStatuses.NO_MAP if not has else slotStatuses.NOT_READY)
 
 		# Send updates
 		self.sendUpdates()
@@ -489,7 +521,8 @@ class match:
 		"""
 		Transfer host to slotID
 
-		slotID -- ID of slot
+		:param slotID: ID of slot
+		:return:
 		"""
 		# Make sure there is someone in that slot
 		if self.slots[slotID].user is None or self.slots[slotID].user not in glob.tokens.tokens:
@@ -505,7 +538,8 @@ class match:
 		"""
 		Send userID's failed packet to everyone in match
 
-		userID -- ID of user
+		:param userID: ID of user
+		:return:
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
@@ -522,10 +556,10 @@ class match:
 		"""
 		Fro invites to in this match.
 
-		fro -- sender userID
-		to -- receiver userID
+		:param fro: sender userID
+		:param to: receiver userID
+		:return:
 		"""
-
 		# Get tokens
 		froToken = glob.tokens.getTokenFromUserID(fro)
 		toToken = glob.tokens.getTokenFromUserID(to)
@@ -544,7 +578,7 @@ class match:
 		"""
 		Return how many players are in that match
 
-		return -- number of users
+		:return: number of users
 		"""
 		c = 0
 		for i in range(0,16):
@@ -556,7 +590,8 @@ class match:
 		"""
 		Change userID's team
 
-		userID -- id of user
+		:param userID: id of user
+		:return:
 		"""
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
@@ -564,11 +599,16 @@ class match:
 			return
 
 		# Update slot and send update
-		newTeam = matchTeams.blue if self.slots[slotID].team == matchTeams.red else matchTeams.red
+		newTeam = matchTeams.BLUE if self.slots[slotID].team == matchTeams.RED else matchTeams.RED
 		self.setSlot(slotID, None, newTeam)
 		self.sendUpdates()
 
 	def sendUpdates(self):
+		"""
+		Send match updates packet to everyone in lobby and room streams
+
+		:return:
+		"""
 		self.matchDataCache = serverPackets.updateMatch(self.matchID)
 		if self.matchDataCache is not None:
 			glob.streams.broadcast(self.streamName, self.matchDataCache)
@@ -580,16 +620,17 @@ class match:
 		"""
 		Check if match teams are valid
 
-		return -- True if valid, False if invalid
+		:return: True if valid, False if invalid
+		:return:
 		"""
-		if self.matchTeamType != matchTeamTypes.teamVs or self.matchTeamType != matchTeamTypes.tagTeamVs:
+		if self.matchTeamType != matchTeamTypes.TEAM_VS or self.matchTeamType != matchTeamTypes.TAG_TEAM_VS:
 			# Teams are always valid if we have no teams
 			return True
 
 		# We have teams, check if they are valid
 		firstTeam = -1
 		for i in range(0,16):
-			if self.slots[i].user is not None and (self.slots[i].status & slotStatuses.noMap) == 0:
+			if self.slots[i].user is not None and (self.slots[i].status & slotStatuses.NO_MAP) == 0:
 				if firstTeam == -1:
 					firstTeam = self.slots[i].team
 				elif firstTeam != self.slots[i].team:
@@ -600,6 +641,11 @@ class match:
 		return False
 
 	def start(self):
+		"""
+		Start the match
+
+		:return:
+		"""
 		# Make sure we have enough players
 		if self.countUsers() < 2 or not self.checkTeams():
 			return
@@ -613,8 +659,8 @@ class match:
 		# Set playing to ready players and set load, skip and complete to False
 		# Make clients join playing stream
 		for i in range(0, 16):
-			if (self.slots[i].status & slotStatuses.ready) > 0 and self.slots[i].user in glob.tokens.tokens:
-				self.slots[i].status = slotStatuses.playing
+			if (self.slots[i].status & slotStatuses.READY) > 0 and self.slots[i].user in glob.tokens.tokens:
+				self.slots[i].status = slotStatuses.PLAYING
 				self.slots[i].loaded = False
 				self.slots[i].skip = False
 				self.slots[i].complete = False

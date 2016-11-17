@@ -13,7 +13,7 @@ try:
 	with open("version") as f:
 		VERSION = f.read()
 	if VERSION == "":
-		raise
+		raise Exception
 except:
 	VERSION = "¯\_(xd)_/¯"
 

@@ -1,8 +1,8 @@
-free = 1
-locked = 2
-notReady = 4
-ready = 8
-noMap = 16
-playing = 32
-occupied = 124
-playingQuit = 128
+FREE = 1
+LOCKED = 2
+NOT_READY = 4
+READY = 8
+NO_MAP = 16
+PLAYING = 32
+OCCUPIED = 124
+PLAYING_QUIT = 128

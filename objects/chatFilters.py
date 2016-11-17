@@ -1,9 +1,20 @@
 class chatFilters:
 	def __init__(self, fileName="filters.txt"):
+		"""
+		Initialize chat filters
+
+		:param fileName: name of the file containing filters. Default: filters.txt
+		"""
 		self.filters = {}
 		self.loadFilters(fileName)
 
 	def loadFilters(self, fileName="filters.txt"):
+		"""
+		Load filters from a file
+
+		:param fileName: name of the file containing filters. Default: filters.txt
+		:return:
+		"""
 		# Reset chat filters
 		self.filters = {}
 
@@ -19,6 +30,12 @@ class chatFilters:
 				self.filters[lineSplit[0].lower()] = lineSplit[1].replace("\n", "")
 
 	def filterMessage(self, message):
+		"""
+		Replace forbidden words with filtered ones
+
+		:param message: normal message
+		:return: filtered message
+		"""
 		# Split words by spaces
 		messageTemp = message.split(" ")
 

@@ -1,5 +1,4 @@
-"""Contains all country codes with their osu numeric code"""
-
+# TODO: Update countries list
 countryCodes = {
 	"LV": 132,
 	"AD": 3,
@@ -255,12 +254,11 @@ countryCodes = {
 
 def getCountryID(code):
 	"""
-	Get country ID for osu client
+	Get osu country ID from country letters
 
-	code -- country name abbreviation (eg: US)
-	return -- country code int
+	:param code: country letters (eg: US)
+	:return: country osu code
 	"""
-
 	if code in countryCodes:
 		return countryCodes[code]
 	else:
@@ -270,10 +268,9 @@ def getCountryLetters(code):
 	"""
 	Get country letters from osu country ID
 
-	code -- country code int
-	return -- country name (2 letters) (XX if code not found)
+	:param code: osu country ID
+	:return: country letters (XX if not found)
 	"""
-
 	for key, value in countryCodes.items():
 		if value == code:
 			return key

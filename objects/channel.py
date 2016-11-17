@@ -1,20 +1,16 @@
 from objects import glob
 
 class channel:
-	"""
-	A chat channel
-	"""
-
 	def __init__(self, name, description, publicRead, publicWrite, temp, hidden):
 		"""
 		Create a new chat channel object
 
-		name -- channel name
-		description -- channel description
-		publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
-		publicWrite -- bool, same as public read but relative to write permissions
-		temp -- if True, channel will be deleted when there's no one in the channel
-		hidden -- if True, channel won't be shown in channels list
+		:param name: channel name
+		:param description: channel description
+		:param publicRead: if True, this channel can be read by everyone. If False, it can be read only by mods/admins
+		:param publicWrite: same as public read, but regards writing permissions
+		:param temp: if True, this channel will be deleted when there's no one in this channel
+		:param hidden: if True, thic channel won't be shown in channels list
 		"""
 		self.name = name
 		self.description = description
@@ -36,7 +32,8 @@ class channel:
 		"""
 		Add a user to connected users
 
-		userID -- user ID that joined the channel
+		:param userID:
+		:return:
 		"""
 		if userID not in self.connectedUsers:
 			self.connectedUsers.append(userID)
@@ -45,7 +42,8 @@ class channel:
 		"""
 		Remove a user from connected users
 
-		userID -- user ID that left the channel
+		:param userID:
+		:return:
 		"""
 		if userID in self.connectedUsers:
 			self.connectedUsers.remove(userID)
@@ -54,19 +52,3 @@ class channel:
 		l = len(self.connectedUsers)
 		if self.temp == True and ((l == 0) or (l == 1 and 999 in self.connectedUsers)):
 			glob.channels.removeChannel(self.name)
-
-	def getConnectedUsers(self):
-		"""
-		Get connected user IDs list
-
-		return -- connectedUsers list
-		"""
-		return self.connectedUsers
-
-	def getConnectedUsersCount(self):
-		"""
-		Count connected users
-
-		return -- connected users number
-		"""
-		return len(self.connectedUsers)

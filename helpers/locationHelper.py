@@ -7,10 +7,10 @@ from objects import glob
 
 def getCountry(ip):
 	"""
-	Get country from IP address
+	Get country from IP address using geoip api
 
-	ip -- IP Address
-	return -- Country code (2 letters)
+	:param ip: IP address
+	:return: country code. XX if invalid.
 	"""
 	try:
 		# Try to get country from Pikolo Aul's Go-Sanic ip API
@@ -22,15 +22,15 @@ def getCountry(ip):
 
 def getLocation(ip):
 	"""
-	Get latitude and longitude from IP address
+	Get latitude and longitude from IP address using geoip api
 
-	ip -- IP address
-	return -- [latitude, longitude]
+	:param ip: IP address
+	:return: (latitude, longitude)
 	"""
 	try:
 		# Try to get position from Pikolo Aul's Go-Sanic ip API
 		result = json.loads(urllib.request.urlopen("{}/{}".format(glob.conf.config["localize"]["ipapiurl"], ip), timeout=3).read().decode())["loc"].split(",")
-		return [float(result[0]), float(result[1])]
+		return (float(result[0]), float(result[1]))
 	except:
 		log.error("Error in get position")
-		return [0,0]
+		return (0, 0)

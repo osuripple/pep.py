@@ -44,7 +44,5 @@ class handler(requestsManager.asyncRequestHandler):
 			data["status"] = statusCode
 
 			# Send response
-			#self.clear()
 			self.write(json.dumps(data))
 			self.set_status(statusCode)
-			#self.finish(json.dumps(data))

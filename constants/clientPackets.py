@@ -1,4 +1,3 @@
-""" Contains functions used to read specific client packets from byte stream """
 from constants import dataTypes
 from helpers import packetHelper
 from constants import slotStatuses
@@ -100,7 +99,7 @@ def matchSettings(stream):
 	start += 2
 	for i in range(0,16):
 		s = data[0]["slot{}Status".format(str(i))]
-		if s != slotStatuses.free and s != slotStatuses.locked:
+		if s != slotStatuses.FREE and s != slotStatuses.LOCKED:
 			start += 4
 
 	# Other settings

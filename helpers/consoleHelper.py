@@ -1,11 +1,12 @@
 from common.constants import bcolors
 from objects import glob
 
-def printServerStartHeader(asciiArt):
+def printServerStartHeader(asciiArt=True):
 	"""
-	Print server start header with optional ascii art
+	Print server start message
 
-	asciiArt -- if True, will print ascii art too
+	:param asciiArt: print BanchoBoat ascii art. Default: True
+	:return:
 	"""
 	if asciiArt:
 		print("{}           _                 __".format(bcolors.GREEN))
@@ -32,35 +33,43 @@ def printServerStartHeader(asciiArt):
 
 def printNoNl(string):
 	"""
-	Print string without new line at the end
+	Print a string without \n at the end
 
-	string -- string to print
+	:param string: string to print
+	:return:
 	"""
 	print(string, end="")
 
 def printColored(string, color):
 	"""
-	Print colored string
+	Print a colored string
 
-	string -- string to print
-	color -- see bcolors.py
+	:param string: string to print
+	:param color: ANSI color code
+	:return:
 	"""
 	print("{}{}{}".format(color, string, bcolors.ENDC))
 
 def printError():
 	"""
-	Print error text FOR LOADING
+	Print a red "Error"
+
+	:return:
 	"""
 	printColored("Error", bcolors.RED)
 
 def printDone():
 	"""
-	Print error text FOR LOADING
+	Print a green "Done"
+
+	:return:
 	"""
 	printColored("Done", bcolors.GREEN)
 
 def printWarning():
 	"""
-	Print error text FOR LOADING
+	Print a yellow "Warning"
+
+	:return:
 	"""
 	printColored("Warning", bcolors.YELLOW)

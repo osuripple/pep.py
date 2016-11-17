@@ -4,18 +4,14 @@ from objects import glob
 
 
 class channelList:
-	"""
-	Channel list
-
-	channels -- dictionary. key: channel name, value: channel object
-	"""
-	channels = {}
+	def __init__(self):
+		self.channels = {}
 
 	def loadChannels(self):
 		"""
-		Load chat channels from db and add them to channels dictionary
+		Load chat channels from db and add them to channels list
+		:return:
 		"""
-
 		# Get channels from DB
 		channels = glob.db.fetchAll("SELECT * FROM bancho_channels")
 
@@ -28,14 +24,15 @@ class channelList:
 
 	def addChannel(self, name, description, publicRead, publicWrite, temp = False, hidden = False):
 		"""
-		Add a channel object to channels dictionary
+		Add a channel to channels list
 
-		name -- channel name
-		description -- channel description
-		publicRead -- bool, if true channel can be read by everyone, if false it can be read only by mods/admins
-		publicWrite -- bool, same as public read but relative to write permissions
-		temp -- if True, channel will be deleted when there's no one in the channel. Optional. Default = False.
-		hidden -- if True, channel will be hidden in channels list. Optional. Default = False.
+		:param name: channel name
+		:param description: channel description
+		:param publicRead: if True, this channel can be read by everyone. If False, it can be read only by mods/admins
+		:param publicWrite: same as public read, but regards writing permissions
+		:param temp: if True, this channel will be deleted when there's no one in this channel
+		:param hidden: if True, thic channel won't be shown in channels list
+		:return:
 		"""
 		self.channels[name] = channel.channel(name, description, publicRead, publicWrite, temp, hidden)
 		log.info("Created channel {}".format(name))
@@ -45,8 +42,8 @@ class channelList:
 		Add a temporary channel (like #spectator or #multiplayer), gets deleted when there's no one in the channel
 		and it's hidden in channels list
 
-		name -- channel name
-		return -- True if channel was created, False if failed
+		:param name: channel name
+		:return: True if the channel was created, otherwise False
 		"""
 		if name in self.channels:
 			return False
@@ -57,7 +54,8 @@ class channelList:
 		"""
 		Removes a channel from channels list
 
-		name -- channel name
+		:param name: channel name
+		:return:
 		"""
 		if name not in self.channels:
 			log.debug("{} is not in channels list".format(name))

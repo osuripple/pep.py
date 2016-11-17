@@ -8,27 +8,19 @@ from events import logoutEvent
 from objects import glob
 from objects import osuToken
 
-
 class tokenList:
-	"""
-	List of connected osu tokens
-
-	tokens -- dictionary. key: token string, value: token object
-	"""
-
 	def __init__(self):
-		"""
-		Initialize a tokens list
-		"""
 		self.tokens = {}
 
 	def addToken(self, userID, ip = "", irc = False, timeOffset=0, tournament=False):
 		"""
 		Add a token object to tokens list
 
-		userID -- user id associated to that token
-		irc -- if True, set this token as IRC client
-		return -- token object
+		:param userID: user id associated to that token
+		:param irc: if True, set this token as IRC client
+		:param timeOffset: the time offset from UTC for this user. Default: 0.
+		:param tournament: if True, flag this client as a tournement client. Default: True.
+		:return: token object
 		"""
 		newToken = osuToken.token(userID, ip=ip, irc=irc, timeOffset=timeOffset, tournament=tournament)
 		self.tokens[newToken.token] = newToken
@@ -38,7 +30,8 @@ class tokenList:
 		"""
 		Delete a token from token list if it exists
 
-		token -- token string
+		:param token: token string
+		:return:
 		"""
 		if token in self.tokens:
 			# Delete session from DB
@@ -52,8 +45,8 @@ class tokenList:
 		"""
 		Get user ID from a token
 
-		token -- token to find
-		return -- false if not found, userID if found
+		:param token: token to find
+		:return: False if not found, userID if found
 		"""
 		# Make sure the token exists
 		if token not in self.tokens:
@@ -66,8 +59,9 @@ class tokenList:
 		"""
 		Get token from a user ID
 
-		userID -- user ID to find
-		return -- False if not found, token object if found
+		:param userID: user ID to find
+		:param ignoreIRC: if True, consider bancho clients only and skip IRC clients
+		:return: False if not found, token object if found
 		"""
 		# Make sure the token exists
 		for _, value in self.tokens.items():
@@ -85,8 +79,8 @@ class tokenList:
 
 		:param username: normal username or safe username
 		:param ignoreIRC: if True, consider bancho clients only and skip IRC clients
-		:param safe: if True, username is a safe username,
-		compare it with token's safe username rather than normal username
+		:param safe: 	if True, username is a safe username,
+						compare it with token's safe username rather than normal username
 		:return: osuToken object or None
 		"""
 		# lowercase
@@ -106,7 +100,8 @@ class tokenList:
 		"""
 		Delete old userID's tokens if found
 
-		userID -- tokens associated to this user will be deleted
+		:param userID: tokens associated to this user will be deleted
+		:return:
 		"""
 		# Delete older tokens
 		for key, value in list(self.tokens.items()):
@@ -118,9 +113,10 @@ class tokenList:
 		"""
 		Enqueue a packet to multiple users
 
-		packet -- packet bytes to enqueue
-		who -- userIDs array
-		but -- if True, enqueue to everyone but users in who array
+		:param packet: packet bytes to enqueue
+		:param who: userIDs array
+		:param but: if True, enqueue to everyone but users in `who` array
+		:return:
 		"""
 		for _, value in self.tokens.items():
 			shouldEnqueue = False
@@ -136,19 +132,21 @@ class tokenList:
 		"""
 		Enqueue packet(s) to every connected user
 
-		packet -- packet bytes to enqueue
+		:param packet: packet bytes to enqueue
+		:return:
 		"""
 		for _, value in self.tokens.items():
 			value.enqueue(packet)
 
 	def usersTimeoutCheckLoop(self, timeoutTime = 100, checkTime = 100):
 		"""
-		Deletes all timed out users.
-		If called once, will recall after checkTime seconds and so on, forever
+		Start timed out users disconnect loop.
+		This function will be called every `checkTime` seconds and so on, forever.
 		CALL THIS FUNCTION ONLY ONCE!
 
-		timeoutTime - seconds of inactivity required to disconnect someone (Default: 100)
-		checkTime - seconds between loops (Default: 100)
+		:param timeoutTime: seconds of inactivity required to disconnect someone. Default: 100
+		:param checkTime: seconds between loops. Default: 100
+		:return:
 		"""
 		log.debug("Checking timed out clients")
 		timedOutTokens = []		# timed out users
@@ -172,8 +170,11 @@ class tokenList:
 
 	def spamProtectionResetLoop(self):
 		"""
-		Reset spam rate every 10 seconds.
+		Start spam protection reset loop.
+		Called every 10 seconds.
 		CALL THIS FUNCTION ONLY ONCE!
+
+		:return:
 		"""
 		# Reset spamRate for every token
 		for _, value in self.tokens.items():
@@ -186,18 +187,20 @@ class tokenList:
 		"""
 		Truncate bancho_sessions table.
 		Call at bancho startup to delete old cached sessions
+
+		:return:
 		"""
 		glob.db.execute("TRUNCATE TABLE bancho_sessions")
 
+
 	def tokenExists(self, username = "", userID = -1):
 		"""
-		Check if a token exists (aka check if someone is connected)
-
-		username -- Optional.
-		userID -- Optional.
-		return -- True if it exists, otherwise False
-
+		Check if a token exists
 		Use username or userid, not both at the same time.
+
+		:param username: Optional.
+		:param userID: Optional.
+		:return: True if it exists, otherwise False
 		"""
 		if userID > -1:
 			return True if self.getTokenFromUserID(userID) is not None else False

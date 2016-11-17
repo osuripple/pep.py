@@ -159,7 +159,7 @@ def channelInfo(chan):
 	return packetHelper.buildPacket(packetIDs.server_channelInfo, [
 		[chan, dataTypes.STRING],
 		[channel.description, dataTypes.STRING],
-		[channel.getConnectedUsersCount(), dataTypes.UINT16]
+		[len(channel.connectedUsers), dataTypes.UINT16]
 	])
 
 def channelInfoEnd():

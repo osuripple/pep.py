@@ -1,2 +1,2 @@
-normal = 0
-freeMod = 1
+NORMAL = 0
+FREE_MOD = 1

@@ -3,10 +3,10 @@ from constants import dataTypes
 
 def uleb128Encode(num):
 	"""
-	Encode int -> uleb128
+	Encode an int to uleb128
 
-	num -- int to encode
-	return -- bytearray with encoded number
+	:param num: int to encode
+	:return: bytearray with encoded number
 	"""
 	arr = bytearray()
 	length = 0
@@ -25,10 +25,10 @@ def uleb128Encode(num):
 
 def uleb128Decode(num):
 	"""
-	Decode uleb128 -> int
+	Decode a uleb128 to int
 
-	num -- encoded uleb128
-	return -- list. [total, length]
+	:param num: encoded uleb128 int
+	:return: (total, length)
 	"""
 	shift = 0
 	arr = [0,0]	#total, length
@@ -45,14 +45,12 @@ def uleb128Decode(num):
 
 def unpackData(data, dataType):
 	"""
-	Unpacks data according to dataType
+	Unpacks a single section of a packet.
 
-	data -- bytes array to unpack
-	dataType -- data type. See dataTypes.py
-
-	return -- unpacked bytes
+	:param data: bytes to unpack
+	:param dataType: data type
+	:return: unpacked bytes
 	"""
-
 	# Get right pack Type
 	if dataType == dataTypes.UINT16:
 		unpackType = "<H"
@@ -78,14 +76,12 @@ def unpackData(data, dataType):
 
 def packData(__data, dataType):
 	"""
-	Packs data according to dataType
+	Packs a single section of a packet.
 
-	data -- bytes to pack
-	dataType -- data type. See dataTypes.py
-
-	return -- packed bytes
+	:param __data: data to pack
+	:param dataType: data type
+	:return: packed bytes
 	"""
-
 	data = bytes()	# data to return
 	pack = True		# if True, use pack. False only with strings
 
@@ -140,12 +136,11 @@ def packData(__data, dataType):
 
 def buildPacket(__packet, __packetData=None):
 	"""
-	Build a packet
+	Builds a packet
 
-	packet -- packet id (int)
-	packetData -- list [[data, dataType], [data, dataType], ...]
-
-	return -- packet bytes
+	:param __packet: packet ID
+	:param __packetData: packet structure [[data, dataType], [data, dataType], ...]
+	:return: packet bytes
 	"""
 	# Set some variables
 	if __packetData is None:
@@ -170,33 +165,31 @@ def buildPacket(__packet, __packetData=None):
 
 def readPacketID(stream):
 	"""
-	Read packetID from stream (0-1 bytes)
+	Read packetID (first two bytes) from a packet
 
-	stream -- data stream
-	return -- packet ID (int)
+	:param stream: packet bytes
+	:return: packet ID
 	"""
 	return unpackData(stream[0:2], dataTypes.UINT16)
 
 def readPacketLength(stream):
 	"""
-	Read packet length from stream (3-4-5-6 bytes)
+	Read packet data length (3:7 bytes) from a packet
 
-	stream -- data stream
-	return -- packet length (int)
+	:param stream: packet bytes
+	:return: packet data length
 	"""
 	return unpackData(stream[3:7], dataTypes.UINT32)
 
 
 def readPacketData(stream, structure=None, hasFirstBytes = True):
 	"""
-	Read packet data from stream according to structure
-
-	stream -- data stream
-	structure -- [[name, dataType], [name, dataType], ...]
-	hasFirstBytes -- 	if True, stream has packetID and length bytes.
-						if False, stream has only packetData.
-						Optional. Default: True
-	return -- dictionary. key: name, value: read data
+	Read packet data from `stream` according to `structure`
+	:param stream: packet bytes
+	:param structure: packet structure: [[name, dataType], [name, dataType], ...]
+	:param hasFirstBytes: 	if True, `stream` has packetID and length bytes.
+							if False, `stream` has only packet data. Default: True
+	:return: {name: unpackedValue, ...}
 	"""
 	# Read packet ID (first 2 bytes)
 	if structure is None:

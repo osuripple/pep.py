@@ -12,14 +12,11 @@ def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 	"""
 	Join a channel
 
-	userID -- 	user ID of the user that joins the channel. Optional.
-				token can be used instead.
-	token --	user token object of user that joins the channel. Optional.
-					userID can be used instead.
-	channel -- name of channe
-	toIRC -- if True, send this channel join event to IRC. Must be true if joining from bancho.
-			Optional. Defaukt: True
-	return -- 	returns	0 if joined or other IRC code in case of error. Needed only on IRC-side
+	:param userID: user ID of the user that joins the channel. Optional. token can be used instead.
+	:param token: user token object of user that joins the channel. Optional. userID can be used instead.
+	:param channel: channel name
+	:param toIRC: if True, send this channel join event to IRC. Must be true if joining from bancho. Default: True
+	:return: 0 if joined or other IRC code in case of error. Needed only on IRC-side
 	"""
 	try:
 		# Get token if not defined
@@ -77,15 +74,12 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 	"""
 	Part a channel
 
-	userID -- 	user ID of the user that parts the channel. Optional.
-				token can be used instead.
-	token --	user token object of user that parts the channel. Optional.
-					userID can be used instead.
-	channel -- name of channel
-	toIRC -- if True, send this channel join event to IRC. Must be true if joining from bancho.
-			Optional. Defaukt: True
-	kick -- if True, channel tab will be closed on client. Used when leaving lobby. Optional. Default: False
-	return -- 	returns	0 if joined or other IRC code in case of error. Needed only on IRC-side
+	:param userID: user ID of the user that parts the channel. Optional. token can be used instead.
+	:param token: user token object of user that parts the channel. Optional. userID can be used instead.
+	:param channel: channel name
+	:param toIRC: if True, send this channel join event to IRC. Must be true if joining from bancho. Optional. Default: True
+	:param kick: if True, channel tab will be closed on client. Used when leaving lobby. Optional. Default: False
+	:return: 0 if joined or other IRC code in case of error. Needed only on IRC-side
 	"""
 	try:
 		# Get token if not defined
@@ -151,15 +145,12 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 	"""
 	Send a message to osu!bancho and IRC server
 
-	fro -- 	sender username. Optional.
-			You can use token instead of this if you wish.
-	to -- receiver channel (if starts with #) or username
-	message -- text of the message
-	token -- 	sender token object.
-					You can use this instead of fro if you are sending messages from bancho.
-					Optional.
-	toIRC --	if True, send the message to IRC. If False, send it to Bancho only.
-			Optional. Default: True
+	:param fro: sender username. Optional. token can be used instead
+	:param to: receiver channel (if starts with #) or username
+	:param message: text of the message
+	:param token: sender token object. Optional. fro can be used instead
+	:param toIRC: if True, send the message to IRC. If False, send it to Bancho only. Default: True
+	:return: 0 if joined or other IRC code in case of error. Needed only on IRC-side
 	"""
 	try:
 		tokenString = ""
@@ -231,7 +222,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 				raise exceptions.channelNoPermissionsException
 
 			# Everything seems fine, build recipients list and send packet
-			recipients = glob.channels.channels[to].getConnectedUsers()[:]
+			recipients = glob.channels.channels[to].connectedUsers[:]
 			for key, value in glob.tokens.tokens.items():
 				# Skip our client and irc clients
 				if key == tokenString or value.irc == True:
@@ -312,6 +303,12 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 """ IRC-Bancho Connect/Disconnect/Join/Part interfaces"""
 def fixUsernameForBancho(username):
+	"""
+	Convert username from IRC format (without spaces) to Bancho format (with spaces)
+
+	:param username: username to convert
+	:return: converted username
+	"""
 	# If there are no spaces or underscores in the name
 	# return it
 	if " " not in username and "_" not in username:
@@ -326,9 +323,22 @@ def fixUsernameForBancho(username):
 	return username.replace("_", " ")
 
 def fixUsernameForIRC(username):
+	"""
+	Convert an username from Bancho format to IRC format (underscores instead of spaces)
+
+	:param username: username to convert
+	:return: converted username
+	"""
 	return username.replace(" ", "_")
 
 def IRCConnect(username):
+	"""
+	Handle IRC login bancho-side.
+	Add token and broadcast login packet.
+
+	:param username: username
+	:return:
+	"""
 	userID = userUtils.getID(username)
 	if not userID:
 		log.warning("{} doesn't exist".format(username))
@@ -339,6 +349,13 @@ def IRCConnect(username):
 	log.info("{} logged in from IRC".format(username))
 
 def IRCDisconnect(username):
+	"""
+	Handle IRC logout bancho-side.
+	Remove token and broadcast logout packet.
+
+	:param username: username
+	:return:
+	"""
 	token = glob.tokens.getTokenFromUsername(username)
 	if token is None:
 		log.warning("{} doesn't exist".format(username))
@@ -347,6 +364,13 @@ def IRCDisconnect(username):
 	log.info("{} disconnected from IRC".format(username))
 
 def IRCJoinChannel(username, channel):
+	"""
+	Handle IRC channel join bancho-side.
+
+	:param username: username
+	:param channel: channel name
+	:return: IRC return code
+	"""
 	userID = userUtils.getID(username)
 	if not userID:
 		log.warning("{} doesn't exist".format(username))
@@ -357,6 +381,13 @@ def IRCJoinChannel(username, channel):
 	return joinChannel(userID, channel)
 
 def IRCPartChannel(username, channel):
+	"""
+	Handle IRC channel part bancho-side.
+
+	:param username: username
+	:param channel: channel name
+	:return: IRC return code
+	"""
 	userID = userUtils.getID(username)
 	if not userID:
 		log.warning("{} doesn't exist".format(username))
@@ -364,9 +395,16 @@ def IRCPartChannel(username, channel):
 	return partChannel(userID, channel)
 
 def IRCAway(username, message):
+	"""
+	Handle IRC away command bancho-side.
+
+	:param username:
+	:param message: away message
+	:return: IRC return code
+	"""
 	userID = userUtils.getID(username)
 	if not userID:
 		log.warning("{} doesn't exist".format(username))
 		return
-	glob.tokens.getTokenFromUserID(userID).setAwayMessage(message)
+	glob.tokens.getTokenFromUserID(userID).awayMessage = message
 	return 305 if message == "" else 306

@@ -1,4 +1,3 @@
-"""Bancho user ranks"""
 NORMAL			= 0
 PLAYER			= 1
 BAT				= 2

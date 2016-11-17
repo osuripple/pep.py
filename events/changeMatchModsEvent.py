@@ -18,7 +18,7 @@ def handle(userToken, packetData):
 	match = glob.matches.matches[matchID]
 
 	# Set slot or match mods according to modType
-	if match.matchModMode == matchModModes.freeMod:
+	if match.matchModMode == matchModModes.FREE_MOD:
 		# Freemod
 		# Host can set global DT/HT
 		if userID == match.hostUserID:

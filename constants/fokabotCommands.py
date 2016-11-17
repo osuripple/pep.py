@@ -19,12 +19,12 @@ from objects import glob
 Commands callbacks
 
 Must have fro, chan and messages as arguments
-fro -- name of who triggered the command
-chan -- channel where the message was sent
-message -- 	list containing arguments passed from the message
-			[0] = first argument
-			[1] = second argument
-			. . .
+:param fro: username of who triggered the command
+:param chan: channel"(or username, if PM) where the message was sent
+:param message: list containing arguments passed from the message
+				[0] = first argument
+				[1] = second argument
+				. . .
 
 return the message or **False** if there's no response by the bot
 TODO: Change False to None, because False doesn't make any sense
@@ -35,6 +35,7 @@ def instantRestart(fro, chan, message):
 	return False
 
 def faq(fro, chan, message):
+	# TODO: Unhardcode this
 	if message[0] == "rules":
 		return "Please make sure to check (Ripple's rules)[http://ripple.moe/?p=23]."
 	elif message[0] == "swearing":
@@ -160,11 +161,11 @@ def silence(fro, chan, message):
 	if unit == 's':
 		silenceTime = int(amount)
 	elif unit == 'm':
-		silenceTime = int(amount)*60
+		silenceTime = int(amount) * 60
 	elif unit == 'h':
-		silenceTime = int(amount)*3600
+		silenceTime = int(amount) * 3600
 	elif unit == 'd':
-		silenceTime = int(amount)*86400
+		silenceTime = int(amount) * 86400
 	else:
 		return "Invalid time unit (s/m/h/d)."
 
@@ -707,11 +708,6 @@ callback: function to call when the command is triggered. Optional.
 response: text to return when the command is triggered. Optional.
 syntax: command syntax. Arguments must be separated by spaces (eg: <arg1> <arg2>)
 privileges: privileges needed to execute the command. Optional.
-
-NOTES:
-- You CAN'T use both rank and minRank at the same time.
-- If both rank and minrank are **not** present, everyone will be able to run that command.
-- You MUST set trigger and callback/response, or the command won't work.
 """
 commands = [
 	{

@@ -22,18 +22,15 @@ from objects import glob
 
 
 class Client:
-	"""
-	IRC Client object
-	"""
 	__linesep_regexp = re.compile(r"\r?\n")
-
 
 	def __init__(self, server, sock):
 		"""
 		Initialize a Client object
 
-		server -- server object
-		sock -- socket connection object
+		:param server: server object
+		:param sock: socket connection object
+		:return:
 		"""
 		self.__timestamp = time.time()
 		self.__readbuffer = ""
@@ -60,7 +57,8 @@ class Client:
 		Add a message (basic string) to client buffer.
 		This is the lowest possible level.
 
-		msg -- message to add
+		:param msg: message to add
+		:return:
 		"""
 		self.__writebuffer += msg + "\r\n"
 
@@ -69,7 +67,7 @@ class Client:
 		"""
 		Return this client's write buffer size
 
-		return -- write buffer size
+		:return: write buffer size
 		"""
 		return len(self.__writebuffer)
 
@@ -78,7 +76,8 @@ class Client:
 		"""
 		Add an IRC-like message to client buffer.
 
-		msg -- message (without IRC stuff)
+		:param msg: message (without IRC stuff)
+		:return:
 		"""
 		self.message(":{} {}".format(self.server.host, msg))
 
@@ -87,10 +86,11 @@ class Client:
 		"""
 		Add an IRC-like message to client buffer with code
 
-		code -- response code
-		message -- response message
-		nickname -- receiver nickname
-		channel -- optional
+		:param code: response code
+		:param message: response message
+		:param nickname: receiver nickname
+		:param channel: optional
+		:return:
 		"""
 		if nickname == "":
 			nickname = self.IRCUsername
@@ -103,7 +103,8 @@ class Client:
 		"""
 		Add a 403 reply (no such channel) to client buffer.
 
-		channel -- meh
+		:param channel:
+		:return:
 		"""
 		self.replyCode(403, "{} :No such channel".format(channel))
 
@@ -112,7 +113,8 @@ class Client:
 		"""
 		Add a 461 reply (not enough parameters) to client buffer
 
-		command -- command that had not enough parameters
+		:param command: name of the command that had not enough parameters
+		:return:
 		"""
 		self.replyCode(403, "{} :Not enough parameters".format(command))
 
@@ -121,8 +123,9 @@ class Client:
 		"""
 		Disconnects this client from the IRC server
 
-		quitmsg -- IRC quit message. Default: 'Client quit'
-		callLogout -- if True, call logoutEvent on bancho
+		:param quitmsg: IRC quit message. Default: 'Client quit'
+		:param callLogout: if True, call logoutEvent on bancho
+		:return:
 		"""
 		# Send error to client and close socket
 		self.message("ERROR :{}".format(quitmsg))
@@ -138,7 +141,11 @@ class Client:
 
 
 	def readSocket(self):
-		"""Read data coming from this client socket"""
+		"""
+		Read data coming from this client socket
+
+		:return:
+		"""
 		try:
 			# Try to read incoming data from socket
 			data = self.socket.recv(2 ** 10)
@@ -161,7 +168,11 @@ class Client:
 
 
 	def parseBuffer(self):
-		"""Parse self.__readbuffer, get command, arguments and call its handler"""
+		"""
+		Parse self.__readbuffer, get command, arguments and call its handler
+
+		:return:
+		"""
 		# Get lines from buffer
 		lines = self.__linesep_regexp.split(self.__readbuffer)
 		self.__readbuffer = lines[-1]
@@ -198,7 +209,11 @@ class Client:
 
 
 	def writeSocket(self):
-		"""Write buffer to socket"""
+		"""
+		Write buffer to socket
+
+		:return:
+		"""
 		try:
 			sent = self.socket.send(self.__writebuffer.encode())
 			log.debug("[IRC] [{}:{}] <- {}".format(self.ip, self.port, self.__writebuffer[:sent]))
@@ -206,9 +221,13 @@ class Client:
 		except socket.error as x:
 			self.disconnect(str(x))
 
-
 	def checkAlive(self):
-		"""Check if this client is still connected"""
+		"""
+		Check if this client is still connected.
+		If the client is dead, disconnect it.
+
+		:return:
+		"""
 		now = time.time()
 		if self.__timestamp + 180 < now:
 			self.disconnect("ping timeout")
@@ -224,11 +243,19 @@ class Client:
 
 
 	def sendLusers(self):
-		"""Send lusers response to this client"""
+		"""
+		Send lusers response to this client
+
+		:return:
+		"""
 		self.replyCode(251, "There are {} users and 0 services on 1 server".format(len(glob.tokens.tokens)))
 
 	def sendMotd(self):
-		"""Send MOTD to this client"""
+		"""
+		Send MOTD to this client
+
+		:return:
+		"""
 		self.replyCode(375, "- {} Message of the day - ".format(self.server.host))
 		if len(self.server.motd) == 0:
 			self.replyCode(422, "MOTD File is missing")
@@ -340,13 +367,13 @@ class Client:
 
 		# TODO: Part all channels
 		if arguments[0] == "0":
-			return
 			'''for (channelname, channel) in self.channels.items():
 				self.message_channel(channel, "PART", channelname, True)
 				self.channel_log(channel, "left", meta=True)
 				server.remove_member_from_channel(self, channelname)
 			self.channels = {}
 			return'''
+			return
 
 		# Get channels to join list
 		channels = arguments[0].split(",")
@@ -375,7 +402,7 @@ class Client:
 					self.replyCode(332, description, channel=channel)
 
 				# Build connected users list
-				users = glob.channels.channels[channel].getConnectedUsers()[:]
+				users = glob.channels.channels[channel].connectedUsers[:]
 				usernames = []
 				for user in users:
 					token = glob.tokens.getTokenFromUserID(user)
@@ -488,11 +515,14 @@ class Client:
 		pass
 
 	def awayHandler(self, command, arguments):
+		"""AWAY command handler"""
 		response = chat.IRCAway(self.banchoUsername, " ".join(arguments))
 		self.replyCode(response, "You are no longer marked as being away" if response == 305 else "You have been marked as being away")
 
 	def mainHandler(self, command, arguments):
-		"""Handler for post-login commands"""
+		"""
+		Handler for post-login commands
+		"""
 		handlers = {
 			"AWAY": self.awayHandler,
 			#"ISON": ison_handler,
@@ -522,17 +552,18 @@ class Client:
 
 class Server:
 	def __init__(self, port):
-		#self.host = socket.getfqdn("127.0.0.1")[:63]
 		self.host = glob.conf.config["irc"]["hostname"]
 		self.port = port
-		self.clients = {}  # Socket --> Client instance.
+		self.clients = {}  # Socket - - > Client instance.
 		self.motd = ["Welcome to pep.py's embedded IRC server!", "This is a VERY simple IRC server and it's still in beta.", "Expect things to crash and not work as expected :("]
 
 	def forceDisconnection(self, username, isBanchoUsername=True):
 		"""
 		Disconnect someone from IRC if connected
 
-		username -- victim
+		:param username: victim
+		:param isBanchoUsername: if True, username is a bancho username, else convert it to a bancho username
+		:return:
 		"""
 		for _, value in self.clients.items():
 			if (value.IRCUsername == username and not isBanchoUsername) or (value.banchoUsername == username and isBanchoUsername):
@@ -543,8 +574,9 @@ class Server:
 		"""
 		Let every IRC client connected to a specific client know that 'username' joined the channel from bancho
 
-		username -- username of bancho user
-		channel -- joined channel name
+		:param username: username of bancho user
+		:param channel: joined channel name
+		:return:
 		"""
 		username = chat.fixUsernameForIRC(username)
 		for _, value in self.clients.items():
@@ -555,8 +587,9 @@ class Server:
 		"""
 		Let every IRC client connected to a specific client know that 'username' parted the channel from bancho
 
-		username -- username of bancho user
-		channel -- joined channel name
+		:param username: username of bancho user
+		:param channel: joined channel name
+		:return:
 		"""
 		username = chat.fixUsernameForIRC(username)
 		for _, value in self.clients.items():
@@ -567,9 +600,10 @@ class Server:
 		"""
 		Send a message to IRC when someone sends it from bancho
 
-		fro -- sender username
-		to -- receiver username
-		message -- text of the message
+		:param fro: sender username
+		:param to: receiver username
+		:param message: text of the message
+		:return:
 		"""
 		fro = chat.fixUsernameForIRC(fro)
 		to = chat.fixUsernameForIRC(to)
@@ -589,14 +623,19 @@ class Server:
 		"""
 		Remove a client from connected clients
 
-		client -- client object
-		quitmsg -- QUIT argument, useless atm
+		:param client: client object
+		:param quitmsg: QUIT argument, useless atm
+		:return:
 		"""
 		if client.socket in self.clients:
 			del self.clients[client.socket]
 
 	def start(self):
-		"""Start IRC server main loop"""
+		"""
+		Start IRC server main loop
+
+		:return:
+		"""
 		# Sentry
 		if glob.sentry:
 			sentryClient = raven.Client(glob.conf.config["sentry"]["ircdns"])
@@ -653,5 +692,11 @@ class Server:
 					sentryClient.captureException()
 
 def main(port=6667):
+	"""
+	Create and start an IRC server
+
+	:param port: IRC port. Default: 6667
+	:return:
+	"""
 	glob.ircServer = Server(port)
 	glob.ircServer.start()

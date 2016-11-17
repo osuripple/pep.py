@@ -12,29 +12,35 @@ from objects import glob
 npRegex = re.compile("^https?:\\/\\/osu\\.ppy\\.sh\\/b\\/(\\d*)")
 
 def connect():
-	"""Add FokaBot to connected users and send userpanel/stats packet to everyone"""
+	"""
+	Connect FokaBot to Bancho
+
+	:return:
+	"""
 	token = glob.tokens.addToken(999)
 	token.actionID = actions.IDLE
 	glob.streams.broadcast("main", serverPackets.userPanel(999))
 	glob.streams.broadcast("main", serverPackets.userStats(999))
 
 def disconnect():
-	"""Remove FokaBot from connected users"""
+	"""
+	Disconnect FokaBot from Bancho
+
+	:return:
+	"""
 	glob.tokens.deleteToken(glob.tokens.getTokenFromUserID(999))
 
 def fokabotResponse(fro, chan, message):
 	"""
-	Check if a message has triggered fokabot (and return its response)
+	Check if a message has triggered FokaBot
 
-	fro -- sender username (for permissions stuff with admin commands)
-	chan -- channel name
-	message -- message
-
-	return -- fokabot's response string or False
+	:param fro: sender username
+	:param chan: channel name (or receiver username)
+	:param message: chat mesage
+	:return: FokaBot's response or False if no response
 	"""
 	for i in fokabotCommands.commands:
 		# Loop though all commands
-		#if i["trigger"] in message:
 		if generalUtils.strContains(message, i["trigger"]):
 			# message has triggered a command
 

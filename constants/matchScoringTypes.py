@@ -1,3 +1,3 @@
-score = 0
-accuracy = 1
-combo = 2
+SCORE = 0
+ACCURACY = 1
+COMBO = 2

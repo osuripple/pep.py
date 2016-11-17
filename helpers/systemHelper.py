@@ -17,6 +17,7 @@ from objects import glob
 def dispose():
 	"""
 	Perform some clean up. Called on shutdown.
+	
 	:return:
 	"""
 	print("> Disposing server... ")
@@ -27,7 +28,7 @@ def runningUnderUnix():
 	"""
 	Get if the server is running under UNIX or NT
 
-	return --- True if running under UNIX, otherwise False
+	:return: True if running under UNIX, otherwise False
 	"""
 	return True if os.name == "posix" else False
 
@@ -35,9 +36,11 @@ def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 	"""
 	Schedule a server shutdown/restart
 
-	sendRestartTime -- time (seconds) to wait before sending server restart packets to every client
-	restart -- if True, server will restart. if False, server will shudown
-	message -- if set, send that message to every client to warn about the shutdown/restart
+	:param sendRestartTime: time (seconds) to wait before sending server restart packets to every client
+	:param restart: if True, server will restart. if False, server will shudown
+	:param message: if set, send that message to every client to warn about the shutdown/restart
+	:param delay: additional restart delay in seconds. Default: 20
+	:return:
 	"""
 	# Console output
 	log.info("Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+delay))
@@ -61,13 +64,21 @@ def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 	threading.Timer(sendRestartTime+delay, action).start()
 
 def restartServer():
-	"""Restart pep.py script"""
+	"""
+	Restart pep.py
+
+	:return:
+	"""
 	log.info("Restarting pep.py...")
 	dispose()
 	os.execv(sys.executable, [sys.executable] + sys.argv)
 
 def shutdownServer():
-	"""Shutdown pep.py"""
+	"""
+	Shutdown pep.py
+
+	:return:
+	"""
 	log.info("Shutting down pep.py...")
 	dispose()
 	sig = signal.SIGKILL if runningUnderUnix() else signal.CTRL_C_EVENT
@@ -77,7 +88,7 @@ def getSystemInfo():
 	"""
 	Get a dictionary with some system/server info
 
-	return -- ["unix", "connectedUsers", "webServer", "cpuUsage", "totalMemory", "usedMemory", "loadAverage"]
+	:return: ["unix", "connectedUsers", "webServer", "cpuUsage", "totalMemory", "usedMemory", "loadAverage"]
 	"""
 	data = {"unix": runningUnderUnix(), "connectedUsers": len(glob.tokens.tokens), "matches": len(glob.matches.matches)}
 

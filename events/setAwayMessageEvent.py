@@ -11,7 +11,7 @@ def handle(userToken, packetData):
 	packetData = clientPackets.setAwayMessage(packetData)
 
 	# Set token away message
-	userToken.setAwayMessage(packetData["awayMessage"])
+	userToken.awayMessage = packetData["awayMessage"]
 
 	# Send private message from fokabot
 	if packetData["awayMessage"] == "":

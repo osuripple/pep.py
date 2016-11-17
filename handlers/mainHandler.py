@@ -115,8 +115,6 @@ class handler(SentryMixin, requestsManager.asyncRequestHandler):
 							return wrapper
 
 						eventHandler = {
-							# TODO: Rename packets and events
-							# TODO: Host check for multi
 							packetIDs.client_changeAction: handleEvent(changeActionEvent),
 							packetIDs.client_logout: handleEvent(logoutEvent),
 							packetIDs.client_friendAdd: handleEvent(friendAddEvent),
