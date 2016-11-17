@@ -113,6 +113,9 @@ if __name__ == "__main__":
 			# Script returns error if there are no keys starting with peppy:*
 			pass
 
+		# Save peppy version in redis
+		glob.redis.set("peppy:version", glob.VERSION)
+
 		# Load bancho_settings
 		try:
 			consoleHelper.printNoNl("> Loading bancho settings from DB... ")
