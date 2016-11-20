@@ -1,4 +1,5 @@
 import time
+import json
 
 from common.log import logUtils as log
 from constants import serverPackets
@@ -6,7 +7,7 @@ from helpers import chatHelper as chat
 from objects import glob
 
 
-def handle(userToken, _=None):
+def handle(userToken, _=None, deleteToken=True):
 	# get usertoken data
 	userID = userToken.userID
 	username = userToken.username
@@ -38,7 +39,19 @@ def handle(userToken, _=None):
 			glob.ircServer.forceDisconnection(userToken.username)
 
 		# Delete token
-		glob.tokens.deleteToken(requestToken)
+		if deleteToken:
+			glob.tokens.deleteToken(requestToken)
+		else:
+			userToken.kicked = True
+
+		# Change username if needed
+		newUsername = glob.redis.get("ripple:change_username_pending:{}".format(userID))
+		if newUsername is not None:
+			log.debug("Sending username change request for user {}".format(userID))
+			glob.redis.publish("peppy:change_username", json.dumps({
+				"userID": userID,
+				"newUsername": newUsername.decode("utf-8")
+			}))
 
 		# Console output
 		log.info("{} has been disconnected. (logout)".format(username))

@@ -16,7 +16,7 @@ from common.constants import bcolors
 from common.db import dbConnector
 from common.ddog import datadogClient
 from common.log import logUtils as log
-from common.ripple import userUtils
+from common.redis import pubSub
 from common.web import schiavo
 from handlers import apiFokabotMessageHandler
 from handlers import apiIsOnlineHandler
@@ -34,6 +34,12 @@ from objects import banchoConfig
 from objects import chatFilters
 from objects import fokabot
 from objects import glob
+from pubSubHandlers import changeUsernameHandler
+
+from pubSubHandlers import disconnectHandler
+from pubSubHandlers import banHandler
+from pubSubHandlers import updateSilenceHandler
+from pubSubHandlers import updateStatsHandler
 
 
 def make_app():
@@ -263,6 +269,16 @@ if __name__ == "__main__":
 		# Server start message and console output
 		log.logMessage("**pep.py** Server started!", discord="bunker", of="info.txt", stdout=False)
 		consoleHelper.printColored("> Tornado listening for HTTP(s) clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
+
+		# Connect to pubsub channels
+		pubSub.listener(glob.redis, {
+			"peppy:disconnect": disconnectHandler.handler(),
+			"peppy:change_username": changeUsernameHandler.handler(),
+			"peppy:reload_settings": lambda x: x == b"reload" and glob.banchoConf.reload(),
+			"peppy:update_cached_stats": updateStatsHandler.handler(),
+			"peppy:silence": updateSilenceHandler.handler(),
+			"peppy:ban": banHandler.handler(),
+		}).start()
 
 		# Start tornado
 		glob.application.listen(serverPort)

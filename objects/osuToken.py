@@ -31,6 +31,7 @@ class token:
 		self.privileges = userUtils.getPrivileges(self.userID)
 		self.admin = userUtils.isInPrivilegeGroup(self.userID, "developer") or userUtils.isInPrivilegeGroup(self.userID, "community manager")
 		self.irc = irc
+		self.kicked = False
 		self.restricted = userUtils.isRestricted(self.userID)
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
@@ -323,22 +324,28 @@ class token:
 		self.enqueue(serverPackets.loginFailed())
 
 		# Logout event
-		logoutEvent.handle(self, None)
+		logoutEvent.handle(self, deleteToken=False)
 
-	def silence(self, seconds, reason, author = 999):
+	def silence(self, seconds = None, reason = "", author = 999):
 		"""
 		Silences this user (db, packet and token)
 
-		:param seconds: silence length in seconds
-		:param reason: silence reason
+		:param seconds: silence length in seconds. If None, get it from db. Default: None
+		:param reason: silence reason. Default: empty string
 		:param author: userID of who has silenced the user. Default: 999 (FokaBot)
 		:return:
 		"""
-		# Silence in db and token
-		self.silenceEndTime = int(time.time())+seconds
-		userUtils.silence(self.userID, seconds, reason, author)
+		if seconds is None:
+			# Get silence expire from db if needed
+			seconds = max(0, userUtils.getSilenceEnd(self.userID) - int(time.time()))
+		else:
+			# Silence in db and token
+			userUtils.silence(self.userID, seconds, reason, author)
 
-		# Send silence packet to target
+		# Silence token
+		self.silenceEndTime = int(time.time()) + seconds
+
+		# Send silence packet to user
 		self.enqueue(serverPackets.silenceEndTime(seconds))
 
 		# Send silenced packet to everyone else
@@ -394,18 +401,29 @@ class token:
 		self.gameRank = stats["gameRank"]
 		self.pp = stats["pp"]
 
-	def checkRestricted(self, force=False):
+	def checkRestricted(self):
 		"""
 		Check if this token is restricted. If so, send fokabot message
 
-		:param force:	If True, get restricted value from db.
-						If False, get the cached one. Default: False
 		:return:
 		"""
-		if force:
-			self.restricted = userUtils.isRestricted(self.userID)
+		oldRestricted = self.restricted
+		self.restricted = userUtils.isRestricted(self.userID)
 		if self.restricted:
 			self.setRestricted()
+		elif not self.restricted and oldRestricted != self.restricted:
+			self.resetRestricted()
+
+	def checkBanned(self):
+		"""
+		Check if this user is banned. If so, disconnect it.
+
+		:return:
+		"""
+		if userUtils.isBanned(self.userID):
+			self.enqueue(serverPackets.loginBanned())
+			logoutEvent.handle(self, deleteToken=False)
+
 
 	def setRestricted(self):
 		"""
@@ -415,7 +433,16 @@ class token:
 		:return:
 		"""
 		self.restricted = True
-		chat.sendMessage("FokaBot",self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information.")
+		chat.sendMessage("FokaBot", self.username, "Your account is currently in restricted mode. Please visit ripple's website for more information.")
+
+	def resetRestricted(self):
+		"""
+		Send FokaBot message to alert the user that he has been unrestricted
+		and he has to log in again.
+
+		:return:
+		"""
+		chat.sendMessage("FokaBot", self.username, "Your account has been unrestricted! Please log in again.")
 
 	def joinStream(self, name):
 		"""

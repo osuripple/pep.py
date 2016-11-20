@@ -304,22 +304,7 @@ def systemShutdown(fro, chan, message):
 	return restartShutdown(False)
 
 def systemReload(fro, chan, message):
-	# Reload settings from bancho_settings
-	glob.banchoConf.loadSettings()
-
-	# Reload channels too
-	glob.channels.loadChannels()
-
-	# And chat filters
-	glob.chatFilters.loadFilters()
-
-	# Send new channels and new bottom icon to everyone
-	glob.streams.broadcast("main", serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
-	glob.streams.broadcast("main", serverPackets.channelInfoEnd())
-	for key, value in glob.channels.channels.items():
-		if value.publicRead == True and value.hidden == False:
-			glob.streams.broadcast("main", serverPackets.channelInfo(key))
-
+	glob.banchoConf.reload()
 	return "Bancho settings reloaded!"
 
 def systemMaintenance(fro, chan, message):

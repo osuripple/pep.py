@@ -1,5 +1,6 @@
 # TODO: Rewrite this shit
 from common import generalUtils
+from constants import serverPackets
 from objects import glob
 
 
@@ -41,3 +42,20 @@ class banchoConfig:
 		"""
 		self.config["banchoMaintenance"] = maintenance
 		glob.db.execute("UPDATE bancho_settings SET value_int = %s WHERE name = 'bancho_maintenance'", [int(maintenance)])
+
+	def reload(self):
+		# Reload settings from bancho_settings
+		glob.banchoConf.loadSettings()
+
+		# Reload channels too
+		glob.channels.loadChannels()
+
+		# And chat filters
+		glob.chatFilters.loadFilters()
+
+		# Send new channels and new bottom icon to everyone
+		glob.streams.broadcast("main", serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
+		glob.streams.broadcast("main", serverPackets.channelInfoEnd())
+		for key, value in glob.channels.channels.items():
+			if value.publicRead == True and value.hidden == False:
+				glob.streams.broadcast("main", serverPackets.channelInfo(key))

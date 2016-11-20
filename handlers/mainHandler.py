@@ -122,7 +122,7 @@ class handler(SentryMixin, requestsManager.asyncRequestHandler):
 							packetIDs.client_userStatsRequest: handleEvent(userStatsRequestEvent),
 							packetIDs.client_requestStatusUpdate: handleEvent(requestStatusUpdateEvent),
 							packetIDs.client_userPanelRequest: handleEvent(userPanelRequestEvent),
-							
+
 							packetIDs.client_channelJoin: handleEvent(channelJoinEvent),
 							packetIDs.client_channelPart: handleEvent(channelPartEvent),
 							packetIDs.client_sendPublicMessage: handleEvent(sendPublicMessageEvent),
@@ -206,6 +206,9 @@ class handler(SentryMixin, requestsManager.asyncRequestHandler):
 						userToken.updatePingTime()
 						# Release token lock
 						userToken.lock.release()
+						# Delete token if kicked
+						if userToken.kicked:
+							glob.tokens.deleteToken(userToken)
 
 			if glob.outputRequestTime:
 				# End time

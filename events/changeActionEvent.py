@@ -5,20 +5,19 @@ from constants import clientPackets
 from constants import serverPackets
 from objects import glob
 
-
 def handle(userToken, packetData):
 	# Get usertoken data
 	userID = userToken.userID
 	username = userToken.username
 
 	# Make sure we are not banned
-	if userUtils.isBanned(userID):
-		userToken.enqueue(serverPackets.loginBanned())
-		return
+	#if userUtils.isBanned(userID):
+	#	userToken.enqueue(serverPackets.loginBanned())
+	#	return
 
 	# Send restricted message if needed
-	if userToken.restricted:
-		userToken.checkRestricted(True)
+	#if userToken.restricted:
+	#	userToken.checkRestricted(True)
 
 	# Change action packet
 	packetData = clientPackets.userActionChange(packetData)
@@ -34,8 +33,10 @@ if userToken.matchID != -1 and userToken.actionID != actions.MULTIPLAYING and us
 		'''
 
 	# Update cached stats if our pp changed if we've just submitted a score or we've changed gameMode
-	if (userToken.actionID == actions.PLAYING or userToken.actionID == actions.MULTIPLAYING) or (userToken.pp != userUtils.getPP(userID, userToken.gameMode)) or (userToken.gameMode != packetData["gameMode"]):
-		# Always update game mode, or we'll cache stats from the wrong game mode if we've changed it
+	#if (userToken.actionID == actions.PLAYING or userToken.actionID == actions.MULTIPLAYING) or (userToken.pp != userUtils.getPP(userID, userToken.gameMode)) or (userToken.gameMode != packetData["gameMode"]):
+
+	# Update cached stats if we've changed gamemode
+	if userToken.gameMode != packetData["gameMode"]:
 		userToken.gameMode = packetData["gameMode"]
 		userToken.updateCachedStats()
 
