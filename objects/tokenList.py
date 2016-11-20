@@ -185,12 +185,16 @@ class tokenList:
 
 	def deleteBanchoSessions(self):
 		"""
-		Truncate bancho_sessions table.
+		Remove all `peppy:sessions:*` redis keys.
 		Call at bancho startup to delete old cached sessions
 
 		:return:
 		"""
-		glob.db.execute("TRUNCATE TABLE bancho_sessions")
+		try:
+			# TODO: Make function or some redis meme
+			glob.redis.eval("return redis.call('del', unpack(redis.call('keys', ARGV[1])))", 0, "peppy:sessions:*")
+		except:
+			pass
 
 
 	def tokenExists(self, username = "", userID = -1):
