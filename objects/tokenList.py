@@ -24,6 +24,7 @@ class tokenList:
 		"""
 		newToken = osuToken.token(userID, ip=ip, irc=irc, timeOffset=timeOffset, tournament=tournament)
 		self.tokens[newToken.token] = newToken
+		glob.redis.incr("ripple:online_users")
 		return newToken
 
 	def deleteToken(self, token):
@@ -34,12 +35,10 @@ class tokenList:
 		:return:
 		"""
 		if token in self.tokens:
-			# Delete session from DB
 			if self.tokens[token].ip != "":
 				userUtils.deleteBanchoSessions(self.tokens[token].userID, self.tokens[token].ip)
-
-			# Pop token from list
 			self.tokens.pop(token)
+			glob.redis.decr("ripple:online_users")
 
 	def getUserIDFromToken(self, token):
 		"""

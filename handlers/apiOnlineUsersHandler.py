@@ -10,7 +10,7 @@ class handler(requestsManager.asyncRequestHandler):
 		data = {"message": "unknown error"}
 		try:
 			# Get online users count
-			data["result"] = len(glob.tokens.tokens)
+			data["result"] = int(glob.redis.get("ripple:online_users").decode("utf-8"))
 
 			# Status code and message
 			statusCode = 200
