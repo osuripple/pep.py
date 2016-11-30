@@ -1,4 +1,5 @@
 ## pep.py
+
 This is Ripple's bancho server. It handles:
 - Client login
 - Online users listing and statuses
@@ -6,6 +7,9 @@ This is Ripple's bancho server. It handles:
 - Spectator
 - Multiplayer
 - Fokabot
+
+- Origin: https://git.zxq.co/ripple/pep.py
+- Mirror: https://github.com/osuripple/pep.py
 
 ## Requirements
 - Python 3.5
