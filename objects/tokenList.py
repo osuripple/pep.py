@@ -103,10 +103,15 @@ class tokenList:
 		:return:
 		"""
 		# Delete older tokens
+		delete = []
 		for key, value in list(self.tokens.items()):
 			if value.userID == userID:
 				# Delete this token from the dictionary
-				self.tokens[key].kick("You have logged in from somewhere else. You can't connect to Bancho/IRC from more than one device at the same time.", "kicked, multiple clients")
+				#self.tokens[key].kick("You have logged in from somewhere else. You can't connect to Bancho/IRC from more than one device at the same time.", "kicked, multiple clients")
+				delete.append(self.tokens[key])
+
+		for i in delete:
+			logoutEvent.handle(i)
 
 	def multipleEnqueue(self, packet, who, but = False):
 		"""
