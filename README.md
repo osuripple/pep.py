@@ -1,5 +1,8 @@
 ## pep.py
 
+- Origin: https://git.zxq.co/ripple/pep.py
+- Mirror: https://github.com/osuripple/pep.py
+
 This is Ripple's bancho server. It handles:
 - Client login
 - Online users listing and statuses
@@ -8,11 +11,9 @@ This is Ripple's bancho server. It handles:
 - Multiplayer
 - Fokabot
 
-- Origin: https://git.zxq.co/ripple/pep.py
-- Mirror: https://github.com/osuripple/pep.py
-
 ## Requirements
 - Python 3.5
+- Cython
 - MySQLdb (`mysqlclient`)
 - Tornado
 - Bcrypt
@@ -27,9 +28,14 @@ afterwards, install the required dependencies with pip
 ```
 $ pip install -r requirements.txt
 ```
-then, run pep.py once to create the default config file and edit it
+then, compile all `*.pyx` files to `*.so` or `*.dll` files using `setup.py` (distutils file)
+```
+$ python3 setup.py build_ext --inplace
+```
+finally, run pep.py once to create the default config file and edit it
 ```
 $ python3 pep.py
+...
 $ nano config.ini
 ```
 you can run pep.py by typing

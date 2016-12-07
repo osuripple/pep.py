@@ -1,15 +1,15 @@
 import struct
 from constants import dataTypes
 
-def uleb128Encode(num):
+cpdef bytearray uleb128Encode(int num):
 	"""
 	Encode an int to uleb128
 
 	:param num: int to encode
 	:return: bytearray with encoded number
 	"""
-	arr = bytearray()
-	length = 0
+	cdef bytearray arr = bytearray()
+	cdef int length = 0
 
 	if num == 0:
 		return bytearray(b"\x00")
@@ -23,15 +23,16 @@ def uleb128Encode(num):
 
 	return arr
 
-def uleb128Decode(num):
+cpdef list uleb128Decode(bytes num):
 	"""
 	Decode a uleb128 to int
 
 	:param num: encoded uleb128 int
 	:return: (total, length)
 	"""
-	shift = 0
-	arr = [0,0]	#total, length
+	cdef int shift = 0
+	cdef list arr = [0,0]	#total, length
+	cdef int b
 
 	while True:
 		b = num[arr[1]]
@@ -43,7 +44,7 @@ def uleb128Decode(num):
 
 	return arr
 
-def unpackData(data, dataType):
+cpdef unpackData(bytes data, int dataType):
 	"""
 	Unpacks a single section of a packet.
 
@@ -74,7 +75,7 @@ def unpackData(data, dataType):
 	# Unpack
 	return struct.unpack(unpackType, bytes(data))[0]
 
-def packData(__data, dataType):
+cpdef bytes packData(__data, int dataType):
 	"""
 	Packs a single section of a packet.
 
@@ -82,8 +83,9 @@ def packData(__data, dataType):
 	:param dataType: data type
 	:return: packed bytes
 	"""
-	data = bytes()	# data to return
-	pack = True		# if True, use pack. False only with strings
+	cdef bytes data = bytes()	# data to return
+	cdef bint pack = True		# if True, use pack. False only with strings
+	cdef str packType
 
 	# Get right pack Type
 	if dataType == dataTypes.BBYTES:
@@ -134,7 +136,7 @@ def packData(__data, dataType):
 
 	return data
 
-def buildPacket(__packet, __packetData=None):
+cpdef bytes buildPacket(int __packet, list __packetData = []):
 	"""
 	Builds a packet
 
@@ -143,13 +145,12 @@ def buildPacket(__packet, __packetData=None):
 	:return: packet bytes
 	"""
 	# Set some variables
-	if __packetData is None:
-		__packetData = []
-	packetData = bytes()
-	packetLength = 0
-	packetBytes = bytes()
+	cdef bytes packetData = bytes()
+	cdef int packetLength = 0
+	cdef bytes packetBytes = bytes()
 
 	# Pack packet data
+	cdef list i
 	for i in __packetData:
 		packetData += packData(i[0], i[1])
 
@@ -163,7 +164,7 @@ def buildPacket(__packet, __packetData=None):
 	packetBytes += packetData						# packet data
 	return packetBytes
 
-def readPacketID(stream):
+cpdef int readPacketID(bytes stream):
 	"""
 	Read packetID (first two bytes) from a packet
 
@@ -172,7 +173,7 @@ def readPacketID(stream):
 	"""
 	return unpackData(stream[0:2], dataTypes.UINT16)
 
-def readPacketLength(stream):
+cpdef int readPacketLength(bytes stream):
 	"""
 	Read packet data length (3:7 bytes) from a packet
 
@@ -182,7 +183,7 @@ def readPacketLength(stream):
 	return unpackData(stream[3:7], dataTypes.UINT32)
 
 
-def readPacketData(stream, structure=None, hasFirstBytes = True):
+cpdef readPacketData(bytes stream, list structure=[], bint hasFirstBytes = True):
 	"""
 	Read packet data from `stream` according to `structure`
 	:param stream: packet bytes
@@ -192,11 +193,10 @@ def readPacketData(stream, structure=None, hasFirstBytes = True):
 	:return: {name: unpackedValue, ...}
 	"""
 	# Read packet ID (first 2 bytes)
-	if structure is None:
-		structure = []
-	data = {}
+	cdef dict data = {}
 
 	# Skip packet ID and packet length if needed
+	cdef start, end
 	if hasFirstBytes:
 		end = 7
 		start = 7
@@ -205,6 +205,8 @@ def readPacketData(stream, structure=None, hasFirstBytes = True):
 		start = 0
 
 	# Read packet
+	cdef list i
+	cdef bint unpack
 	for i in structure:
 		start = end
 		unpack = True
@@ -239,7 +241,10 @@ def readPacketData(stream, structure=None, hasFirstBytes = True):
 				end = start+length[0]+length[1]+1
 
 				# Read bytes
-				data[i[0]] = ''.join(chr(j) for j in stream[start+1+length[1]:end])
+				#data[i[0]] = ''.join(chr(j) for j in stream[start+1+length[1]:end])
+				data[i[0]] = ""
+				for j in stream[start+1+length[1]:end]:
+					data[i[0]] += chr(j)
 		elif i[1] == dataTypes.BYTE:
 			end = start+1
 		elif i[1] == dataTypes.UINT16 or i[1] == dataTypes.SINT16:
