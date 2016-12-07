@@ -738,7 +738,7 @@ commands = [
 		"callback": moderated
 	}, {
 		"trigger": "!kickall",
-		"privileges": privileges.ADMIN_KICK_USERS,
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"callback": kickAll
 	}, {
 		"trigger": "!kick",
