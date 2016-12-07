@@ -127,9 +127,9 @@ class config:
 		self.config.set("discord", "devgroup", "")
 
 		self.config.add_section("datadog")
-		self.config.set("datadog", "enable")
-		self.config.set("datadog", "apikey")
-		self.config.set("datadog", "appkey")
+		self.config.set("datadog", "enable", "0")
+		self.config.set("datadog", "apikey", "")
+		self.config.set("datadog", "appkey", "")
 
 		self.config.add_section("irc")
 		self.config.set("irc", "enable", "1")
