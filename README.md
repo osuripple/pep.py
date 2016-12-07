@@ -14,6 +14,7 @@ This is Ripple's bancho server. It handles:
 ## Requirements
 - Python 3.5
 - Cython
+- C compiler
 - MySQLdb (`mysqlclient`)
 - Tornado
 - Bcrypt
