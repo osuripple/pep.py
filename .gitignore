@@ -1,11 +1,9 @@
 **/__pycache__
+**/build
 config.ini
 filters.txt
 .data
 .idea
-common_funzia
-common_refractor
-common_memato
 redistest.py
 *.c
 *.so
