@@ -1,5 +1,6 @@
 import json
 
+from common.ripple import userUtils
 from common.web import requestsManager
 from constants import exceptions
 from objects import glob
@@ -18,7 +19,8 @@ class handler(requestsManager.asyncRequestHandler):
 			username = None
 			userID = None
 			if "u" in self.request.arguments:
-				username = self.get_argument("u").lower().replace(" ", "_")
+				#username = self.get_argument("u").lower().replace(" ", "_")
+				username = userUtils.safeUsername(self.get_argument("u"))
 			else:
 				try:
 					userID = int(self.get_argument("id"))
