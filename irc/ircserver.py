@@ -136,7 +136,7 @@ class Client:
 		self.server.removeClient(self, quitmsg)
 
 		# Bancho logout
-		if callLogout:
+		if callLogout and self.banchoUsername != "":
 			chat.IRCDisconnect(self.IRCUsername)
 
 
@@ -669,7 +669,7 @@ class Server:
 						try:
 							self.clients[conn] = Client(self, conn)
 							log.info("[IRC] Accepted connection from {}:{}".format(addr[0], addr[1]))
-						except socket.error as e:
+						except socket.error:
 							try:
 								conn.close()
 							except:

@@ -17,7 +17,7 @@ def handle(userToken, _=None, deleteToken=True):
 	# the old logout packet will still be in the queue and will be sent to
 	# the server, so we accept logout packets sent at least 5 seconds after login
 	# if the user logs out before 5 seconds, he will be disconnected later with timeout check
-	if (int(time.time()-userToken.loginTime) >= 5 or userToken.irc):
+	if int(time.time() - userToken.loginTime) >= 5 or userToken.irc:
 		# Stop spectating
 		userToken.stopSpectating()
 
@@ -35,7 +35,7 @@ def handle(userToken, _=None, deleteToken=True):
 		glob.streams.broadcast("main", serverPackets.userLogout(userID))
 
 		# Disconnect from IRC if needed
-		if userToken.irc == True and glob.irc == True:
+		if userToken.irc and glob.irc:
 			glob.ircServer.forceDisconnection(userToken.username)
 
 		# Delete token

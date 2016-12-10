@@ -1,9 +1,7 @@
-"""Hello, pep.py here, ex-owner of ripple and prime minister of Ripwot."""
 import os
 import sys
 import threading
 from multiprocessing.pool import ThreadPool
-
 import tornado.gen
 import tornado.httpserver
 import tornado.ioloop
@@ -40,7 +38,6 @@ from pubSubHandlers import disconnectHandler
 from pubSubHandlers import banHandler
 from pubSubHandlers import updateSilenceHandler
 from pubSubHandlers import updateStatsHandler
-
 
 def make_app():
 	return tornado.web.Application([
