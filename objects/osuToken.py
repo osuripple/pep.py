@@ -324,7 +324,7 @@ class token:
 		self.enqueue(serverPackets.loginFailed())
 
 		# Logout event
-		logoutEvent.handle(self, deleteToken=False)
+		logoutEvent.handle(self, deleteToken=self.irc)
 
 	def silence(self, seconds = None, reason = "", author = 999):
 		"""
