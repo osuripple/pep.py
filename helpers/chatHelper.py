@@ -175,6 +175,10 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		if token.isSilenced():
 			raise exceptions.userSilencedException()
 
+		# Redirect !report to FokaBot
+		if message.startswith("!report"):
+			to = "FokaBot"
+
 		# Determine internal name if needed
 		# (toclient is used clientwise for #multiplayer and #spectator channels)
 		toClient = to
@@ -190,7 +194,6 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			toClient = "#spectator"
 		elif to.startswith("#multi_"):
 			toClient = "#multiplayer"
-
 		# Truncate message if > 2048 characters
 		message = message[:2048]+"..." if len(message) > 2048 else message
 
@@ -215,6 +218,9 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			# Make sure we have write permissions
 			if glob.channels.channels[to].publicWrite == False and token.admin == False:
 				raise exceptions.channelNoPermissionsException()
+
+			# Add message in buffer
+			token.addMessageInBuffer(to, message)
 
 			# Everything seems fine, build recipients list and send packet
 			glob.streams.broadcast("chat/{}".format(to), packet, but=[token.token])

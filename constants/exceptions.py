@@ -96,3 +96,9 @@ class userAlreadyInChannelException(Exception):
 
 class userNotInChannelException(Exception):
 	pass
+
+class missingReportInfoException(Exception):
+	pass
+
+class invalidUserException(Exception):
+	pass

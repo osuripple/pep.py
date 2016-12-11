@@ -40,6 +40,7 @@ class token:
 		self.lock = threading.Lock()	# Sync primitive
 		self.streams = []
 		self.tournament = tournament
+		self.messagesBuffer = []
 
 		# Default variables
 		self.spectators = []
@@ -500,3 +501,24 @@ class token:
 			return False
 		self.sentAway.append(userID)
 		return True
+
+	def addMessageInBuffer(self, chan, message):
+		"""
+		Add a message in messages buffer (10 messages, truncated at 50 chars).
+		Used as proof when the user gets reported.
+
+		:param chan: channel
+		:param message: message content
+		:return:
+		"""
+		if len(self.messagesBuffer) > 9:
+			self.messagesBuffer = self.messagesBuffer[1:]
+		self.messagesBuffer.append("{time} - {user}@{channel}: {message}".format(time=time.strftime("%M:%S", time.localtime()), user=self.username, channel=chan, message=message[:50]))
+
+	def getMessagesBufferString(self):
+		"""
+		Get the content of the messages buffer as a string
+
+		:return: messages buffer content as a string
+		"""
+		return "\n".join(x for x in self.messagesBuffer)

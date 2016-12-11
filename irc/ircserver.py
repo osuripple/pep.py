@@ -402,13 +402,15 @@ class Client:
 					self.replyCode(332, description, channel=channel)
 
 				# Build connected users list
-				users = glob.channels.channels[channel].connectedUsers[:]
+				if "chat/{}".format(channel) not in glob.streams.streams:
+					self.reply403(channel)
+					continue
+				users = glob.streams.streams["chat/{}".format(channel)].clients
 				usernames = []
 				for user in users:
-					token = glob.tokens.getTokenFromUserID(user)
-					if token is None:
+					if user not in glob.tokens.tokens:
 						continue
-					usernames.append(chat.fixUsernameForIRC(token.username))
+					usernames.append(chat.fixUsernameForIRC(glob.tokens.tokens[user].username))
 				usernames = " ".join(usernames)
 
 				# Send IRC users list
