@@ -656,7 +656,7 @@ def pp(fro, chan, message):
 	pp = userUtils.getPP(token.userID, gameMode)
 	return "You have {:,} pp".format(pp)
 
-def updateBeatmap(fro, chan, to):
+def updateBeatmap(fro, chan, message):
 	try:
 		# Run the command in PM only
 		if chan.startswith("#"):

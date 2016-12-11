@@ -155,11 +155,13 @@ def channelJoinSuccess(userID, chan):
 	return packetHelper.buildPacket(packetIDs.server_channelJoinSuccess, [[chan, dataTypes.STRING]])
 
 def channelInfo(chan):
+	if chan not in glob.channels.channels:
+		return bytes()
 	channel = glob.channels.channels[chan]
 	return packetHelper.buildPacket(packetIDs.server_channelInfo, [
-		[chan, dataTypes.STRING],
+		[channel.name, dataTypes.STRING],
 		[channel.description, dataTypes.STRING],
-		[len(channel.connectedUsers), dataTypes.UINT16]
+		[len(glob.streams.streams["chat/{}".format(chan)].clients), dataTypes.UINT16]
 	])
 
 def channelInfoEnd():

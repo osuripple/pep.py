@@ -1,6 +1,7 @@
 from objects import stream
 from objects import glob
 
+# TODO: use *args and **kwargs
 class streamList:
 	def __init__(self):
 		self.streams = {}
@@ -55,25 +56,28 @@ class streamList:
 			return
 		self.streams[streamName].removeClient(client=client, token=token)
 
-	def broadcast(self, streamName, data):
+	def broadcast(self, streamName, data, but=None):
 		"""
 		Send some data to all clients in a stream
 
 		:param streamName: stream name
 		:param data: data to send
+		:param but: array of tokens to ignore. Default: None (send to everyone)
 		:return:
 		"""
 		if streamName not in self.streams:
 			return
-		self.streams[streamName].broadcast(data)
+		self.streams[streamName].broadcast(data, but)
 
-	'''def getClients(self, streamName):
+	def dispose(self, streamName, *args, **kwargs):
 		"""
-		Get all clients in a stream
+		Call `dispose` on `streamName`
 
 		:param streamName: name of the stream
+		:param args:
+		:param kwargs:
 		:return:
 		"""
 		if streamName not in self.streams:
 			return
-		return self.streams[streamName].clients'''
+		self.streams[streamName].dispose(*args, **kwargs)

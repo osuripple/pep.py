@@ -18,7 +18,6 @@ class channel:
 		self.publicWrite = publicWrite
 		self.moderated = False
 		self.temp = temp
-		self.connectedUsers = [999]	# Fokabot is always connected to every channels (otherwise it doesn't show up in IRC users list)
 		self.hidden = hidden
 
 		# Client name (#spectator/#multiplayer)
@@ -28,27 +27,7 @@ class channel:
 		elif self.name.startswith("#multi_"):
 			self.clientName = "#multiplayer"
 
-	def userJoin(self, userID):
-		"""
-		Add a user to connected users
-
-		:param userID:
-		:return:
-		"""
-		if userID not in self.connectedUsers:
-			self.connectedUsers.append(userID)
-
-	def userPart(self, userID):
-		"""
-		Remove a user from connected users
-
-		:param userID:
-		:return:
-		"""
-		if userID in self.connectedUsers:
-			self.connectedUsers.remove(userID)
-
-		# Remove temp channels if empty or there's only fokabot connected
-		l = len(self.connectedUsers)
-		if self.temp == True and ((l == 0) or (l == 1 and 999 in self.connectedUsers)):
-			glob.channels.removeChannel(self.name)
+		# Make Foka join the channel
+		fokaToken = glob.tokens.getTokenFromUserID(999)
+		if fokaToken is not None:
+			fokaToken.joinChannel(self)

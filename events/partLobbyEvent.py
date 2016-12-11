@@ -5,13 +5,13 @@ from objects import glob
 
 def handle(userToken, _):
 	# Get usertoken data
-	userID = userToken.userID
 	username = userToken.username
 
 	# Remove user from users in lobby
 	userToken.leaveStream("lobby")
 
 	# Part lobby channel
+	# Done automatically by the client
 	chat.partChannel(channel="#lobby", token=userToken, kick=True)
 
 	# Console output

@@ -90,3 +90,9 @@ class unknownStreamException(Exception):
 
 class userTournamentException(Exception):
 	pass
+
+class userAlreadyInChannelException(Exception):
+	pass
+
+class userNotInChannelException(Exception):
+	pass

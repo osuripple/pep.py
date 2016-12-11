@@ -27,44 +27,32 @@ def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 				raise exceptions.userNotFoundException
 		else:
 			token = token
-			userID = token.userID
-
-		# Get usertoken data
-		username = token.username
 
 		# Normal channel, do check stuff
 		# Make sure the channel exists
 		if channel not in glob.channels.channels:
-			raise exceptions.channelUnknownException
-
-		# Check channel permissions
-		channelObject = glob.channels.channels[channel]
-		if channelObject.publicRead == False and token.admin == False:
-			raise exceptions.channelNoPermissionsException
-
-		# Add our userID to users in that channel
-		channelObject.userJoin(userID)
+			raise exceptions.channelUnknownException()
 
 		# Add the channel to our joined channel
-		token.joinChannel(channel)
-
-		# Send channel joined (bancho). We use clientName here because of #multiplayer and #spectator channels
-		token.enqueue(serverPackets.channelJoinSuccess(userID, channelObject.clientName))
+		token.joinChannel(glob.channels.channels[channel])
 
 		# Send channel joined (IRC)
 		if glob.irc == True and toIRC == True:
-			glob.ircServer.banchoJoinChannel(username, channel)
+			glob.ircServer.banchoJoinChannel(token.username, channel)
 
 		# Console output
-		log.info("{} joined channel {}".format(username, channel))
+		log.info("{} joined channel {}".format(token.username, channel))
 
 		# IRC code return
 		return 0
 	except exceptions.channelNoPermissionsException:
-		log.warning("{} attempted to join channel {}, but they have no read permissions".format(username, channel))
+		log.warning("{} attempted to join channel {}, but they have no read permissions".format(token.username, channel))
 		return 403
 	except exceptions.channelUnknownException:
-		log.warning("{} attempted to join an unknown channel ({})".format(username, channel))
+		log.warning("{} attempted to join an unknown channel ({})".format(token.username, channel))
+		return 403
+	except exceptions.userAlreadyInChannelException:
+		log.warning("User {} already in channel {}".format(token.username, channel))
 		return 403
 	except exceptions.userNotFoundException:
 		log.warning("User not connected to IRC/Bancho")
@@ -82,6 +70,10 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 	:return: 0 if joined or other IRC code in case of error. Needed only on IRC-side
 	"""
 	try:
+		# Make sure the client is not drunk and sends partChannel when closing a PM tab
+		if not channel.startswith("#"):
+			return
+
 		# Get token if not defined
 		if token is None:
 			token = glob.tokens.getTokenFromUserID(userID)
@@ -90,10 +82,6 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 				raise exceptions.userNotFoundException
 		else:
 			token = token
-			userID = token.userID
-
-		# Get usertoken data
-		username = token.username
 
 		# Determine internal/client name if needed
 		# (toclient is used clientwise for #multiplayer and #spectator channels)
@@ -113,12 +101,22 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 
 		# Make sure the channel exists
 		if channel not in glob.channels.channels:
-			raise exceptions.channelUnknownException
+			raise exceptions.channelUnknownException()
+
+		# Make sure the user is in the channel
+		if channel not in token.joinedChannels:
+			raise exceptions.userNotInChannelException()
 
 		# Part channel (token-side and channel-side)
 		channelObject = glob.channels.channels[channel]
-		token.partChannel(channel)
-		channelObject.userPart(userID)
+		token.partChannel(channelObject)
+
+		# Delete temporary channel if everyone left
+		if "chat/{}".format(channelObject.name) in glob.streams.streams:
+			sas = len(glob.streams.streams["chat/{}".format(channelObject.name)].clients)
+			print(str(sas - 1))
+			if channelObject.temp == True and sas - 1 == 0:
+				glob.channels.removeChannel(channelObject.name)
 
 		# Force close tab if needed
 		# NOTE: Maybe always needed, will check later
@@ -127,16 +125,19 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 
 		# IRC part
 		if glob.irc == True and toIRC == True:
-			glob.ircServer.banchoPartChannel(username, channel)
+			glob.ircServer.banchoPartChannel(token.username, channel)
 
 		# Console output
-		log.info("{} parted channel {} ({})".format(username, channel, channelClient))
+		log.info("{} parted channel {} ({})".format(token.username, channel, channelClient))
 
 		# Return IRC code
 		return 0
 	except exceptions.channelUnknownException:
-		log.warning("{} attempted to part an unknown channel ({})".format(username, channel))
+		log.warning("{} attempted to part an unknown channel ({})".format(token.username, channel))
 		return 403
+	except exceptions.userNotInChannelException:
+		log.warning("{} attempted to part {}, but he's not in that channel".format(token.username, channel))
+		return 442
 	except exceptions.userNotFoundException:
 		log.warning("User not connected to IRC/Bancho")
 		return 442	# idk
@@ -153,7 +154,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 	:return: 0 if joined or other IRC code in case of error. Needed only on IRC-side
 	"""
 	try:
-		tokenString = ""
+		#tokenString = ""
 		# Get token object if not passed
 		if token is None:
 			token = glob.tokens.getTokenFromUsername(fro)
@@ -162,11 +163,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		else:
 			# token object alredy passed, get its string and its username (fro)
 			fro = token.username
-			tokenString = token.token
-
-		# Set some variables
-		userID = token.userID
-		username = token.username
+			#tokenString = token.token
 
 		# Make sure this is not a tournament client
 		if token.tournament:
@@ -185,7 +182,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		toClient = to
 		if to == "#spectator":
 			if token.spectating is None:
-				s = userID
+				s = token.userID
 			else:
 				s = token.spectatingUserID
 			to = "#spect_{}".format(s)
@@ -203,7 +200,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		message = glob.chatFilters.filterMessage(message)
 
 		# Build packet bytes
-		packet = serverPackets.sendMessage(username, toClient, message)
+		packet = serverPackets.sendMessage(token.username, toClient, message)
 
 		# Send the message
 		isChannel = to.startswith("#")
@@ -211,35 +208,28 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			# CHANNEL
 			# Make sure the channel exists
 			if to not in glob.channels.channels:
-				raise exceptions.channelUnknownException
+				raise exceptions.channelUnknownException()
 
 			# Make sure the channel is not in moderated mode
 			if glob.channels.channels[to].moderated == True and token.admin == False:
-				raise exceptions.channelModeratedException
+				raise exceptions.channelModeratedException()
 
 			# Make sure we have write permissions
 			if glob.channels.channels[to].publicWrite == False and token.admin == False:
-				raise exceptions.channelNoPermissionsException
+				raise exceptions.channelNoPermissionsException()
 
 			# Everything seems fine, build recipients list and send packet
-			recipients = glob.channels.channels[to].connectedUsers[:]
-			for key, value in glob.tokens.tokens.items():
-				# Skip our client and irc clients
-				if key == tokenString or value.irc == True:
-					continue
-				# Send to this client if it's connected to the channel
-				if value.userID in recipients:
-					value.enqueue(packet)
+			glob.streams.broadcast("chat/{}".format(to), packet, but=[token.token])
 		else:
 			# USER
 			# Make sure recipient user is connected
 			recipientToken = glob.tokens.getTokenFromUsername(to)
 			if recipientToken is None:
-				raise exceptions.userNotFoundException
+				raise exceptions.userNotFoundException()
 
 			# Make sure the recipient is not a tournament client
-			if recipientToken.tournament:
-				raise exceptions.userTournamentException()
+			#if recipientToken.tournament:
+			#	raise exceptions.userTournamentException()
 
 			# Make sure the recipient is not restricted or we are FokaBot
 			if recipientToken.restricted == True and fro.lower() != "fokabot":
@@ -248,7 +238,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			# TODO: Make sure the recipient has not disabled PMs for non-friends or he's our friend
 
 			# Away check
-			if recipientToken.awayCheck(userID):
+			if recipientToken.awayCheck(token.userID):
 				sendMessage(to, fro, "\x01ACTION is away: {message}\x01".format(code=chr(int(1)), message=recipientToken.awayMessage))
 
 			# Check message templates (mods/admins only)
@@ -263,38 +253,38 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			glob.ircServer.banchoMessage(fro, to, message)
 
 		# Spam protection (ignore FokaBot)
-		if userID > 999:
+		if token.userID > 999:
 			token.spamProtection()
 
 		# Fokabot message
 		if isChannel == True or to.lower() == "fokabot":
-			fokaMessage = fokabot.fokabotResponse(username, to, message)
+			fokaMessage = fokabot.fokabotResponse(token.username, to, message)
 			if fokaMessage:
 				sendMessage("FokaBot", to if isChannel else fro, fokaMessage)
 
 		# File and discord logs (public chat only)
 		if to.startswith("#") and not (message.startswith("\x01ACTION is playing") and to.startswith("#spect_")):
-			log.chat("{fro} @ {to}: {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))))
-			glob.schiavo.sendChatlog("**{fro} @ {to}:** {message}".format(fro=username, to=to, message=str(message.encode("utf-8"))[2:-1]))
+			log.chat("{fro} @ {to}: {message}".format(fro=token.username, to=to, message=str(message.encode("utf-8"))))
+			glob.schiavo.sendChatlog("**{fro} @ {to}:** {message}".format(fro=token.username, to=to, message=str(message.encode("utf-8"))[2:-1]))
 		return 0
 	except exceptions.userSilencedException:
 		token.enqueue(serverPackets.silenceEndTime(token.getSilenceSecondsLeft()))
-		log.warning("{} tried to send a message during silence".format(username))
+		log.warning("{} tried to send a message during silence".format(token.username))
 		return 404
 	except exceptions.channelModeratedException:
-		log.warning("{} tried to send a message to a channel that is in moderated mode ({})".format(username, to))
+		log.warning("{} tried to send a message to a channel that is in moderated mode ({})".format(token.username, to))
 		return 404
 	except exceptions.channelUnknownException:
-		log.warning("{} tried to send a message to an unknown channel ({})".format(username, to))
+		log.warning("{} tried to send a message to an unknown channel ({})".format(token.username, to))
 		return 403
 	except exceptions.channelNoPermissionsException:
-		log.warning("{} tried to send a message to channel {}, but they have no write permissions".format(username, to))
+		log.warning("{} tried to send a message to channel {}, but they have no write permissions".format(token.username, to))
 		return 404
 	except exceptions.userRestrictedException:
-		log.warning("{} tried to send a message {}, but the recipient is in restricted mode".format(username, to))
+		log.warning("{} tried to send a message {}, but the recipient is in restricted mode".format(token.username, to))
 		return 404
 	except exceptions.userTournamentException:
-		log.warning("{} tried to send a message {}, but the recipient is a tournament client".format(username, to))
+		log.warning("{} tried to send a message {}, but the recipient is a tournament client".format(token.username, to))
 		return 404
 	except exceptions.userNotFoundException:
 		log.warning("User not connected to IRC/Bancho")

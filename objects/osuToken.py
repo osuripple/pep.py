@@ -5,6 +5,7 @@ import uuid
 from common.constants import gameModes, actions
 from common.log import logUtils as log
 from common.ripple import userUtils
+from constants import exceptions
 from constants import serverPackets
 from events import logoutEvent
 from helpers import chatHelper as chat
@@ -98,7 +99,12 @@ class token:
 
 		:param bytes: (packet) bytes to enqueue
 		"""
-		# TODO: reduce max queue size
+
+		# Never enqueue for IRC clients or Foka
+		if self.irc or self.userID < 999:
+			return
+
+		# Avoid memory leaks
 		if len(bytes_) < 10 * 10 ** 6:
 			self.queue += bytes_
 		else:
@@ -108,23 +114,30 @@ class token:
 		"""Resets the queue. Call when enqueued packets have been sent"""
 		self.queue = bytes()
 
-	def joinChannel(self, channel):
+	def joinChannel(self, channelObject):
 		"""
-		Add channel to joined channels list
+		Join a channel
 
-		:param channel: channel name
+		:param channelObject: channel object
+		:raises: exceptions.userAlreadyInChannelException()
+				 exceptions.channelNoPermissionsException()
 		"""
-		if channel not in self.joinedChannels:
-			self.joinedChannels.append(channel)
+		if channelObject.name in self.joinedChannels:
+			raise exceptions.userAlreadyInChannelException()
+		if channelObject.publicRead == False and self.admin == False:
+			raise exceptions.channelNoPermissionsException()
+		self.joinedChannels.append(channelObject.name)
+		self.joinStream("chat/{}".format(channelObject.name))
+		self.enqueue(serverPackets.channelJoinSuccess(self.userID, channelObject.clientName))
 
-	def partChannel(self, channel):
+	def partChannel(self, channelObject):
 		"""
 		Remove channel from joined channels list
 
-		:param channel: channel name
+		:param channelObject: channel object
 		"""
-		if channel in self.joinedChannels:
-			self.joinedChannels.remove(channel)
+		self.joinedChannels.remove(channelObject.name)
+		self.leaveStream("chat/{}".format(channelObject.name))
 
 	def setLocation(self, latitude, longitude):
 		"""
@@ -233,7 +246,7 @@ class token:
 		chat.partChannel(token=self, channel="#spect_{}".format(self.spectatingUserID), kick=True)
 
 		# Console output
-		log.info("{} is no longer spectating {}".format(self.username, self.spectatingUserID))
+		log.info("{} is no longer spectating {}. Current spectators: {}".format(self.username, self.spectatingUserID, hostToken.spectators))
 
 		# Set our spectating user to 0
 		self.spectating = None

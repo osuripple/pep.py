@@ -154,6 +154,11 @@ if __name__ == "__main__":
 			consoleHelper.printColored("[!] Error while loading chat filters. Make sure there is a filters.txt file present", bcolors.RED)
 			raise
 
+		# Start fokabot
+		consoleHelper.printNoNl("> Connecting FokaBot... ")
+		fokabot.connect()
+		consoleHelper.printDone()
+
 		# Initialize chat channels
 		print("> Initializing chat channels... ")
 		glob.channels.loadChannels()
@@ -163,11 +168,6 @@ if __name__ == "__main__":
 		consoleHelper.printNoNl("> Creating packets streams... ")
 		glob.streams.add("main")
 		glob.streams.add("lobby")
-		consoleHelper.printDone()
-
-		# Start fokabot
-		consoleHelper.printNoNl("> Connecting FokaBot... ")
-		fokabot.connect()
 		consoleHelper.printDone()
 
 		# Initialize user timeout check loop

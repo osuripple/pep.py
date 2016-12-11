@@ -43,15 +43,29 @@ class stream:
 			log.info("{} has left stream {}".format(token, self.name))
 			self.clients.remove(token)
 
-	def broadcast(self, data):
+	def broadcast(self, data, but=None):
 		"""
-		Send some data to all clients connected to this stream
+		Send some data to all (or some) clients connected to this stream
 
 		:param data: data to send
+		:param but: array of tokens to ignore. Default: None (send to everyone)
+		:return:
+		"""
+		if but is None:
+			but = []
+		for i in self.clients:
+			if i in glob.tokens.tokens:
+				if i not in but:
+					glob.tokens.tokens[i].enqueue(data)
+			else:
+				self.removeClient(token=i)
+
+	def dispose(self):
+		"""
+		Tell every client in this stream to leave the stream
+
 		:return:
 		"""
 		for i in self.clients:
 			if i in glob.tokens.tokens:
-				glob.tokens.tokens[i].enqueue(data)
-			else:
-				self.removeClient(token=i)
+				glob.tokens.tokens[i].leaveStream(self.name)

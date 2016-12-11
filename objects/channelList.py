@@ -1,4 +1,5 @@
 from common.log import logUtils as log
+from constants import serverPackets
 from objects import channel
 from objects import glob
 
@@ -34,6 +35,7 @@ class channelList:
 		:param hidden: if True, thic channel won't be shown in channels list
 		:return:
 		"""
+		glob.streams.add("chat/{}".format(name))
 		self.channels[name] = channel.channel(name, description, publicRead, publicWrite, temp, hidden)
 		log.info("Created channel {}".format(name))
 
@@ -47,6 +49,7 @@ class channelList:
 		"""
 		if name in self.channels:
 			return False
+		glob.streams.add("chat/{}".format(name))
 		self.channels[name] = channel.channel(name, "Chat", True, True, True, True)
 		log.info("Created temp channel {}".format(name))
 
@@ -60,5 +63,8 @@ class channelList:
 		if name not in self.channels:
 			log.debug("{} is not in channels list".format(name))
 			return
+		glob.streams.broadcast("chat/{}".format(name), serverPackets.channelKicked(name))
+		glob.streams.dispose("chat/{}".format(name))
+		glob.streams.remove("chat/{}".format(name))
 		self.channels.pop(name)
 		log.info("Removed channel {}".format(name))
