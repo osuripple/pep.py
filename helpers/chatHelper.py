@@ -113,9 +113,7 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 
 		# Delete temporary channel if everyone left
 		if "chat/{}".format(channelObject.name) in glob.streams.streams:
-			sas = len(glob.streams.streams["chat/{}".format(channelObject.name)].clients)
-			print(str(sas - 1))
-			if channelObject.temp == True and sas - 1 == 0:
+			if channelObject.temp == True and len(glob.streams.streams["chat/{}".format(channelObject.name)].clients) - 1 == 0:
 				glob.channels.removeChannel(channelObject.name)
 
 		# Force close tab if needed

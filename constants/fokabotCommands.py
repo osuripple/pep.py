@@ -119,15 +119,18 @@ def kickAll(fro, chan, message):
 
 def kick(fro, chan, message):
 	# Get parameters
-	target = message[0].replace("_", " ")
+	target = message[0].lower().replace("_", " ")
+	if target == "fokabot":
+		return "Nope."
 
 	# Get target token and make sure is connected
-	targetToken = glob.tokens.getTokenFromUsername(target)
-	if targetToken is None:
+	tokens = glob.tokens.getTokenFromUsername(target, all=True)
+	if len(tokens) == 0:
 		return "{} is not online".format(target)
 
-	# Kick user
-	targetToken.kick()
+	# Kick users
+	for i in tokens:
+		i.kick()
 
 	# Bot response
 	return "{} has been kicked from the server.".format(target)

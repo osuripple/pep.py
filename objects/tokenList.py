@@ -54,25 +54,34 @@ class tokenList:
 		# Get userID associated to that token
 		return self.tokens[token].userID
 
-	def getTokenFromUserID(self, userID, ignoreIRC=False):
+	def getTokenFromUserID(self, userID, ignoreIRC=False, all=False):
 		"""
 		Get token from a user ID
 
 		:param userID: user ID to find
 		:param ignoreIRC: if True, consider bancho clients only and skip IRC clients
+		:param all: if True, return a list with all clients that match given username, otherwise return
+					only the first occurrence.
 		:return: False if not found, token object if found
 		"""
 		# Make sure the token exists
+		ret = []
 		for _, value in self.tokens.items():
 			if value.userID == userID:
 				if ignoreIRC and value.irc:
 					continue
-				return value
+				if all:
+					ret.append(value)
+				else:
+					return value
 
-		# Return none if not found
-		return None
+		# Return full list or None if not found
+		if all:
+			return ret
+		else:
+			return None
 
-	def getTokenFromUsername(self, username, ignoreIRC=False, safe=False):
+	def getTokenFromUsername(self, username, ignoreIRC=False, safe=False, all=False):
 		"""
 		Get an osuToken object from an username
 
@@ -80,20 +89,29 @@ class tokenList:
 		:param ignoreIRC: if True, consider bancho clients only and skip IRC clients
 		:param safe: 	if True, username is a safe username,
 						compare it with token's safe username rather than normal username
+		:param all: if True, return a list with all clients that match given username, otherwise return
+					only the first occurrence.
 		:return: osuToken object or None
 		"""
 		# lowercase
 		who = username.lower() if not safe else username
 
 		# Make sure the token exists
+		ret = []
 		for _, value in self.tokens.items():
 			if (not safe and value.username.lower() == who) or (safe and value.safeUsername == who):
 				if ignoreIRC and value.irc:
 					continue
-				return value
+				if all:
+					ret.append(value)
+				else:
+					return value
 
-		# Return none if not found
-		return None
+		# Return full list or None if not found
+		if all:
+			return ret
+		else:
+			return None
 
 	def deleteOldTokens(self, userID):
 		"""
