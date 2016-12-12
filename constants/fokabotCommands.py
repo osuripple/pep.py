@@ -754,10 +754,10 @@ def report(fro, chan, message):
 		if msg != "":
 			token = glob.tokens.getTokenFromUsername(fro)
 			if token is not None:
-				if not token.irc:
-					token.enqueue(serverPackets.notification(msg))
-				else:
+				if token.irc:
 					chat.sendMessage("FokaBot", fro, msg)
+				else:
+					token.enqueue(serverPackets.notification(msg))
 	return False
 
 """
