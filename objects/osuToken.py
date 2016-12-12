@@ -513,7 +513,7 @@ class token:
 		"""
 		if len(self.messagesBuffer) > 9:
 			self.messagesBuffer = self.messagesBuffer[1:]
-		self.messagesBuffer.append("{time} - {user}@{channel}: {message}".format(time=time.strftime("%M:%S", time.localtime()), user=self.username, channel=chan, message=message[:50]))
+		self.messagesBuffer.append("{time} - {user}@{channel}: {message}".format(time=time.strftime("%H:%M", time.localtime()), user=self.username, channel=chan, message=message[:50]))
 
 	def getMessagesBufferString(self):
 		"""
