@@ -741,7 +741,7 @@ def report(fro, chan, message):
 		chat.sendMessage("FokaBot", "#admin", adminMsg)
 		log.warning(adminMsg, discord="cm")
 	except exceptions.invalidUserException:
-		msg = "You can't report. I won't forget what you've tried to do. Watch out."
+		msg = "Hello, FokaBot here! You can't report me. I won't forget what you've tried to do. Watch out."
 	except exceptions.invalidArgumentsException:
 		msg = "Invalid report command syntax. To report an user, click on it and select 'Report user'."
 	except exceptions.userNotFoundException:
@@ -752,7 +752,12 @@ def report(fro, chan, message):
 		raise
 	finally:
 		if msg != "":
-			chat.sendMessage("FokaBot", fro, msg)
+			token = glob.tokens.getTokenFromUsername(fro)
+			if token is not None:
+				if not token.irc:
+					token.enqueue(serverPackets.notification(msg))
+				else:
+					chat.sendMessage("FokaBot", fro, msg)
 	return False
 
 """
