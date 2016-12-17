@@ -1,4 +1,4 @@
-## pep.py
+## pep.py [![Code Health](https://landscape.io/github/osuripple/pep.py/master/landscape.svg?style=flat)](https://landscape.io/github/osuripple/pep.py/master)
 
 - Origin: https://git.zxq.co/ripple/pep.py
 - Mirror: https://github.com/osuripple/pep.py
