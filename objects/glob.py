@@ -11,7 +11,7 @@ from common.web import schiavo
 
 try:
 	with open("version") as f:
-		VERSION = f.read()
+		VERSION = f.read().strip()
 	if VERSION == "":
 		raise Exception
 except:
