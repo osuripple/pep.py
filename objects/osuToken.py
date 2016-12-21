@@ -243,11 +243,11 @@ class token:
 				chat.partChannel(token=hostToken, channel="#spect_{}".format(hostToken.userID), kick=True)
 				hostToken.leaveStream(streamName)
 
+			# Console output
+			log.info("{} is no longer spectating {}. Current spectators: {}".format(self.username, self.spectatingUserID, hostToken.spectators))
+
 		# Part #spectator channel
 		chat.partChannel(token=self, channel="#spect_{}".format(self.spectatingUserID), kick=True)
-
-		# Console output
-		log.info("{} is no longer spectating {}. Current spectators: {}".format(self.username, self.spectatingUserID, hostToken.spectators))
 
 		# Set our spectating user to 0
 		self.spectating = None
