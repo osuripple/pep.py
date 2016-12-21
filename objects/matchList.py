@@ -41,6 +41,8 @@ class matchList:
 
 		# Remove match object and stream
 		match = self.matches.pop(matchID)
+		glob.streams.dispose(match.streamName)
+		glob.streams.dispose(match.playingStreamName)
 		glob.streams.remove(match.streamName)
 		glob.streams.remove(match.playingStreamName)
 

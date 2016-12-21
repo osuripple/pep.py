@@ -81,3 +81,14 @@ class streamList:
 		if streamName not in self.streams:
 			return
 		self.streams[streamName].dispose(*args, **kwargs)
+
+	def getStream(self, streamName):
+		"""
+		Returns streamName's stream object or None if it doesn't exist
+
+		:param streamName:
+		:return:
+		"""
+		if streamName in self.streams:
+			return self.streams[streamName]
+		return None

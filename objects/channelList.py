@@ -2,6 +2,7 @@ from common.log import logUtils as log
 from constants import serverPackets
 from objects import channel
 from objects import glob
+from helpers import chatHelper as chat
 
 
 class channelList:
@@ -63,7 +64,12 @@ class channelList:
 		if name not in self.channels:
 			log.debug("{} is not in channels list".format(name))
 			return
-		glob.streams.broadcast("chat/{}".format(name), serverPackets.channelKicked(name))
+		#glob.streams.broadcast("chat/{}".format(name), serverPackets.channelKicked(name))
+		stream = glob.streams.getStream("chat/{}".format(name))
+		if stream is not None:
+			for token in stream.clients:
+				if token in glob.tokens.tokens:
+					chat.partChannel(channel=name, token=glob.tokens.tokens[token], kick=True)
 		glob.streams.dispose("chat/{}".format(name))
 		glob.streams.remove("chat/{}".format(name))
 		self.channels.pop(name)

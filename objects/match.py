@@ -355,6 +355,7 @@ class match:
 		glob.streams.broadcast(self.streamName, serverPackets.matchComplete())
 
 		# Destroy playing stream
+		glob.streams.dispose(self.playingStreamName)
 		glob.streams.remove(self.playingStreamName)
 
 		# Console output
