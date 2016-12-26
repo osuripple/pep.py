@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
 		# Discord
 		if generalUtils.stringToBool(glob.conf.config["discord"]["enable"]):
-			glob.schiavo = schiavo.schiavo(glob.conf.config["discord"]["boturl"])
+			glob.schiavo = schiavo.schiavo(glob.conf.config["discord"]["boturl"], "**pep.py**")
 		else:
 			consoleHelper.printColored("[!] Warning! Discord logging is disabled!", bcolors.YELLOW)
 
