@@ -1,6 +1,4 @@
-from common.constants import actions
 from common.log import logUtils as log
-from common.ripple import userUtils
 from constants import clientPackets
 from constants import serverPackets
 from objects import glob

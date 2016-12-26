@@ -1,5 +1,4 @@
 from constants import clientPackets
-from constants import serverPackets
 from objects import glob
 
 def handle(userToken, packetData):

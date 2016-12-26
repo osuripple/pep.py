@@ -1,7 +1,6 @@
 from objects import match
 from objects import glob
 from constants import serverPackets
-from common.log import logUtils as log
 
 class matchList:
 	def __init__(self):
@@ -40,11 +39,11 @@ class matchList:
 			return
 
 		# Remove match object and stream
-		match = self.matches.pop(matchID)
-		glob.streams.dispose(match.streamName)
-		glob.streams.dispose(match.playingStreamName)
-		glob.streams.remove(match.streamName)
-		glob.streams.remove(match.playingStreamName)
+		_match = self.matches.pop(matchID)
+		glob.streams.dispose(_match.streamName)
+		glob.streams.dispose(_match.playingStreamName)
+		glob.streams.remove(_match.streamName)
+		glob.streams.remove(_match.playingStreamName)
 
 		# Send match dispose packet to everyone in lobby
 		glob.streams.broadcast("lobby", serverPackets.disposeMatch(matchID))

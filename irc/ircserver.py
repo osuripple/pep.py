@@ -350,11 +350,11 @@ class Client:
 			self.sendMotd()
 			self.__handleCommand = self.mainHandler
 
-	def quitHandler(self, command, arguments):
+	def quitHandler(self, _, arguments):
 		"""QUIT command handler"""
 		self.disconnect(self.IRCUsername if len(arguments) < 1 else arguments[0])
 
-	def joinHandler(self, command, arguments):
+	def joinHandler(self, _, arguments):
 		"""JOIN command handler"""
 		if len(arguments) < 1:
 			self.reply461("JOIN")
@@ -421,7 +421,7 @@ class Client:
 				self.reply403(channel)
 				continue
 
-	def partHandler(self, command, arguments):
+	def partHandler(self, _, arguments):
 		"""PART command handler"""
 		if len(arguments) < 1:
 			self.reply461("PART")
@@ -505,7 +505,7 @@ class Client:
 		"""LUSERS command handler"""
 		self.sendLusers()
 
-	def pingHandler(self, command, arguments):
+	def pingHandler(self, _, arguments):
 		"""PING command handler"""
 		if len(arguments) < 1:
 			self.replyCode(409, "No origin specified")
@@ -516,7 +516,7 @@ class Client:
 		"""(fake) PONG command handler"""
 		pass
 
-	def awayHandler(self, command, arguments):
+	def awayHandler(self, _, arguments):
 		"""AWAY command handler"""
 		response = chat.IRCAway(self.banchoUsername, " ".join(arguments))
 		self.replyCode(response, "You are no longer marked as being away" if response == 305 else "You have been marked as being away")
@@ -621,12 +621,11 @@ class Server:
 					value.message(":{} PRIVMSG {} :{}".format(fro, to, message))
 
 
-	def removeClient(self, client, quitmsg):
+	def removeClient(self, client, _):
 		"""
 		Remove a client from connected clients
 
 		:param client: client object
-		:param quitmsg: QUIT argument, useless atm
 		:return:
 		"""
 		if client.socket in self.clients:
@@ -639,6 +638,7 @@ class Server:
 		:return:
 		"""
 		# Sentry
+		sentryClient = None
 		if glob.sentry:
 			sentryClient = raven.Client(glob.conf.config["sentry"]["ircdns"])
 
@@ -690,7 +690,7 @@ class Server:
 					lastAliveCheck = now
 			except:
 				log.error("[IRC] Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
-				if glob.sentry:
+				if glob.sentry and sentryClient is not None:
 					sentryClient.captureException()
 
 def main(port=6667):

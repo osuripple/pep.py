@@ -376,7 +376,7 @@ class match:
 		"""
 		Add someone to users in match
 
-		:param userID: user id of the user
+		:param user: user object of the user
 		:return: True if join success, False if fail (room is full)
 		"""
 		# Make sure we're not in this match
@@ -404,7 +404,7 @@ class match:
 		"""
 		Remove someone from users in match
 
-		:param userID: user if of the user
+		:param user: user object of the user
 		:return:
 		"""
 		# Make sure the user is in room

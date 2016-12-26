@@ -15,6 +15,7 @@ from objects import glob
 
 def handle(tornadoRequest):
 	# Data to return
+	responseToken = None
 	responseTokenString = "ayy"
 	responseData = bytes()
 
@@ -29,9 +30,6 @@ def handle(tornadoRequest):
 	# 2:-3 thing is because requestData has some escape stuff that we don't need
 	loginData = str(tornadoRequest.request.body)[2:-3].split("\\n")
 	try:
-		# If true, print error to console
-		err = False
-
 		# Make sure loginData is valid
 		if len(loginData) < 3:
 			raise exceptions.invalidArgumentsException()
@@ -220,25 +218,23 @@ def handle(tornadoRequest):
 	except exceptions.loginFailedException:
 		# Login failed error packet
 		# (we don't use enqueue because we don't have a token since login has failed)
-		err = True
 		responseData += serverPackets.loginFailed()
 	except exceptions.invalidArgumentsException:
 		# Invalid POST data
 		# (we don't use enqueue because we don't have a token since login has failed)
-		err = True
 		responseData += serverPackets.loginFailed()
 		responseData += serverPackets.notification("I see what you're doing...")
 	except exceptions.loginBannedException:
 		# Login banned error packet
-		err = True
 		responseData += serverPackets.loginBanned()
 	except exceptions.loginLockedException:
 		# Login banned error packet
-		err = True
 		responseData += serverPackets.loginLocked()
 	except exceptions.banchoMaintenanceException:
 		# Bancho is in maintenance mode
-		responseData = responseToken.queue
+		responseData = bytes()
+		if responseToken is not None:
+			responseData = responseToken.queue
 		responseData += serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later.")
 		responseData += serverPackets.loginFailed()
 	except exceptions.banchoRestartingException:
@@ -251,7 +247,6 @@ def handle(tornadoRequest):
 	except exceptions.haxException:
 		# Using oldoldold client, we don't have client data. Force update.
 		# (we don't use enqueue because we don't have a token since login has failed)
-		err = True
 		responseData += serverPackets.forceUpdate()
 		responseData += serverPackets.notification("Hory shitto, your client is TOO old! Nice prehistory! Please turn update it from the settings!")
 	except:

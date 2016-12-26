@@ -1,5 +1,4 @@
 from objects import glob
-from constants import slotStatuses
 from constants import serverPackets
 
 def handle(userToken, packetData):

@@ -127,7 +127,7 @@ def kick(fro, chan, message):
 		return "Nope."
 
 	# Get target token and make sure is connected
-	tokens = glob.tokens.getTokenFromUsername(target, all=True)
+	tokens = glob.tokens.getTokenFromUsername(target, _all=True)
 	if len(tokens) == 0:
 		return "{} is not online".format(target)
 

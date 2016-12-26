@@ -1,4 +1,3 @@
-from common import generalUtils
 from common.log import logUtils as log
 from constants import clientPackets
 from constants import exceptions

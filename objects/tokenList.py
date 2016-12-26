@@ -1,6 +1,8 @@
 import threading
 import time
 
+import redis
+
 from common.ripple import userUtils
 from common.log import logUtils as log
 from constants import serverPackets
@@ -17,6 +19,7 @@ class tokenList:
 		Add a token object to tokens list
 
 		:param userID: user id associated to that token
+		:param ip: ip address of the client
 		:param irc: if True, set this token as IRC client
 		:param timeOffset: the time offset from UTC for this user. Default: 0.
 		:param tournament: if True, flag this client as a tournement client. Default: True.
@@ -54,13 +57,13 @@ class tokenList:
 		# Get userID associated to that token
 		return self.tokens[token].userID
 
-	def getTokenFromUserID(self, userID, ignoreIRC=False, all=False):
+	def getTokenFromUserID(self, userID, ignoreIRC=False, _all=False):
 		"""
 		Get token from a user ID
 
 		:param userID: user ID to find
 		:param ignoreIRC: if True, consider bancho clients only and skip IRC clients
-		:param all: if True, return a list with all clients that match given username, otherwise return
+		:param _all: if True, return a list with all clients that match given username, otherwise return
 					only the first occurrence.
 		:return: False if not found, token object if found
 		"""
@@ -70,18 +73,18 @@ class tokenList:
 			if value.userID == userID:
 				if ignoreIRC and value.irc:
 					continue
-				if all:
+				if _all:
 					ret.append(value)
 				else:
 					return value
 
 		# Return full list or None if not found
-		if all:
+		if _all:
 			return ret
 		else:
 			return None
 
-	def getTokenFromUsername(self, username, ignoreIRC=False, safe=False, all=False):
+	def getTokenFromUsername(self, username, ignoreIRC=False, safe=False, _all=False):
 		"""
 		Get an osuToken object from an username
 
@@ -89,7 +92,7 @@ class tokenList:
 		:param ignoreIRC: if True, consider bancho clients only and skip IRC clients
 		:param safe: 	if True, username is a safe username,
 						compare it with token's safe username rather than normal username
-		:param all: if True, return a list with all clients that match given username, otherwise return
+		:param _all: if True, return a list with all clients that match given username, otherwise return
 					only the first occurrence.
 		:return: osuToken object or None
 		"""
@@ -102,13 +105,13 @@ class tokenList:
 			if (not safe and value.username.lower() == who) or (safe and value.safeUsername == who):
 				if ignoreIRC and value.irc:
 					continue
-				if all:
+				if _all:
 					ret.append(value)
 				else:
 					return value
 
 		# Return full list or None if not found
-		if all:
+		if _all:
 			return ret
 		else:
 			return None
@@ -215,7 +218,7 @@ class tokenList:
 		try:
 			# TODO: Make function or some redis meme
 			glob.redis.eval("return redis.call('del', unpack(redis.call('keys', ARGV[1])))", 0, "peppy:sessions:*")
-		except:
+		except redis.RedisError:
 			pass
 
 

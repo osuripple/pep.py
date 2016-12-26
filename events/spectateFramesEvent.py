@@ -1,6 +1,5 @@
 from objects import glob
 from constants import serverPackets
-from constants import exceptions
 
 def handle(userToken, packetData):
 	# get token data

@@ -136,7 +136,7 @@ cpdef bytes packData(__data, int dataType):
 
 	return data
 
-cpdef bytes buildPacket(int __packet, list __packetData = []):
+cpdef bytes buildPacket(int __packet, list __packetData = None):
 	"""
 	Builds a packet
 
@@ -144,6 +144,9 @@ cpdef bytes buildPacket(int __packet, list __packetData = []):
 	:param __packetData: packet structure [[data, dataType], [data, dataType], ...]
 	:return: packet bytes
 	"""
+	# Default argument
+	if __packetData is None:
+		__packetData = []
 	# Set some variables
 	cdef bytes packetData = bytes()
 	cdef int packetLength = 0
@@ -183,7 +186,7 @@ cpdef int readPacketLength(bytes stream):
 	return unpackData(stream[3:7], dataTypes.UINT32)
 
 
-cpdef readPacketData(bytes stream, list structure=[], bint hasFirstBytes = True):
+cpdef readPacketData(bytes stream, list structure=None, bint hasFirstBytes = True):
 	"""
 	Read packet data from `stream` according to `structure`
 	:param stream: packet bytes
@@ -192,6 +195,10 @@ cpdef readPacketData(bytes stream, list structure=[], bint hasFirstBytes = True)
 							if False, `stream` has only packet data. Default: True
 	:return: {name: unpackedValue, ...}
 	"""
+	# Default list argument
+	if structure is None:
+		structure = []
+
 	# Read packet ID (first 2 bytes)
 	cdef dict data = {}
 

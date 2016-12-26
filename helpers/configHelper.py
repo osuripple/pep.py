@@ -74,7 +74,7 @@ class config:
 			self.config.get("localize","enable")
 			self.config.get("localize","ipapiurl")
 			return True
-		except:
+		except configparser.Error:
 			return False
 
 	def generateDefaultConfig(self):

@@ -1,6 +1,6 @@
 from objects import glob
 
-def handle(userToken, packetData, has):
+def handle(userToken, _, has):
 	# Get usertoken data
 	userID = userToken.userID
 

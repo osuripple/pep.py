@@ -98,7 +98,7 @@ class token:
 		"""
 		Add bytes (packets) to queue
 
-		:param bytes: (packet) bytes to enqueue
+		:param bytes_: (packet) bytes to enqueue
 		"""
 
 		# Never enqueue for IRC clients or Foka
@@ -144,7 +144,8 @@ class token:
 		"""
 		Set client location
 
-		:param location: [latitude, longitude]
+		:param latitude: latitude
+		:param longitude: longitude
 		"""
 		self.location = (latitude, longitude)
 

@@ -142,7 +142,7 @@ if __name__ == "__main__":
 			consoleHelper.printNoNl("> Creating threads pool... ")
 			glob.pool = ThreadPool(int(glob.conf.config["server"]["threads"]))
 			consoleHelper.printDone()
-		except:
+		except ValueError:
 			consoleHelper.printError()
 			consoleHelper.printColored("[!] Error while creating threads pool. Please check your config.ini and run the server again", bcolors.RED)
 
@@ -248,9 +248,10 @@ if __name__ == "__main__":
 		glob.irc = generalUtils.stringToBool(glob.conf.config["irc"]["enable"])
 		if glob.irc:
 			# IRC port
+			ircPort = 0
 			try:
 				ircPort = int(glob.conf.config["irc"]["port"])
-			except:
+			except ValueError:
 				consoleHelper.printColored("[!] Invalid IRC port! Please check your config.ini and run the server again", bcolors.RED)
 			log.logMessage("**pep.py** IRC server started!", discord="bunker", of="info.txt", stdout=False)
 			consoleHelper.printColored("> IRC server listening on 127.0.0.1:{}...".format(ircPort), bcolors.GREEN)
@@ -259,9 +260,10 @@ if __name__ == "__main__":
 			consoleHelper.printColored("[!] Warning! IRC server is disabled!", bcolors.YELLOW)
 
 		# Server port
+		serverPort = 0
 		try:
 			serverPort = int(glob.conf.config["server"]["port"])
-		except:
+		except ValueError:
 			consoleHelper.printColored("[!] Invalid server port! Please check your config.ini and run the server again", bcolors.RED)
 
 		# Server start message and console output

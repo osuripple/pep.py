@@ -30,7 +30,7 @@ def getLocation(ip):
 	try:
 		# Try to get position from Pikolo Aul's Go-Sanic ip API
 		result = json.loads(urllib.request.urlopen("{}/{}".format(glob.conf.config["localize"]["ipapiurl"], ip), timeout=3).read().decode())["loc"].split(",")
-		return (float(result[0]), float(result[1]))
+		return float(result[0]), float(result[1])
 	except:
 		log.error("Error in get position")
-		return (0, 0)
+		return 0, 0
