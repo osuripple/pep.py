@@ -43,7 +43,7 @@ def scheduleShutdown(sendRestartTime, restart, message = "", delay=20):
 	:return:
 	"""
 	# Console output
-	log.info("Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+delay))
+	log.info("Pep.py will {} in {} seconds!".format("restart" if restart else "shutdown", sendRestartTime+delay), "bunker")
 	log.info("Sending server restart packets in {} seconds...".format(sendRestartTime))
 
 	# Send notification if set
