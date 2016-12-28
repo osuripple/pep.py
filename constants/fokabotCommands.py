@@ -386,7 +386,7 @@ def getPPMessage(userID, just_data = False):
 		currentAcc = token.tillerino[2]
 
 		# Send request to LETS api
-		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}".format(currentMap, currentMods, currentAcc), timeout=10).text
+		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}".format(currentMap, currentMods), timeout=10).text
 		data = json.loads(resp)
 
 		# Make sure status is in response data
