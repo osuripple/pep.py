@@ -1,5 +1,9 @@
 import json
 
+import tornado.web
+import tornado.gen
+
+from common.sentry import sentry
 from common.ripple import userUtils
 from common.web import requestsManager
 from constants import exceptions
@@ -7,6 +11,9 @@ from objects import glob
 
 
 class handler(requestsManager.asyncRequestHandler):
+	@tornado.web.asynchronous
+	@tornado.gen.engine
+	@sentry.captureTornado
 	def asyncGet(self):
 		statusCode = 400
 		data = {"message": "unknown error"}

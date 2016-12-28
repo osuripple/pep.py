@@ -56,13 +56,14 @@ from events import tournamentJoinMatchChannelEvent
 from events import tournamentLeaveMatchChannelEvent
 from helpers import packetHelper
 from objects import glob
+from common.sentry import sentry
 
 
 class handler(requestsManager.asyncRequestHandler):
 	@tornado.web.asynchronous
 	@tornado.gen.engine
+	@sentry.captureTornado
 	def asyncPost(self):
-		#try:
 		# Track time if needed
 		if glob.outputRequestTime:
 			# Start time
@@ -238,12 +239,6 @@ class handler(requestsManager.asyncRequestHandler):
 		self.add_header("Connection", "keep-alive")
 		self.add_header("Keep-Alive", "timeout=5, max=100")
 		self.add_header("Content-Type", "text/html; charset=UTF-8")
-		#except:
-		#	log.error("Unknown error!\n```\n{}\n{}```".format(sys.exc_info(), traceback.format_exc()))
-		#	if glob.sentry:
-		#		yield tornado.gen.Task(self.captureException, exc_info=True)
-		#finally:
-		#	self.finish()
 
 	@tornado.web.asynchronous
 	@tornado.gen.engine
