@@ -6,7 +6,7 @@ from objects import glob
 
 def handleUsernameChange(userID, newUsername, targetToken=None):
 	try:
-		userUtils.appendNotes(userID, "-- Username change: '{}' -> '{}'".format(userUtils.getUsername(userID), newUsername))
+		userUtils.appendNotes(userID, "Username change: '{}' -> '{}'".format(userUtils.getUsername(userID), newUsername))
 		userUtils.changeUsername(userID, newUsername=newUsername)
 		if targetToken is not None:
 			targetToken.kick("Your username has been changed to {}. Please log in again.".format(newUsername), "username_change")
