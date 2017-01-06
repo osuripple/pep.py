@@ -570,6 +570,10 @@ def tillerinoAcc(fro, chan, message):
 
 def tillerinoLast(fro, chan, message):
 	try:
+		# Run the command in PM only
+		if chan.startswith("#"):
+			return False
+
 		data = glob.db.fetch("""SELECT beatmaps.song_name as sn, scores.*,
 			beatmaps.beatmap_id as bid, beatmaps.difficulty_std, beatmaps.difficulty_taiko, beatmaps.difficulty_ctb, beatmaps.difficulty_mania, beatmaps.max_combo as fc
 		FROM scores
