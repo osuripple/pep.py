@@ -253,7 +253,7 @@ if __name__ == "__main__":
 				ircPort = int(glob.conf.config["irc"]["port"])
 			except ValueError:
 				consoleHelper.printColored("[!] Invalid IRC port! Please check your config.ini and run the server again", bcolors.RED)
-			log.logMessage("**pep.py** IRC server started!", discord="bunker", of="info.txt", stdout=False)
+			log.logMessage("IRC server started!", discord="bunker", of="info.txt", stdout=False)
 			consoleHelper.printColored("> IRC server listening on 127.0.0.1:{}...".format(ircPort), bcolors.GREEN)
 			threading.Thread(target=lambda: ircserver.main(port=ircPort)).start()
 		else:
@@ -267,7 +267,7 @@ if __name__ == "__main__":
 			consoleHelper.printColored("[!] Invalid server port! Please check your config.ini and run the server again", bcolors.RED)
 
 		# Server start message and console output
-		log.logMessage("**pep.py** Server started!", discord="bunker", of="info.txt", stdout=False)
+		log.logMessage("Server started!", discord="bunker", of="info.txt", stdout=False)
 		consoleHelper.printColored("> Tornado listening for HTTP(s) clients on 127.0.0.1:{}...".format(serverPort), bcolors.GREEN)
 
 		# Connect to pubsub channels
