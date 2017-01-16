@@ -17,6 +17,7 @@ from helpers import systemHelper
 from objects import fokabot
 from objects import glob
 from helpers import chatHelper as chat
+from common.web import cheesegull
 
 """
 Commands callbacks
@@ -396,7 +397,7 @@ def getPPMessage(userID, just_data = False):
 		# Make sure status is 200
 		if data["status"] != 200:
 			if "message" in data:
-				return "Error in LETS API call ({}). Please tell this to a dev.".format(data["message"])
+				return "Error in LETS API call ({}).".format(data["message"])
 			else:
 				raise exceptions.apiException
 
@@ -432,7 +433,7 @@ def getPPMessage(userID, just_data = False):
 		return "API Timeout. Please try again in a few seconds."
 	except exceptions.apiException:
 		# API error
-		return "Unknown error in LETS API call. Please tell this to a dev."
+		return "Unknown error in LETS API call."
 	#except:
 		# Unknown exception
 		# TODO: print exception
@@ -681,23 +682,12 @@ def updateBeatmap(fro, chan, message):
 		if token.tillerino[0] == 0:
 			return "Please give me a beatmap first with /np command."
 
-		# Send request
-		beatmapData = glob.db.fetch("SELECT beatmapset_id, song_name FROM beatmaps WHERE beatmap_id = %s LIMIT 1", [token.tillerino[0]])
-		if beatmapData is None:
-			return "Couldn't find beatmap data in database. Please load the beatmap's leaderboard and try again."
-
-		response = requests.post("{}/api/v1/update_beatmap".format(glob.conf.config["mirror"]["url"]), {
-			"beatmap_set_id": beatmapData["beatmapset_id"],
-			"beatmap_name": beatmapData["song_name"],
-			"username": token.username,
-			"key": glob.conf.config["mirror"]["apikey"]
-		})
-		if response.status_code == 200:
-			return "An update request for that beatmap has been queued. You'll receive a message once the beatmap has been updated on our mirror!"
-		elif response.status_code == 429:
-			return "You are sending too many beatmaps update requests. Wait a bit and retry later."
+		# Send the request to cheesegull
+		ok, message = cheesegull.updateBeatmap(token.tillerino[0])
+		if ok:
+			return "An update request for that beatmap has been queued. Check back in a few minutes and the beatmap should be updated!"
 		else:
-			return "Error in beatmap mirror API request. Tell this to a dev: {}".format(response.text)
+			return "Error in beatmap mirror API request: {}".format(message)
 	except:
 		return False
 

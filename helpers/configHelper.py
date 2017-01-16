@@ -48,8 +48,8 @@ class config:
 			self.config.get("server","gziplevel")
 			self.config.get("server","cikey")
 
-			self.config.get("mirror","url")
-			self.config.get("mirror","apikey")
+			self.config.get("cheesegull", "apiurl")
+			self.config.get("cheesegull", "apikey")
 
 			self.config.get("debug","enable")
 			self.config.get("debug","packets")
@@ -107,9 +107,9 @@ class config:
 		self.config.set("server", "gziplevel", "6")
 		self.config.set("server", "cikey", "changeme")
 
-		self.config.add_section("mirror")
-		self.config.set("mirror", "url", "http://storage.ripple.moe")
-		self.config.set("mirror", "apikey", "anotherkey")
+		self.config.add_section("cheesegull")
+		self.config.set("cheesegull", "apiurl", "http://cheesegu.ll/api")
+		self.config.set("cheesegull", "apikey", "")
 
 		self.config.add_section("debug")
 		self.config.set("debug", "enable", "0")
