@@ -30,7 +30,9 @@ class token:
 		self.username = userUtils.getUsername(self.userID)
 		self.safeUsername = userUtils.getSafeUsername(self.userID)
 		self.privileges = userUtils.getPrivileges(self.userID)
-		self.admin = userUtils.isInPrivilegeGroup(self.userID, "developer") or userUtils.isInPrivilegeGroup(self.userID, "community manager")
+		self.admin = userUtils.isInPrivilegeGroup(self.userID, "developer")\
+					 or userUtils.isInPrivilegeGroup(self.userID, "community manager")\
+					 or userUtils.isInPrivilegeGroup(self.userID, "chat mod")
 		self.irc = irc
 		self.kicked = False
 		self.restricted = userUtils.isRestricted(self.userID)
