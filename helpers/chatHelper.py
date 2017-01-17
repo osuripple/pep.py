@@ -254,7 +254,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 		# Send the message to IRC
 		if glob.irc == True and toIRC == True:
-			glob.ircServer.banchoMessage(fro, to, message)
+			glob.ircServer.banchoMessage(fro, to, message.encode("latin-1").decode("utf-8"))
 
 		# Spam protection (ignore FokaBot)
 		if token.userID > 999:
@@ -268,8 +268,8 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 		# File and discord logs (public chat only)
 		if to.startswith("#") and not (message.startswith("\x01ACTION is playing") and to.startswith("#spect_")):
-			log.chat("{fro} @ {to}: {message}".format(fro=token.username, to=to, message=str(message.encode("utf-8"))))
-			glob.schiavo.sendChatlog("**{fro} @ {to}:** {message}".format(fro=token.username, to=to, message=str(message.encode("utf-8"))[2:-1]))
+			log.chat("{fro} @ {to}: {message}".format(fro=token.username, to=to, message=message.encode("latin-1").decode("utf-8")))
+			glob.schiavo.sendChatlog("**{fro} @ {to}:** {message}".format(fro=token.username, to=to, message=message.encode("latin-1").decode("utf-8")))
 		return 0
 	except exceptions.userSilencedException:
 		token.enqueue(serverPackets.silenceEndTime(token.getSilenceSecondsLeft()))
