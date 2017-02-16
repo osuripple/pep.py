@@ -60,10 +60,10 @@ def faq(fro, chan, message):
 		return "Check the server status (here!)[https://ripple.moe/index.php?p=27]"
 	elif message[0] == "english":
 		return "Please keep this channel in english."
-    elif message[0] == "topic":
-      	return "Can you please drop the topic and talk about something else?"
-    elif message[0] == "lines":
-      	return "Please try to keep your sentences on a single line to avoid getting silenced."
+	elif message[0] == "topic":
+		return "Can you please drop the topic and talk about something else?"
+	elif message[0] == "lines":
+		return "Please try to keep your sentences on a single line to avoid getting silenced."
 	else:
 		return False
 
