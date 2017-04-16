@@ -183,8 +183,10 @@ def handle(tornadoRequest):
 		if glob.banchoConf.config["menuIcon"] != "":
 			responseToken.enqueue(serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
 
-		# Send online users IDs array
-		responseToken.enqueue(serverPackets.onlineUsers())
+		# Send online users' panels
+		for _, token in glob.tokens.tokens.items():
+			if not token.restricted:
+				responseToken.enqueue(serverPackets.userPanel(token.userID))
 
 		# Get location and country from ip.zxq.co or database
 		if glob.localize:
