@@ -40,7 +40,8 @@ class tokenList:
 		if token in self.tokens:
 			if self.tokens[token].ip != "":
 				userUtils.deleteBanchoSessions(self.tokens[token].userID, self.tokens[token].ip)
-			self.tokens.pop(token)
+			t = self.tokens.pop(token)
+			del t
 			glob.redis.decr("ripple:online_users")
 
 	def getUserIDFromToken(self, token):
@@ -189,6 +190,7 @@ class tokenList:
 			log.debug("{} timed out!!".format(self.tokens[i].username))
 			self.tokens[i].enqueue(serverPackets.notification("Your connection to the server timed out."))
 			logoutEvent.handle(self.tokens[i], None)
+		del timedOutTokens
 
 		# Schedule a new check (endless loop)
 		threading.Timer(checkTime, self.usersTimeoutCheckLoop, [timeoutTime, checkTime]).start()
