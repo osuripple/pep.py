@@ -202,7 +202,9 @@ def createMatch(matchID):
 
 	# Get match binary data and build packet
 	match = glob.matches.matches[matchID]
-	return packetHelper.buildPacket(packetIDs.server_newMatch, match.getMatchData())
+	matchData = match.getMatchData()
+	matchData.matchPassword = ""
+	return packetHelper.buildPacket(packetIDs.server_newMatch, matchData)
 
 # TODO: Add match object argument to save some CPU
 def updateMatch(matchID):
