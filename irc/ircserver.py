@@ -17,6 +17,7 @@ import traceback
 import raven
 
 from common.log import logUtils as log
+from common.ripple import userUtils
 from helpers import chatHelper as chat
 from objects import glob
 
@@ -44,6 +45,7 @@ class Client:
 		self.IRCUsername = ""
 		self.banchoUsername = ""
 		self.supposedUsername = ""
+        self.supposedUserID = 0
 		self.joinedChannels = []
 
 	def messageChannel(self, channel, command, message, includeSelf=False):
@@ -280,9 +282,10 @@ class Client:
 				m = hashlib.md5()
 				m.update(arguments[0].encode("utf-8"))
 				tokenHash = m.hexdigest()
-				supposedUsername = glob.db.fetch("SELECT users.username FROM users LEFT JOIN irc_tokens ON users.id = irc_tokens.userid WHERE irc_tokens.token = %s LIMIT 1", [tokenHash])
-				if supposedUsername:
-					self.supposedUsername = chat.fixUsernameForIRC(supposedUsername["username"])
+				supposedUser = glob.db.fetch("SELECT users.username, users.id FROM users LEFT JOIN irc_tokens ON users.id = irc_tokens.userid WHERE irc_tokens.token = %s LIMIT 1", [tokenHash])
+				if supposedUser:
+					self.supposedUsername = chat.fixUsernameForIRC(supposedUser["username"])
+					self.supposedUserID = supposedUser["id"]
 					self.__handleCommand = self.registerHandler
 				else:
 					# Wrong IRC Token
@@ -311,8 +314,7 @@ class Client:
 				return
 
 			# Make sure that the user is not banned/restricted:
-			privileges = glob.db.fetch("SELECT privileges FROM users WHERE username = %s LIMIT 1", [self.supposedUsername])["privileges"]
-			if privileges & 3 != 3:
+			if not userUtils.isAllowed(self.supposedUserID)
 				self.reply("465 :You're banned")
 				return
 
@@ -471,13 +473,6 @@ class Client:
 			return
 		recipientIRC = arguments[0]
 		message = arguments[1]
-
-		# Check if the user is silenced
-		# TODO: Maybe don't run a sql query every time
-		silence_end = glob.db.fetch("SELECT silence_end FROM users WHERE username = %s LIMIT 1", [self.supposedUsername])["silence_end"]
-		if silence_end - int(time.time()) > 0:
-			self.reply("404 : You can't send messages.")
-			return
 
 		# Send the message to bancho and reply
 		if not recipientIRC.startswith("#"):
