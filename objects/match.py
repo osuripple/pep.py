@@ -66,7 +66,7 @@ class match:
 		# Create #multiplayer channel
 		glob.channels.addTempChannel("#multi_{}".format(self.matchID))
 
-	def getMatchData(self):
+	def getMatchData(self, censored = False):
 		"""
 		Return binary match data structure for packetHelper
 
@@ -80,12 +80,18 @@ class match:
 			[int(safeMatch.inProgress), dataTypes.BYTE],
 			[0, dataTypes.BYTE],
 			[safeMatch.mods, dataTypes.UINT32],
-			[safeMatch.matchName, dataTypes.STRING],
-			[safeMatch.matchPassword, dataTypes.STRING],
+			[safeMatch.matchName, dataTypes.STRING]
+		]
+		if censored and safeMatch.matchPassword:
+			struct.append(["redacted", dataTypes.STRING])
+		else:
+			struct.append([safeMatch.matchPassword, dataTypes.STRING])
+
+		struct.extend([
 			[safeMatch.beatmapName, dataTypes.STRING],
 			[safeMatch.beatmapID, dataTypes.UINT32],
-			[safeMatch.beatmapMD5, dataTypes.STRING],
-		]
+			[safeMatch.beatmapMD5, dataTypes.STRING]
+		])
 
 		# Slots status IDs, always 16 elements
 		for i in range(0,16):
@@ -611,9 +617,11 @@ class match:
 		:return:
 		"""
 		self.matchDataCache = serverPackets.updateMatch(self.matchID)
+		censoredDataCache = serverPackets.updateMatch(self.matchID, censored=True)
 		if self.matchDataCache is not None:
 			glob.streams.broadcast(self.streamName, self.matchDataCache)
-			glob.streams.broadcast("lobby", self.matchDataCache)
+		if censoredDataCache is not None:
+			glob.streams.broadcast("lobby", censoredDataCache)
 		else:
 			log.error("MPROOM{}: Can't send match update packet, match data is None!!!".format(self.matchID))
 
