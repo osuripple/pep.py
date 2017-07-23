@@ -45,7 +45,7 @@ class Client:
 		self.IRCUsername = ""
 		self.banchoUsername = ""
 		self.supposedUsername = ""
-        self.supposedUserID = 0
+		self.supposedUserID = 0
 		self.joinedChannels = []
 
 	def messageChannel(self, channel, command, message, includeSelf=False):
