@@ -310,6 +310,12 @@ class Client:
 				self.reply("464 :Password incorrect")
 				return
 
+			# Make sure that the user is not banned/restricted:
+			privileges = glob.db.fetch("SELECT privileges FROM users WHERE username = %s LIMIT 1", [self.supposedUsername]
+			if privileges & 3 != 3:
+				self.reply("465 :You're banned")
+				return
+
 			# Make sure we are not connected to Bancho
 			token = glob.tokens.getTokenFromUsername(chat.fixUsernameForBancho(nick), True)
 			if token is not None:
@@ -465,6 +471,13 @@ class Client:
 			return
 		recipientIRC = arguments[0]
 		message = arguments[1]
+
+		# Check if the user is silenced
+		# TODO: Maybe don't run a sql query every time
+		silence_end = glob.db.fetch("SELECT silence_end FROM users WHERE username = %s LIMIT 1", [self.supposedUsername])
+		if silence_end - int(time.time()) > 0:
+			self.reply("404 : You can't send messages.")
+			return
 
 		# Send the message to bancho and reply
 		if not recipientIRC.startswith("#"):
