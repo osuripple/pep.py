@@ -84,9 +84,8 @@ def alert(fro, chan, message):
 	return False
 
 def alertUser(fro, chan, message):
-	target = message[0].replace("_", " ")
-
-	targetToken = glob.tokens.getTokenFromUsername(target)
+	target = message[0].lower()
+	targetToken = glob.tokens.getTokenFromUsername(target, safe=True)
 	if targetToken is not None:
 		targetToken.enqueue(serverPackets.notification(' '.join(message[1:])))
 		return False
@@ -127,12 +126,12 @@ def kickAll(fro, chan, message):
 
 def kick(fro, chan, message):
 	# Get parameters
-	target = message[0].lower().replace("_", " ")
+	target = message[0].lower()
 	if target == "fokabot":
 		return "Nope."
 
 	# Get target token and make sure is connected
-	tokens = glob.tokens.getTokenFromUsername(target, _all=True)
+	tokens = glob.tokens.getTokenFromUsername(target, safe=True, _all=True)
 	if len(tokens) == 0:
 		return "{} is not online".format(target)
 
@@ -155,13 +154,13 @@ def fokabotReconnect(fro, chan, message):
 def silence(fro, chan, message):
 	for i in message:
 		i = i.lower()
-	target = message[0].replace("_", " ")
+	target = message[0]
 	amount = message[1]
 	unit = message[2]
 	reason = ' '.join(message[3:])
 
 	# Get target user ID
-	targetUserID = userUtils.getID(target)
+	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 
 	# Make sure the user exists
@@ -201,10 +200,10 @@ def removeSilence(fro, chan, message):
 	# Get parameters
 	for i in message:
 		i = i.lower()
-	target = message[0].replace("_", " ")
+	target = message[0]
 
 	# Make sure the user exists
-	targetUserID = userUtils.getID(target)
+	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
@@ -224,10 +223,10 @@ def ban(fro, chan, message):
 	# Get parameters
 	for i in message:
 		i = i.lower()
-	target = message[0].replace("_", " ")
+	target = message[0]
 
 	# Make sure the user exists
-	targetUserID = userUtils.getID(target)
+	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
@@ -247,10 +246,10 @@ def unban(fro, chan, message):
 	# Get parameters
 	for i in message:
 		i = i.lower()
-	target = message[0].replace("_", " ")
+	target = message[0]
 
 	# Make sure the user exists
-	targetUserID = userUtils.getID(target)
+	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
@@ -265,10 +264,10 @@ def restrict(fro, chan, message):
 	# Get parameters
 	for i in message:
 		i = i.lower()
-	target = message[0].replace("_", " ")
+	target = message[0]
 
 	# Make sure the user exists
-	targetUserID = userUtils.getID(target)
+	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
@@ -288,10 +287,10 @@ def unrestrict(fro, chan, message):
 	# Get parameters
 	for i in message:
 		i = i.lower()
-	target = message[0].replace("_", " ")
+	target = message[0]
 
 	# Make sure the user exists
-	targetUserID = userUtils.getID(target)
+	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 	if not targetUserID:
 		return "{}: user not found".format(target)
