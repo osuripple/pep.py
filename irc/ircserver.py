@@ -311,7 +311,7 @@ class Client:
 				return
 
 			# Make sure that the user is not banned/restricted:
-			privileges = glob.db.fetch("SELECT privileges FROM users WHERE username = %s LIMIT 1", [self.supposedUsername]
+			privileges = glob.db.fetch("SELECT privileges FROM users WHERE username = %s LIMIT 1", [self.supposedUsername])
 			if privileges & 3 != 3:
 				self.reply("465 :You're banned")
 				return
