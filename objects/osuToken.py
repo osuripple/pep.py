@@ -103,27 +103,30 @@ class token:
 
 		:param bytes_: (packet) bytes to enqueue
 		"""
-		# Acquire the buffer lock
-		self.bufferLock.acquire()
+		try:
+			# Acquire the buffer lock
+			self.bufferLock.acquire()
 
-		# Never enqueue for IRC clients or Foka
-		if self.irc or self.userID < 999:
-			return
+			# Never enqueue for IRC clients or Foka
+			if self.irc or self.userID < 999:
+				return
 
-		# Avoid memory leaks
-		if len(bytes_) < 10 * 10 ** 6:
-			self.queue += bytes_
-		else:
-			log.warning("{}'s packets buffer is above 10M!! Lost some data!".format(self.username))
-
-		# Release the buffer lock
-		self.bufferLock.release()
+			# Avoid memory leaks
+			if len(bytes_) < 10 * 10 ** 6:
+				self.queue += bytes_
+			else:
+				log.warning("{}'s packets buffer is above 10M!! Lost some data!".format(self.username))
+		finally:
+			# Release the buffer lock
+			self.bufferLock.release()
 
 	def resetQueue(self):
 		"""Resets the queue. Call when enqueued packets have been sent"""
-		self.bufferLock.acquire()
-		self.queue = bytes()
-		self.bufferLock.release()
+		try:
+			self.bufferLock.acquire()
+			self.queue = bytes()
+		finally:
+			self.bufferLock.release()
 
 	def joinChannel(self, channelObject):
 		"""
