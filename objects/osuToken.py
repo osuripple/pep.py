@@ -39,7 +39,8 @@ class token:
 		self.loginTime = int(time.time())
 		self.pingTime = self.loginTime
 		self.timeOffset = timeOffset
-		self.lock = threading.Lock()	# Sync primitive
+		self.lock = threading.Lock()
+		self.bufferLock = threading.Lock()
 		self.streams = []
 		self.tournament = tournament
 		self.messagesBuffer = []
@@ -102,6 +103,8 @@ class token:
 
 		:param bytes_: (packet) bytes to enqueue
 		"""
+		# Acquire the buffer lock
+		self.bufferLock.acquire()
 
 		# Never enqueue for IRC clients or Foka
 		if self.irc or self.userID < 999:
@@ -113,9 +116,14 @@ class token:
 		else:
 			log.warning("{}'s packets buffer is above 10M!! Lost some data!".format(self.username))
 
+		# Release the buffer lock
+		self.bufferLock.release()
+
 	def resetQueue(self):
 		"""Resets the queue. Call when enqueued packets have been sent"""
+		self.bufferLock.acquire()
 		self.queue = bytes()
+		self.bufferLock.release()
 
 	def joinChannel(self, channelObject):
 		"""
