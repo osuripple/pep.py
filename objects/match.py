@@ -1,4 +1,5 @@
 import copy
+import json
 from common.log import logUtils as log
 from constants import dataTypes
 from constants import matchModModes
@@ -21,6 +22,7 @@ class slot:
 		self.loaded = False
 		self.skip = False
 		self.complete = False
+		self.score = 0
 
 class match:
 	def __init__(self, matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID):
@@ -311,6 +313,16 @@ class match:
 		glob.streams.broadcast(self.playingStreamName, serverPackets.allPlayersSkipped())
 		log.info("MPROOM{}: All players have skipped!".format(self.matchID))
 
+	def updateScore(self, slotID, score):
+		"""
+		Update score for a slot
+
+		:param slotID: the slot that the user that is updating their score is in
+		:param score: the new score to update
+		:return:
+		"""
+		self.slots[slotID].score = score
+
 	def playerCompleted(self, userID):
 		"""
 		Set userID's slot completed to True
@@ -343,6 +355,27 @@ class match:
 
 		:return:
 		"""
+		# Collect some info about the match that just ended to send to the api
+		infoToSend = {
+			"id": self.matchID,
+			"name": self.matchName,
+			"beatmap_id": self.beatmapID,
+			"mods": self.mods,
+			"game_mode": self.gameMode,
+			"scores": {}
+		}
+
+		# Add score info for each player
+		for i in range(0,16):
+			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
+				infoToSend["scores"][glob.tokens.tokens[self.slots[i].user].userID] = {
+					"score": self.slots[i].score,
+					"mods": self.slots[i].mods
+				}
+
+		# Send the info to the api
+		glob.redis.publish("api:mp_complete_match", json.dumps(infoToSend))
+
 		# Reset inProgress
 		self.inProgress = False
 
@@ -353,6 +386,7 @@ class match:
 				self.slots[i].loaded = False
 				self.slots[i].skip = False
 				self.slots[i].complete = False
+				self.slots[i].score = 0
 
 		# Send match update
 		self.sendUpdates()

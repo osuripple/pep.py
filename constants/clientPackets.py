@@ -143,6 +143,26 @@ def transferHost(stream):
 def matchInvite(stream):
 	return packetHelper.readPacketData(stream, [["userID", dataTypes.UINT32]])
 
+def matchFrames(stream):
+	return packetHelper.readPacketData(stream,
+	[
+		["time", dataTypes.SINT32],
+		["id", dataTypes.BYTE],
+		["count300", dataTypes.UINT16],
+		["count100", dataTypes.UINT16],
+		["count50", dataTypes.UINT16],
+		["countGeki", dataTypes.UINT16],
+		["countKatu", dataTypes.UINT16],
+		["countMiss", dataTypes.UINT16],
+		["totalScore", dataTypes.SINT32],
+		["maxCombo", dataTypes.UINT16],
+		["currentCombo", dataTypes.UINT16],
+		["perfect", dataTypes.BYTE],
+		["currentHp", dataTypes.BYTE],
+		["tagByte", dataTypes.BYTE],
+		["usingScoreV2", dataTypes.BYTE]
+	])
+
 def tournamentMatchInfoRequest(stream):
 	return packetHelper.readPacketData(stream, [["matchID", dataTypes.UINT32]])
 

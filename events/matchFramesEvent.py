@@ -1,5 +1,5 @@
 from objects import glob
-from constants import serverPackets
+from constants import serverPackets, clientPackets
 
 def handle(userToken, packetData):
 	# Get usertoken data
@@ -21,6 +21,12 @@ def handle(userToken, packetData):
 
 	# Change slot id in packetData
 	slotID = match.getUserSlotID(userID)
+
+	# Parse the data
+	data = clientPackets.matchFrames(packetData)
+
+	# Update the score
+	match.updateScore(slotID, data["totalScore"])
 
 	# Enqueue frames to who's playing
 	glob.streams.broadcast(match.playingStreamName, serverPackets.matchFrames(slotID, packetData))
