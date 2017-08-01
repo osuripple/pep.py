@@ -56,6 +56,7 @@ class match:
 		self.seed = 0
 		self.matchDataCache = bytes()
 		self.isTourney = isTourney
+		self.isLocked = False 	# if True, users can't change slots/teams. Used in tourney matches
 
 		# Create all slots and reset them
 		self.slots = []
@@ -487,6 +488,10 @@ class match:
 		:param newSlotID: slot id of new slot
 		:return:
 		"""
+		# Make sure the match is not locked
+		if self.isLocked:
+			return
+
 		# Make sure the user is in room
 		oldSlotID = self.getUserSlotID(userID)
 		if oldSlotID is None:
@@ -637,6 +642,10 @@ class match:
 		:param userID: id of user
 		:return:
 		"""
+		# Make sure the match is not locked
+		if self.isLocked:
+			return
+
 		# Make sure the user is in room
 		slotID = self.getUserSlotID(userID)
 		if slotID is None:

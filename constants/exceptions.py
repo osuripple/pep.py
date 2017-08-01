@@ -102,3 +102,6 @@ class missingReportInfoException(Exception):
 
 class invalidUserException(Exception):
 	pass
+
+class wrongChannelException(Exception):
+	pass

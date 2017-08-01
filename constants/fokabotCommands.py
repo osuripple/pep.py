@@ -758,6 +758,17 @@ def report(fro, chan, message):
 	return False
 
 def multiplayer(fro, chan, message):
+	def getMatchIDFromChannel(chan):
+		if not chan.lower().startswith("#multi_"):
+			raise exceptions.wrongChannelException()
+		parts = chan.lower().split("_")
+		if len(parts) < 2 or not parts[1].isdigit():
+			raise exceptions.wrongChannelException()
+		matchID = int(parts[1])
+		if matchID not in glob.matches.matches:
+			raise exceptions.matchNotFoundException()
+		return matchID
+
 	def mpMake():
 		if len(message) < 2:
 			raise exceptions.invalidArgumentsException("Wrong syntax: !mp make <name>")
@@ -779,11 +790,23 @@ def multiplayer(fro, chan, message):
 		glob.matches.disposeMatch(myToken.matchID)
 		return "Multiplayer match #{} disposed successfully".format(myToken.matchID)
 
+	def mpLock():
+		matchID = getMatchIDFromChannel(chan)
+		glob.matches.matches[matchID].isLocked = True
+		return "This match has been locked"
+
+	def mpUnlock():
+		matchID = getMatchIDFromChannel(chan)
+		glob.matches.matches[matchID].isLocked = False
+		return "This match has been unlocked"
+
 	try:
 		subcommands = {
 			"make": mpMake,
 			"clear": mpClose,
-			"join": mpJoin
+			"join": mpJoin,
+			"lock": mpLock,
+			"unlock": mpUnlock
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
@@ -791,6 +814,10 @@ def multiplayer(fro, chan, message):
 		return subcommands[requestedSubcommand]()
 	except exceptions.invalidArgumentsException as e:
 		return str(e)
+	except exceptions.wrongChannelException:
+		return "This command only works in multiplayer chat channels"
+	except exceptions.matchNotFoundException:
+		return "Match not found"
 	except:
 		raise
 
