@@ -30,8 +30,5 @@ def handle(userToken, packetData):
 		match.setHost(userID)
 		match.sendUpdates()
 		match.changePassword(packetData["matchPassword"])
-
-		# Console output
-		log.info("MPROOM{}: Room created!".format(matchID))
 	except exceptions.matchCreateError:
 		log.error("Error while creating match!")

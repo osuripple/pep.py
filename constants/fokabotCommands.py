@@ -759,7 +759,18 @@ def report(fro, chan, message):
 
 def multiplayer(fro, chan, message):
 	def mpMake():
-		return "Not implemented yet."
+		if len(message) < 2:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp make <name>")
+		matchID = glob.matches.createMatch(" ".join(message[1:]), generalUtils.stringMd5(generalUtils.randomString(32)), 0, "Tournament", "", 0, -1, isTourney=True)
+		return "Tourney match #{} created!".format(matchID)
+
+	def mpJoin():
+		if len(message) < 2 or not message[1].isdigit():
+			return exceptions.invalidArgumentsException("Wrong syntax: !mp join <id>")
+		matchID = int(message[1])
+		userToken = glob.tokens.getTokenFromUsername(fro, ignoreIRC=True)
+		userToken.joinMatch(matchID)
+		return "Joined match #{}!".format(matchID)
 
 	def mpClose():
 		myToken = glob.tokens.getTokenFromUsername(fro)
@@ -771,7 +782,8 @@ def multiplayer(fro, chan, message):
 	try:
 		subcommands = {
 			"make": mpMake,
-			"clear": mpClose
+			"clear": mpClose,
+			"join": mpJoin
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:

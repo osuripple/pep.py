@@ -25,7 +25,7 @@ class slot:
 		self.score = 0
 
 class match:
-	def __init__(self, matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID):
+	def __init__(self, matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID, isTourney=False):
 		"""
 		Create a new match object
 
@@ -55,6 +55,7 @@ class match:
 		self.matchModMode = matchModModes.NORMAL			# default value
 		self.seed = 0
 		self.matchDataCache = bytes()
+		self.isTourney = isTourney
 
 		# Create all slots and reset them
 		self.slots = []
@@ -67,6 +68,7 @@ class match:
 
 		# Create #multiplayer channel
 		glob.channels.addTempChannel("#multi_{}".format(self.matchID))
+		log.info("MPROOM{}: {} match created!".format(self.matchID, "Tourney" if self.isTourney else "Normal"))
 
 	def getMatchData(self, censored = False):
 		"""
@@ -457,7 +459,7 @@ class match:
 		self.setSlot(slotID, slotStatuses.FREE, 0, None, 0)
 
 		# Check if everyone left
-		if self.countUsers() == 0 and disposeMatch:
+		if self.countUsers() == 0 and disposeMatch and not self.isTourney:
 			# Dispose match
 			glob.matches.disposeMatch(self.matchID)
 			log.info("MPROOM{}: Room disposed because all users left".format(self.matchID))
