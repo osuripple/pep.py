@@ -308,6 +308,10 @@ class token:
 		chat.joinChannel(token=self, channel="#multi_{}".format(self.matchID))
 		self.enqueue(serverPackets.matchJoinSuccess(matchID))
 
+		# Alert the user if we have just joined a tourney match
+		if match.isTourney:
+			self.enqueue(serverPackets.notification("You are now in a tournament match."))
+
 	def leaveMatch(self):
 		"""
 		Leave joined match, match stream and match channel
