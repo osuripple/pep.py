@@ -440,11 +440,12 @@ class match:
 
 		return False
 
-	def userLeft(self, user):
+	def userLeft(self, user, disposeMatch=True):
 		"""
 		Remove someone from users in match
 
 		:param user: user object of the user
+		:param disposeMatch: if `True`, will try to dispose match if there are no users in the room
 		:return:
 		"""
 		# Make sure the user is in room
@@ -456,10 +457,10 @@ class match:
 		self.setSlot(slotID, slotStatuses.FREE, 0, None, 0)
 
 		# Check if everyone left
-		if self.countUsers() == 0:
+		if self.countUsers() == 0 and disposeMatch:
 			# Dispose match
 			glob.matches.disposeMatch(self.matchID)
-			log.info("MPROOM{}: Room disposed".format(self.matchID))
+			log.info("MPROOM{}: Room disposed because all users left".format(self.matchID))
 			return
 
 		# Check if host left

@@ -1,6 +1,7 @@
 from objects import match
 from objects import glob
 from constants import serverPackets
+from common.log import logUtils as log
 
 class matchList:
 	def __init__(self):
@@ -38,8 +39,18 @@ class matchList:
 		if matchID not in self.matches:
 			return
 
-		# Remove match object and stream
-		_match = self.matches.pop(matchID)
+		# Get match and disconnect all players
+		_match = self.matches[matchID]
+		for slot in _match.slots:
+			_token = glob.tokens.getTokenFromUserID(slot.userID, ignoreIRC=True)
+			if _token is None:
+				continue
+			_match.userLeft(_token, disposeMatch=False)	# don't dispose the match twice when we remove all players
+
+		# Send matchDisposed packet before disposing streams
+		glob.streams.broadcast(_match.streamName, serverPackets.disposeMatch(_match.matchID))
+
+		# Dispose all streams
 		glob.streams.dispose(_match.streamName)
 		glob.streams.dispose(_match.playingStreamName)
 		glob.streams.remove(_match.streamName)
@@ -47,3 +58,5 @@ class matchList:
 
 		# Send match dispose packet to everyone in lobby
 		glob.streams.broadcast("lobby", serverPackets.disposeMatch(matchID))
+		del self.matches[matchID]
+		log.info("MPROOM{}: Room disposed manually".format(_match.matchID))

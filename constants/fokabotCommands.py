@@ -757,6 +757,32 @@ def report(fro, chan, message):
 					token.enqueue(serverPackets.notification(msg))
 	return False
 
+def multiplayer(fro, chan, message):
+	def mpMake():
+		return "Not implemented yet."
+
+	def mpClose():
+		myToken = glob.tokens.getTokenFromUsername(fro)
+		if myToken.matchID == -1:
+			return "You're not in a multiplayer match"
+		glob.matches.disposeMatch(myToken.matchID)
+		return "Multiplayer match #{} disposed successfully".format(myToken.matchID)
+
+	try:
+		subcommands = {
+			"make": mpMake,
+			"clear": mpClose
+		}
+		requestedSubcommand = message[0].lower().strip()
+		if requestedSubcommand not in subcommands:
+			raise exceptions.invalidArgumentsException("Invalid subcommand")
+		return subcommands[requestedSubcommand]()
+	except exceptions.invalidArgumentsException as e:
+		return str(e)
+	except:
+		raise
+
+
 """
 Commands list
 
@@ -891,6 +917,11 @@ commands = [
 	}, {
 		"trigger": "!update",
 		"callback": updateBeatmap
+	}, {
+		"trigger": "!mp",
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,	# TODO: replace with admin tournament privilege
+		"syntax": "<subcommand>",
+		"callback": multiplayer
 	}
 	#
 	#	"trigger": "!acc",

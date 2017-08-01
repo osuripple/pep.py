@@ -323,18 +323,19 @@ class token:
 		self.leaveStream("multi/{}".format(self.matchID))
 		self.leaveStream("multi/{}/playing".format(self.matchID))	# optional
 
+		# Set usertoken match to -1
+		leavingMatchID = self.matchID
+		self.matchID = -1
+
 		# Make sure the match exists
-		if self.matchID not in glob.matches.matches:
+		if leavingMatchID not in glob.matches.matches:
 			return
 
 		# The match exists, get object
-		match = glob.matches.matches[self.matchID]
+		match = glob.matches.matches[leavingMatchID]
 
 		# Set slot to free
 		match.userLeft(self)
-
-		# Set usertoken match to -1
-		self.matchID = -1
 
 	def kick(self, message="You have been kicked from the server. Please login again.", reason="kick"):
 		"""

@@ -41,7 +41,7 @@ def fokabotResponse(fro, chan, message):
 	"""
 	for i in fokabotCommands.commands:
 		# Loop though all commands
-		if generalUtils.strContains(message, i["trigger"]):
+		if message.strip().startswith(i["trigger"]):
 			# message has triggered a command
 
 			# Make sure the user has right permissions
