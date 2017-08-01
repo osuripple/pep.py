@@ -821,6 +821,27 @@ def multiplayer(fro, chan, message):
 	except:
 		raise
 
+def switchServer(fro, chan, message):
+	# Get target user ID
+	target = message[0]
+	newServer = message[1]
+	targetUserID = userUtils.getIDSafe(target)
+	userID = userUtils.getID(fro)
+
+	# Make sure the user exists
+	if not targetUserID:
+		return "{}: user not found".format(target)
+
+	# Connect the user to the end server
+	userToken = glob.tokens.getTokenFromUserID(userID, ignoreIRC=True, _all=False)
+	userToken.enqueue(serverPackets.switchServer(newServer))
+
+	# Disconnect the user from the origin server
+	# userToken.kick()
+	return "{} has been connected to {}".format(target, newServer)
+
+
+
 
 """
 Commands list
@@ -961,6 +982,11 @@ commands = [
 		"privileges": privileges.ADMIN_MANAGE_SERVERS,	# TODO: replace with admin tournament privilege
 		"syntax": "<subcommand>",
 		"callback": multiplayer
+	}, {
+		"trigger": "!switchserver",
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
+		"syntax": "<username> <server_address>",
+		"callback": switchServer
 	}
 	#
 	#	"trigger": "!acc",

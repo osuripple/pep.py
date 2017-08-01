@@ -264,6 +264,8 @@ def playerFailed(slotID):
 def matchTransferHost():
 	return packetHelper.buildPacket(packetIDs.server_matchTransferHost)
 
+def switchServer(address):
+	return packetHelper.buildPacket(packetIDs.server_switchServer, [[address, dataTypes.STRING]])
 
 """ Other packets """
 def notification(message):

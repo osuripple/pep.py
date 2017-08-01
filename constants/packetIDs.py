@@ -78,5 +78,6 @@ server_userSilenced = 94
 server_userPresenceBundle = 96
 client_userPanelRequest = 97
 client_tournamentMatchInfoRequest = 93
+server_switchServer = 107
 client_tournamentJoinMatchChannel = 108
 client_tournamentLeaveMatchChannel = 109
