@@ -140,12 +140,22 @@ class match:
 		"""
 		slotID = self.getUserSlotID(newHost)
 		if slotID is None or self.slots[slotID].user not in glob.tokens.tokens:
-			return
+			return False
 		token = glob.tokens.tokens[self.slots[slotID].user]
 		self.hostUserID = newHost
 		token.enqueue(serverPackets.matchTransferHost())
 		self.sendUpdates()
 		log.info("MPROOM{}: {} is now the host".format(self.matchID, token.username))
+		return True
+
+	def removeHost(self):
+		"""
+		Removes the host (for tourney matches)
+		:return:
+		"""
+		self.hostUserID = -1
+		self.sendUpdates()
+		log.info("MPROOM{}: Removed host".format(self.matchID))
 
 	def setSlot(self, slotID, status = None, team = None, user = "", mods = None, loaded = None, skip = None, complete = None):
 		"""
@@ -490,16 +500,16 @@ class match:
 		"""
 		# Make sure the match is not locked
 		if self.isLocked:
-			return
+			return False
 
 		# Make sure the user is in room
 		oldSlotID = self.getUserSlotID(userID)
 		if oldSlotID is None:
-			return
+			return False
 
 		# Make sure there is no one inside new slot
 		if self.slots[newSlotID].user is not None or self.slots[newSlotID].status != slotStatuses.FREE:
-			return
+			return False
 
 		# Get old slot data
 		#oldData = dill.copy(self.slots[oldSlotID])
@@ -516,6 +526,7 @@ class match:
 
 		# Console output
 		log.info("MPROOM{}: {} moved to slot {}".format(self.matchID, userID, newSlotID))
+		return True
 
 	def changePassword(self, newPassword):
 		"""
@@ -581,7 +592,7 @@ class match:
 		self.setHost(glob.tokens.tokens[self.slots[slotID].user].userID)
 
 		# Send updates
-		self.sendUpdates()
+		# self.sendUpdates()
 
 	def playerFailed(self, userID):
 		"""

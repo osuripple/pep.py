@@ -819,9 +819,30 @@ def multiplayer(fro, chan, message):
 		username = message[1]
 		newSlotID = int(message[2])
 		userID = userUtils.getIDSafe(username)
+		if userID is None:
+			raise exceptions.userNotFoundException("No such user")
 		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
-		_match.userChangeSlot(userID, newSlotID)
-		return "Player {} moved to slot {}".format(username, newSlotID)
+		success = _match.userChangeSlot(userID, newSlotID)
+		if success:
+			result = "Player {} moved to slot {}".format(username, newSlotID)
+		else:
+			result = "You can't use that slot: it's either already occupied by someone else or locked"
+		return result
+
+	def mpHost():
+		if len(message) < 2:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp host <username>")
+		username = message[1]
+		userID = userUtils.getIDSafe(username)
+		if userID is None:
+			raise exceptions.userNotFoundException("No such user")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		success = _match.setHost(userID)
+		return "{} is now the host".format(username) if success else "Couldn't give host to {}".format(username)
+
+	def mpClearHost():
+		matchID = getMatchIDFromChannel(chan)
+		glob.matches.matches[matchID].removeHost()
 
 	try:
 		subcommands = {
@@ -832,6 +853,8 @@ def multiplayer(fro, chan, message):
 			"unlock": mpUnlock,
 			"size": mpSize,
 			"move": mpMove,
+			"host": mpHost,
+			"clearhost": mpClearHost,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
