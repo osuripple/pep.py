@@ -801,8 +801,8 @@ def multiplayer(fro, chan, message):
 		return "This match has been unlocked"
 
 	def mpSize():
-		if len(message) < 2 or not message[1].isdigit() or int(message[1]) < 1 or int(message[1]) > 16:
-			raise exceptions.invalidArgumentsException("Wrong syntax: !mp size <slots(1-16)>")
+		if len(message) < 2 or not message[1].isdigit() or int(message[1]) < 2 or int(message[1]) > 16:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp size <slots(2-16)>")
 		matchSize = int(message[1])
 		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
 		for i in range(0, matchSize):
