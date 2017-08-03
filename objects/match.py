@@ -215,7 +215,7 @@ class match:
 		self.sendUpdates()
 		log.info("MPROOM{}: Slot{} changed ready status to {}".format(self.matchID, slotID, self.slots[slotID].status))
 
-	def toggleSlotLock(self, slotID):
+	def toggleSlotLocked(self, slotID):
 		"""
 		Lock a slot
 		Same as calling setSlot and then sendUpdate

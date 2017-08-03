@@ -24,4 +24,4 @@ def handle(userToken, packetData):
 		return
 
 	# Lock/Unlock slot
-	match.toggleSlotLock(packetData["slotID"])
+	match.toggleSlotLocked(packetData["slotID"])

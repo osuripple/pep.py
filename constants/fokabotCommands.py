@@ -9,7 +9,7 @@ from common import generalUtils
 from common.constants import mods
 from common.log import logUtils as log
 from common.ripple import userUtils
-from constants import exceptions
+from constants import exceptions, slotStatuses
 from common.constants import gameModes
 from common.constants import privileges
 from constants import serverPackets
@@ -777,7 +777,7 @@ def multiplayer(fro, chan, message):
 
 	def mpJoin():
 		if len(message) < 2 or not message[1].isdigit():
-			return exceptions.invalidArgumentsException("Wrong syntax: !mp join <id>")
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp join <id>")
 		matchID = int(message[1])
 		userToken = glob.tokens.getTokenFromUsername(fro, ignoreIRC=True)
 		userToken.joinMatch(matchID)
@@ -800,13 +800,27 @@ def multiplayer(fro, chan, message):
 		glob.matches.matches[matchID].isLocked = False
 		return "This match has been unlocked"
 
+	def mpSize():
+		if len(message) < 2 or not message[1].isdigit() or int(message[1]) < 1 or int(message[1]) > 16:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp size <slots(1-16)>")
+		matchSize = int(message[1])
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		for i in range(0, matchSize):
+			if _match.slots[i].status == slotStatuses.LOCKED:
+				_match.toggleSlotLocked(i)
+		for i in range(matchSize, 16):
+			if _match.slots[i].status != slotStatuses.LOCKED:
+				_match.toggleSlotLocked(i)
+		return "Match size changed to {}".format(matchSize)
+
 	try:
 		subcommands = {
 			"make": mpMake,
 			"clear": mpClose,
 			"join": mpJoin,
 			"lock": mpLock,
-			"unlock": mpUnlock
+			"unlock": mpUnlock,
+			"size": mpSize,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
