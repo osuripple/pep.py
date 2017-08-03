@@ -826,7 +826,7 @@ def multiplayer(fro, chan, message):
 	try:
 		subcommands = {
 			"make": mpMake,
-			"clear": mpClose,
+			"close": mpClose,
 			"join": mpJoin,
 			"lock": mpLock,
 			"unlock": mpUnlock,
