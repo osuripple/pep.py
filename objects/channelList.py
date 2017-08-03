@@ -53,6 +53,20 @@ class channelList:
 		self.channels[name] = channel.channel(name, "Chat", True, True, True, True)
 		log.info("Created temp channel {}".format(name))
 
+	def addHiddenChannel(self, name):
+		"""
+		Add a hidden channel. It's like a normal channel and must be deleted manually,
+		but it's not shown in channels list.
+
+		:param name: channel name
+		:return: True if the channel was created, otherwise False
+		"""
+		if name in self.channels:
+			return False
+		glob.streams.add("chat/{}".format(name))
+		self.channels[name] = channel.channel(name, "Chat", True, True, False, True)
+		log.info("Created hidden channel {}".format(name))
+
 	def removeChannel(self, name):
 		"""
 		Removes a channel from channels list

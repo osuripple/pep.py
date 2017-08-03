@@ -68,7 +68,7 @@ class match:
 		glob.streams.add(self.playingStreamName)
 
 		# Create #multiplayer channel
-		glob.channels.addTempChannel("#multi_{}".format(self.matchID))
+		glob.channels.addHiddenChannel("#multi_{}".format(self.matchID))
 		log.info("MPROOM{}: {} match created!".format(self.matchID, "Tourney" if self.isTourney else "Normal"))
 
 	def getMatchData(self, censored = False):

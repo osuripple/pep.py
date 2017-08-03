@@ -47,6 +47,9 @@ class matchList:
 				continue
 			_match.userLeft(_token, disposeMatch=False)	# don't dispose the match twice when we remove all players
 
+		# Delete chat channel
+		glob.channels.removeChannel("#multi_{}".format(_match.matchID))
+
 		# Send matchDisposed packet before disposing streams
 		glob.streams.broadcast(_match.streamName, serverPackets.disposeMatch(_match.matchID))
 
