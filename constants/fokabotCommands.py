@@ -781,7 +781,7 @@ def multiplayer(fro, chan, message):
 		matchID = int(message[1])
 		userToken = glob.tokens.getTokenFromUsername(fro, ignoreIRC=True)
 		userToken.joinMatch(matchID)
-		return "Joined match #{}!".format(matchID)
+		return "Attempting to join match #{}!".format(matchID)
 
 	def mpClose():
 		myToken = glob.tokens.getTokenFromUsername(fro)
@@ -813,6 +813,16 @@ def multiplayer(fro, chan, message):
 				_match.toggleSlotLocked(i)
 		return "Match size changed to {}".format(matchSize)
 
+	def mpMove():
+		if len(message) < 3 or not message[2].isdigit() or int(message[2]) < 0 or int(message[2]) > 16:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp move <username> <slot>")
+		username = message[1]
+		newSlotID = int(message[2])
+		userID = userUtils.getIDSafe(username)
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.userChangeSlot(userID, newSlotID)
+		return "Player {} moved to slot {}".format(username, newSlotID)
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -821,6 +831,7 @@ def multiplayer(fro, chan, message):
 			"lock": mpLock,
 			"unlock": mpUnlock,
 			"size": mpSize,
+			"move": mpMove,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:

@@ -498,7 +498,7 @@ class match:
 			return
 
 		# Make sure there is no one inside new slot
-		if self.slots[newSlotID].user is not None and self.slots[newSlotID].status != slotStatuses.FREE:
+		if self.slots[newSlotID].user is not None or self.slots[newSlotID].status != slotStatuses.FREE:
 			return
 
 		# Get old slot data
