@@ -1,6 +1,7 @@
 import json
 import random
 import re
+import threading
 
 import requests
 import time
@@ -844,6 +845,47 @@ def multiplayer(fro, chan, message):
 		matchID = getMatchIDFromChannel(chan)
 		glob.matches.matches[matchID].removeHost()
 
+	def mpStart():
+		def _start():
+			matchID = getMatchIDFromChannel(chan)
+			success = glob.matches.matches[matchID].start()
+			if not success:
+				chat.sendMessage("FokaBot", chan, "Couldn't start match. Make sure there are enough players and "
+												  "teams are valid. The match has been unlocked.")
+			else:
+				chat.sendMessage("FokaBot", chan, "Have fun!")
+
+
+		def _decreaseTimer(t):
+			if t <= 0:
+				_start()
+			else:
+				if t % 10 == 0 or t <= 5:
+					chat.sendMessage("FokaBot", chan, "Match starts in {} seconds. The match has been locked. "
+													  "Please don't leave the match during the countdown "
+													  "or you might receive a penalty".format(t))
+				threading.Timer(1.00, _decreaseTimer, [t - 1]).start()
+
+		if len(message) < 2 or not message[1].isdigit():
+			startTime = 0
+		else:
+			startTime = int(message[1])
+
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+
+		# Force everyone to ready
+		for i, slot in enumerate(_match.slots):
+			if slot.status != slotStatuses.READY and slot.user is not None:
+				_match.toggleSlotReady(i)
+
+		if startTime == 0:
+			_start()
+			return "Starting match"
+		else:
+			_match.isStarting = True
+			threading.Timer(1.00, _decreaseTimer, [startTime - 1]).start()
+			return "Match starts in {} seconds".format(startTime)
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -855,6 +897,7 @@ def multiplayer(fro, chan, message):
 			"move": mpMove,
 			"host": mpHost,
 			"clearhost": mpClearHost,
+			"start": mpStart,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:

@@ -57,6 +57,7 @@ class match:
 		self.matchDataCache = bytes()
 		self.isTourney = isTourney
 		self.isLocked = False 	# if True, users can't change slots/teams. Used in tourney matches
+		self.isStarting = False
 
 		# Create all slots and reset them
 		self.slots = []
@@ -216,6 +217,8 @@ class match:
 		:return:
 		"""
 		# Update ready status and setnd update
+		if self.slots[slotID].user is None or self.isStarting:
+			return
 		oldStatus = self.slots[slotID].status
 		if oldStatus == slotStatuses.READY:
 			newStatus = slotStatuses.NOT_READY
@@ -499,7 +502,7 @@ class match:
 		:return:
 		"""
 		# Make sure the match is not locked
-		if self.isLocked:
+		if self.isLocked or self.isStarting:
 			return False
 
 		# Make sure the user is in room
@@ -654,7 +657,7 @@ class match:
 		:return:
 		"""
 		# Make sure the match is not locked
-		if self.isLocked:
+		if self.isLocked or self.isStarting:
 			return
 
 		# Make sure the user is in room
@@ -712,9 +715,12 @@ class match:
 
 		:return:
 		"""
+		# Remove isStarting timer flag thingie
+		self.isStarting = False
+
 		# Make sure we have enough players
 		if self.countUsers() < 2 or not self.checkTeams():
-			return
+			return False
 
 		# Create playing channel
 		glob.streams.add(self.playingStreamName)
@@ -737,3 +743,4 @@ class match:
 
 		# Send updates
 		self.sendUpdates()
+		return True
