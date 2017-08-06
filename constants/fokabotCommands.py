@@ -902,6 +902,26 @@ def multiplayer(fro, chan, message):
 												 "enter your tourney match."))
 		return "An invite to this match has been sent to {}".format(username)
 
+	def mpMap():
+		if len(message) < 2 or not message[1].isdigit() or (len(message) == 3 and not message[2].isdigit()):
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp map <beatmapid> [<gamemode>]")
+		beatmapID = int(message[1])
+		gameMode = int(message[2]) if len(message) == 3 else 0
+		if gameMode < 0 or gameMode > 3:
+			raise exceptions.invalidArgumentsException("Gamemode must be 0, 1, 2 or 3")
+		beatmapData = glob.db.fetch("SELECT * FROM beatmaps WHERE beatmap_id = %s LIMIT 1", [beatmapID])
+		if beatmapData is None:
+			raise exceptions.invalidArgumentsException("The beatmap you've selected couldn't be found in the database."
+													   "If the beatmap id is valid, please load the scoreboard first in "
+													   "order to cache it, then try again.")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.beatmapID = beatmapID
+		_match.beatmapName = beatmapData["song_name"]
+		_match.beatmapMD5 = beatmapData["beatmap_md5"]
+		_match.gameMode = gameMode
+		_match.sendUpdates()
+		return "Match map has been updated"
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -915,6 +935,7 @@ def multiplayer(fro, chan, message):
 			"clearhost": mpClearHost,
 			"start": mpStart,
 			"invite": mpInvite,
+			"map": mpMap,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
