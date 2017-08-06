@@ -25,8 +25,7 @@ def handle(userToken, packetData):
 		#	password = generalUtils.stringMd5(password)
 
 		# Check password
-		# Always send wrong password if this is a tourney match
-		if (match.matchPassword != "" and match.matchPassword != password) or match.isTourney:
+		if match.matchPassword != "" and match.matchPassword != password:
 			raise exceptions.matchWrongPasswordException
 
 		# Password is correct, join match

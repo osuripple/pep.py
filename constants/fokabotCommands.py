@@ -886,6 +886,22 @@ def multiplayer(fro, chan, message):
 			threading.Timer(1.00, _decreaseTimer, [startTime - 1]).start()
 			return "Match starts in {} seconds".format(startTime)
 
+	def mpInvite():
+		if len(message) < 2:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp invite <username>")
+		username = message[1]
+		userID = userUtils.getIDSafe(username)
+		if userID is None:
+			raise exceptions.userNotFoundException("No such user")
+		token = glob.tokens.getTokenFromUserID(userID, ignoreIRC=True)
+		if token is None:
+			raise exceptions.invalidUserException("That user is not connected to bancho right now.")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.invite(999, userID)
+		token.enqueue(serverPackets.notification("Please accept the invite you've just received from FokaBot to "
+												 "enter your tourney match."))
+		return "An invite to this match has been sent to {}".format(username)
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -898,12 +914,13 @@ def multiplayer(fro, chan, message):
 			"host": mpHost,
 			"clearhost": mpClearHost,
 			"start": mpStart,
+			"invite": mpInvite,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
 			raise exceptions.invalidArgumentsException("Invalid subcommand")
 		return subcommands[requestedSubcommand]()
-	except exceptions.invalidArgumentsException as e:
+	except (exceptions.invalidArgumentsException, exceptions.userNotFoundException) as e:
 		return str(e)
 	except exceptions.wrongChannelException:
 		return "This command only works in multiplayer chat channels"
