@@ -660,7 +660,7 @@ class match:
 		:return:
 		"""
 		# Make sure this match's mode has teams
-		if self.matchTeamType != matchTeamTypes.TEAM_VS or self.matchTeamType != matchTeamTypes.TAG_TEAM_VS:
+		if self.matchTeamType != matchTeamTypes.TEAM_VS and self.matchTeamType != matchTeamTypes.TAG_TEAM_VS:
 			return
 
 		# Make sure the match is not locked
@@ -700,7 +700,7 @@ class match:
 		:return: True if valid, False if invalid
 		:return:
 		"""
-		if self.matchTeamType != matchTeamTypes.TEAM_VS or self.matchTeamType != matchTeamTypes.TAG_TEAM_VS:
+		if self.matchTeamType != matchTeamTypes.TEAM_VS and self.matchTeamType != matchTeamTypes.TAG_TEAM_VS:
 			# Teams are always valid if we have no teams
 			return True
 
