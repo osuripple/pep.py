@@ -164,8 +164,8 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			#tokenString = token.token
 
 		# Make sure this is not a tournament client
-		if token.tournament:
-			raise exceptions.userTournamentException()
+		# if token.tournament:
+		# 	raise exceptions.userTournamentException()
 
 		# Make sure the user is not in restricted mode
 		if token.restricted:

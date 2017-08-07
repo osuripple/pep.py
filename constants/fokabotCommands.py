@@ -774,6 +774,7 @@ def multiplayer(fro, chan, message):
 		if len(message) < 2:
 			raise exceptions.invalidArgumentsException("Wrong syntax: !mp make <name>")
 		matchID = glob.matches.createMatch(" ".join(message[1:]), generalUtils.stringMd5(generalUtils.randomString(32)), 0, "Tournament", "", 0, -1, isTourney=True)
+		glob.matches.matches[matchID].sendUpdates()
 		return "Tourney match #{} created!".format(matchID)
 
 	def mpJoin():

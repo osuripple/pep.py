@@ -18,7 +18,7 @@ def handle(userToken, packetData):
 
 		# Make sure the match has been created
 		if matchID not in glob.matches.matches:
-			raise exceptions.matchCreateError
+			raise exceptions.matchCreateError()
 
 		# Get match object
 		match = glob.matches.matches[matchID]
