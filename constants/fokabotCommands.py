@@ -956,6 +956,18 @@ def multiplayer(fro, chan, message):
 			_match.toggleSlotLocked(slotID)
 		return "{} has been kicked from the match.".format(username)
 
+	def mpPassword():
+		password = "" if len(message) < 2 else message[1]
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.changePassword(password)
+		return "Match password has been changed!"
+
+	def mpRandomPassword():
+		password = generalUtils.stringMd5(generalUtils.randomString(32))
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.changePassword(password)
+		return "Match password has been changed to a random one"
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -973,6 +985,8 @@ def multiplayer(fro, chan, message):
 			"set": mpSet,
 			"abort": mpAbort,
 			"kick": mpKick,
+			"password": mpPassword,
+			"randompassword": mpRandomPassword,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
