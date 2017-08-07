@@ -806,12 +806,7 @@ def multiplayer(fro, chan, message):
 			raise exceptions.invalidArgumentsException("Wrong syntax: !mp size <slots(2-16)>")
 		matchSize = int(message[1])
 		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
-		for i in range(0, matchSize):
-			if _match.slots[i].status == slotStatuses.LOCKED:
-				_match.toggleSlotLocked(i)
-		for i in range(matchSize, 16):
-			if _match.slots[i].status != slotStatuses.LOCKED:
-				_match.toggleSlotLocked(i)
+		_match.forceSize(matchSize)
 		return "Match size changed to {}".format(matchSize)
 
 	def mpMove():
@@ -922,6 +917,25 @@ def multiplayer(fro, chan, message):
 		_match.sendUpdates()
 		return "Match map has been updated"
 
+	def mpSet():
+		if len(message) < 2 or not message[1].isdigit() or \
+				(len(message) >= 3 and not message[2].isdigit()) or \
+				(len(message) >= 4 and not message[3].isdigit()):
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp set <teammode> [<scoremode>] [<size>]")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		matchTeamType = int(message[1])
+		matchScoringType = int(message[2]) if len(message) >= 3 else _match.matchScoringType
+		if not 0 <= matchTeamType <= 3:
+			raise exceptions.invalidArgumentsException("Match team type must be between 0 and 3")
+		if not 0 <= matchScoringType <= 3:
+			raise exceptions.invalidArgumentsException("Match scoring type must be between 0 and 3")
+		_match.matchTeamType = matchTeamType
+		_match.matchScoringType = matchScoringType
+		if len(message) >= 4:
+			_match.forceSize(int(message[3]))
+		_match.sendUpdates()
+		return "Match settings have been updated!"
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -936,6 +950,7 @@ def multiplayer(fro, chan, message):
 			"start": mpStart,
 			"invite": mpInvite,
 			"map": mpMap,
+			"set": mpSet,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:

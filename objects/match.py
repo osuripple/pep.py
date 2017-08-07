@@ -744,3 +744,11 @@ class match:
 		# Send updates
 		self.sendUpdates()
 		return True
+
+	def forceSize(self, matchSize):
+		for i in range(0, matchSize):
+			if self.slots[i].status == slotStatuses.LOCKED:
+				self.toggleSlotLocked(i)
+		for i in range(matchSize, 16):
+			if self.slots[i].status != slotStatuses.LOCKED:
+				self.toggleSlotLocked(i)
