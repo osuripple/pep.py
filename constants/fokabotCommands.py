@@ -856,9 +856,7 @@ def multiplayer(fro, chan, message):
 				_start()
 			else:
 				if t % 10 == 0 or t <= 5:
-					chat.sendMessage("FokaBot", chan, "Match starts in {} seconds. The match has been locked. "
-													  "Please don't leave the match during the countdown "
-													  "or you might receive a penalty".format(t))
+					chat.sendMessage("FokaBot", chan, "Match starts in {} seconds.".format(t))
 				threading.Timer(1.00, _decreaseTimer, [t - 1]).start()
 
 		if len(message) < 2 or not message[1].isdigit():
@@ -879,7 +877,9 @@ def multiplayer(fro, chan, message):
 		else:
 			_match.isStarting = True
 			threading.Timer(1.00, _decreaseTimer, [startTime - 1]).start()
-			return "Match starts in {} seconds".format(startTime)
+			return "Match starts in {} seconds. The match has been locked. " \
+				   "Please don't leave the match during the countdown " \
+				   "or you might receive a penalty.".format(startTime)
 
 	def mpInvite():
 		if len(message) < 2:
