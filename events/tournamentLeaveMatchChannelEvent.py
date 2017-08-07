@@ -5,7 +5,7 @@ from helpers import chatHelper as chat
 def handle(userToken, packetData):
 	packetData = clientPackets.tournamentLeaveMatchChannel(packetData)
 	matchID = packetData["matchID"]
-	if matchID not in glob.matches.matches:
+	if matchID not in glob.matches.matches or not userToken.isTourney:
 		return
 	chat.partChannel(token=userToken, channel="#multi_{}".format(matchID))
 	userToken.matchID = 0
