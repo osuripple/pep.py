@@ -10,7 +10,7 @@ from common import generalUtils
 from common.constants import mods
 from common.log import logUtils as log
 from common.ripple import userUtils
-from constants import exceptions, slotStatuses
+from constants import exceptions, slotStatuses, matchModModes
 from common.constants import gameModes
 from common.constants import privileges
 from constants import serverPackets
@@ -968,6 +968,33 @@ def multiplayer(fro, chan, message):
 		_match.changePassword(password)
 		return "Match password has been changed to a random one"
 
+	def mpMods():
+		if len(message) < 2:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp <mod1> [<mod2>] ...")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		newMods = 0
+		freeMod = False
+		for _mod in message[1:]:
+			if _mod.lower().strip() == "hd":
+				newMods |= mods.HIDDEN
+			elif _mod.lower().strip() == "hr":
+				newMods |= mods.HARDROCK
+			elif _mod.lower().strip() == "dt":
+				newMods |= mods.DOUBLETIME
+			elif _mod.lower().strip() == "fl":
+				newMods |= mods.FLASHLIGHT
+			elif _mod.lower().strip() == "fi":
+				newMods |= mods.FADEIN
+			if _mod.lower().strip() == "none":
+				newMods = 0
+
+			if _mod.lower().strip() == "freemod":
+				freeMod = True
+
+		_match.matchModMode = matchModModes.FREE_MOD if freeMod else matchModModes.NORMAL
+		_match.changeMods(newMods)
+
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -987,6 +1014,7 @@ def multiplayer(fro, chan, message):
 			"kick": mpKick,
 			"password": mpPassword,
 			"randompassword": mpRandomPassword,
+			"mods": mpMods,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
