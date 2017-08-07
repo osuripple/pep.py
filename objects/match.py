@@ -396,13 +396,7 @@ class match:
 		self.inProgress = False
 
 		# Reset slots
-		for i in range(0,16):
-			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
-				self.slots[i].status = slotStatuses.NOT_READY
-				self.slots[i].loaded = False
-				self.slots[i].skip = False
-				self.slots[i].complete = False
-				self.slots[i].score = 0
+		self.resetSlotsReady()
 
 		# Send match update
 		self.sendUpdates()
@@ -416,6 +410,15 @@ class match:
 
 		# Console output
 		log.info("MPROOM{}: Match completed".format(self.matchID))
+
+	def resetSlotsReady(self):
+		for i in range(0,16):
+			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
+				self.slots[i].status = slotStatuses.NOT_READY
+				self.slots[i].loaded = False
+				self.slots[i].skip = False
+				self.slots[i].complete = False
+				self.slots[i].score = 0
 
 	def getUserSlotID(self, userID):
 		"""
@@ -726,7 +729,7 @@ class match:
 		glob.streams.add(self.playingStreamName)
 
 		# Change inProgress value
-		match.inProgress = True
+		self.inProgress = True
 
 		# Set playing to ready players and set load, skip and complete to False
 		# Make clients join playing stream
@@ -752,3 +755,16 @@ class match:
 		for i in range(matchSize, 16):
 			if self.slots[i].status != slotStatuses.LOCKED:
 				self.toggleSlotLocked(i)
+
+	def abort(self):
+		if not self.inProgress:
+			log.warning("MPROOM{}: Match is not in progress!".format(self.matchID))
+			return
+		self.inProgress = False
+		self.isStarting = False
+		self.resetSlotsReady()
+		self.sendUpdates()
+		glob.streams.broadcast(self.playingStreamName, serverPackets.matchAbort())
+		glob.streams.dispose(self.playingStreamName)
+		glob.streams.remove(self.playingStreamName)
+		log.info("MPROOM{}: Match aborted".format(self.matchID))

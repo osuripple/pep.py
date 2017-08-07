@@ -936,6 +936,11 @@ def multiplayer(fro, chan, message):
 		_match.sendUpdates()
 		return "Match settings have been updated!"
 
+	def mpAbort():
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.abort()
+		return "Match aborted!"
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -951,6 +956,7 @@ def multiplayer(fro, chan, message):
 			"invite": mpInvite,
 			"map": mpMap,
 			"set": mpSet,
+			"abort": mpAbort,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:

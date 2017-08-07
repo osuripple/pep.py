@@ -264,6 +264,9 @@ def playerFailed(slotID):
 def matchTransferHost():
 	return packetHelper.buildPacket(packetIDs.server_matchTransferHost)
 
+def matchAbort():
+	return packetHelper.buildPacket(packetIDs.server_matchAbort)
+
 def switchServer(address):
 	return packetHelper.buildPacket(packetIDs.server_switchServer, [[address, dataTypes.STRING]])
 
