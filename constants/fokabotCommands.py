@@ -941,6 +941,21 @@ def multiplayer(fro, chan, message):
 		_match.abort()
 		return "Match aborted!"
 
+	def mpKick():
+		if len(message) < 2:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp kick <username>")
+		username = message[1]
+		userID = userUtils.getIDSafe(username)
+		if userID is None:
+			raise exceptions.userNotFoundException("No such user")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		slotID = _match.getUserSlotID(userID)
+		if slotID is None:
+			raise exceptions.userNotFoundException("The specified user is not in this match")
+		for i in range(0, 2):
+			_match.toggleSlotLocked(slotID)
+		return "{} has been kicked from the match.".format(username)
+
 	try:
 		subcommands = {
 			"make": mpMake,
@@ -957,6 +972,7 @@ def multiplayer(fro, chan, message):
 			"map": mpMap,
 			"set": mpSet,
 			"abort": mpAbort,
+			"kick": mpKick,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
