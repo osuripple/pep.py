@@ -652,13 +652,17 @@ class match:
 				c+=1
 		return c
 
-	def changeTeam(self, userID):
+	def changeTeam(self, userID, newTeam=None):
 		"""
 		Change userID's team
 
 		:param userID: id of user
 		:return:
 		"""
+		# Make sure this match's mode has teams
+		if self.matchTeamType != matchTeamTypes.TEAM_VS or self.matchTeamType != matchTeamTypes.TAG_TEAM_VS:
+			return
+
 		# Make sure the match is not locked
 		if self.isLocked or self.isStarting:
 			return
@@ -669,7 +673,8 @@ class match:
 			return
 
 		# Update slot and send update
-		newTeam = matchTeams.BLUE if self.slots[slotID].team == matchTeams.RED else matchTeams.RED
+		if newTeam is None:
+			newTeam = matchTeams.BLUE if self.slots[slotID].team == matchTeams.RED else matchTeams.RED
 		self.setSlot(slotID, None, newTeam)
 		self.sendUpdates()
 

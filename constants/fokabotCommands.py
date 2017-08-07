@@ -10,7 +10,7 @@ from common import generalUtils
 from common.constants import mods
 from common.log import logUtils as log
 from common.ripple import userUtils
-from constants import exceptions, slotStatuses, matchModModes
+from constants import exceptions, slotStatuses, matchModModes, matchTeams
 from common.constants import gameModes
 from common.constants import privileges
 from constants import serverPackets
@@ -994,6 +994,22 @@ def multiplayer(fro, chan, message):
 		_match.matchModMode = matchModModes.FREE_MOD if freeMod else matchModModes.NORMAL
 		_match.changeMods(newMods)
 
+		return "Match mods have been updated!"
+
+	def mpTeam():
+		if len(message) < 3:
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp team <username> <colour>")
+		username = message[1]
+		colour = message[2].lower().strip()
+		if colour not in ["red", "blue"]:
+			raise exceptions.invalidArgumentsException("Team colour must be red or blue")
+		userID = userUtils.getIDSafe(username)
+		if userID is None:
+			raise exceptions.userNotFoundException("No such user")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.changeTeam(userID, matchTeams.BLUE if colour == "blue" else matchTeams.RED)
+		return "{} is now in {} team".format(username, colour)
+
 
 	try:
 		subcommands = {
@@ -1015,6 +1031,7 @@ def multiplayer(fro, chan, message):
 			"password": mpPassword,
 			"randompassword": mpRandomPassword,
 			"mods": mpMods,
+			"team": mpTeam,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
