@@ -1243,7 +1243,7 @@ commands = [
 		"callback": updateBeatmap
 	}, {
 		"trigger": "!mp",
-		"privileges": privileges.ADMIN_MANAGE_SERVERS,	# TODO: replace with admin tournament privilege
+		"privileges": privileges.USER_TOURNAMENT_STAFF,
 		"syntax": "<subcommand>",
 		"callback": multiplayer
 	}, {
