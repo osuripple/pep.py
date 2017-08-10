@@ -93,7 +93,7 @@ class handler(requestsManager.asyncRequestHandler):
 
 				# Token exists, get its object and lock it
 				userToken = glob.tokens.tokens[requestTokenString]
-				userToken.lock.acquire()
+				userToken.processingLock.acquire()
 
 				# Keep reading packets until everything has been read
 				while pos < len(requestData):
@@ -205,8 +205,8 @@ class handler(requestsManager.asyncRequestHandler):
 				if userToken is not None:
 					# Update ping time for timeout
 					userToken.updatePingTime()
-					# Release token lock
-					userToken.lock.release()
+					# Release processing lock
+					userToken.processingLock.release()
 					# Delete token if kicked
 					if userToken.kicked:
 						glob.tokens.deleteToken(userToken)
