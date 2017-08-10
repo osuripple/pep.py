@@ -86,7 +86,7 @@ def alert(fro, chan, message):
 
 def alertUser(fro, chan, message):
 	target = message[0].lower()
-	targetToken = glob.tokens.getTokenFromUsername(target, safe=True)
+	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 	if targetToken is not None:
 		targetToken.enqueue(serverPackets.notification(' '.join(message[1:])))
 		return False
@@ -132,7 +132,7 @@ def kick(fro, chan, message):
 		return "Nope."
 
 	# Get target token and make sure is connected
-	tokens = glob.tokens.getTokenFromUsername(target, safe=True, _all=True)
+	tokens = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True, _all=True)
 	if len(tokens) == 0:
 		return "{} is not online".format(target)
 
@@ -185,7 +185,7 @@ def silence(fro, chan, message):
 		return "Invalid silence time. Max silence time is 7 days."
 
 	# Send silence packet to target if he's connected
-	targetToken = glob.tokens.getTokenFromUsername(target)
+	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 	if targetToken is not None:
 		# user online, silence both in db and with packet
 		targetToken.silence(silenceTime, reason, userID)
@@ -210,7 +210,7 @@ def removeSilence(fro, chan, message):
 		return "{}: user not found".format(target)
 
 	# Send new silence end packet to user if he's online
-	targetToken = glob.tokens.getTokenFromUsername(target)
+	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 	if targetToken is not None:
 		# User online, remove silence both in db and with packet
 		targetToken.silence(0, "", userID)
@@ -236,7 +236,7 @@ def ban(fro, chan, message):
 	userUtils.ban(targetUserID)
 
 	# Send ban packet to the user if he's online
-	targetToken = glob.tokens.getTokenFromUsername(target)
+	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 	if targetToken is not None:
 		targetToken.enqueue(serverPackets.loginBanned())
 
@@ -277,7 +277,7 @@ def restrict(fro, chan, message):
 	userUtils.restrict(targetUserID)
 
 	# Send restricted mode packet to this user if he's online
-	targetToken = glob.tokens.getTokenFromUsername(target)
+	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 	if targetToken is not None:
 		targetToken.setRestricted()
 
@@ -726,7 +726,7 @@ def report(fro, chan, message):
 
 		# Get the token if possible
 		chatlog = ""
-		token = glob.tokens.getTokenFromUsername(target)
+		token = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 		if token is not None:
 			chatlog = token.getMessagesBufferString()
 
