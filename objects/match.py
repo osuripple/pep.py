@@ -23,6 +23,8 @@ class slot:
 		self.skip = False
 		self.complete = False
 		self.score = 0
+		self.failed = False
+		self.passed = True
 
 class match:
 	def __init__(self, matchID, matchName, matchPassword, beatmapID, beatmapName, beatmapMD5, gameMode, hostUserID, isTourney=False):
@@ -339,6 +341,16 @@ class match:
 		"""
 		self.slots[slotID].score = score
 
+	def updateHP(self, slotID, hp):
+		"""
+		Update HP for a slot
+
+		:param slotID: the slot that the user that is updating their hp is in
+		:param hp: the new hp to update
+		:return:
+		"""
+		self.slots[slotID].failed = True if hp == 254 else False
+
 	def playerCompleted(self, userID):
 		"""
 		Set userID's slot completed to True
@@ -386,7 +398,10 @@ class match:
 			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
 				infoToSend["scores"][glob.tokens.tokens[self.slots[i].user].userID] = {
 					"score": self.slots[i].score,
-					"mods": self.slots[i].mods
+					"mods": self.slots[i].mods,
+					"failed": self.slots[i].failed,
+					"pass": self.slots[i].passed,
+					"team": self.slots[i].team
 				}
 
 		# Send the info to the api
@@ -419,6 +434,8 @@ class match:
 				self.slots[i].skip = False
 				self.slots[i].complete = False
 				self.slots[i].score = 0
+				self.slots[i].failed = False
+				self.slots[i].passed = True
 
 	def getUserSlotID(self, userID):
 		"""
@@ -611,6 +628,8 @@ class match:
 		slotID = self.getUserSlotID(userID)
 		if slotID is None:
 			return
+
+		self.slots[slotID].passed = False
 
 		# Send packet to everyone
 		glob.streams.broadcast(self.playingStreamName, serverPackets.playerFailed(slotID))
