@@ -36,7 +36,7 @@ TODO: Change False to None, because False doesn't make any sense
 """
 def instantRestart(fro, chan, message):
 	glob.streams.broadcast("main", serverPackets.notification("We are restarting Bancho. Be right back!"))
-	systemHelper.scheduleShutdown(0, True, delay=1)
+	systemHelper.scheduleShutdown(0, True, delay=5)
 	return False
 
 def faq(fro, chan, message):
@@ -1020,6 +1020,34 @@ def multiplayer(fro, chan, message):
 		_match.changeTeam(userID, matchTeams.BLUE if colour == "blue" else matchTeams.RED)
 		return "{} is now in {} team".format(username, colour)
 
+	def mpSettings():
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		msg = "PLAYERS IN THIS MATCH:\n"
+		empty = None
+		for slot in _match.slots:
+			if slot.user is None:
+				continue
+			readableStatuses = {
+				slotStatuses.READY: "ready",
+				slotStatuses.NOT_READY: "not ready",
+				slotStatuses.NO_MAP: "no map",
+				slotStatuses.PLAYING: "playing",
+			}
+			if slot.status not in readableStatuses:
+				readableStatus = "???"
+			else:
+				readableStatus = readableStatuses[slot.status]
+			empty = False
+			msg += "* [{team}] <{status}> ~ {username}{mods}\n".format(
+				team="red" if slot.team == 0 else "blue",
+				status=readableStatus,
+				username=glob.tokens.tokens[slot.user].username,
+				mods=" (+ {})".format(generalUtils.readableMods(slot.mods))
+			)
+		if empty:
+			msg += "\nNobody."
+		return msg
+
 
 	try:
 		subcommands = {
@@ -1042,6 +1070,7 @@ def multiplayer(fro, chan, message):
 			"randompassword": mpRandomPassword,
 			"mods": mpMods,
 			"team": mpTeam,
+			"settings": mpSettings,
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
