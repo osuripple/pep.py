@@ -840,6 +840,7 @@ def multiplayer(fro, chan, message):
 	def mpClearHost():
 		matchID = getMatchIDFromChannel(chan)
 		glob.matches.matches[matchID].removeHost()
+		return "Host has been removed from this match"
 
 	def mpStart():
 		def _start():
@@ -865,12 +866,20 @@ def multiplayer(fro, chan, message):
 		else:
 			startTime = int(message[1])
 
+		force = False if len(message) < 3 else message[2].lower() == "force"
 		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
 
 		# Force everyone to ready
+		someoneNotReady = False
 		for i, slot in enumerate(_match.slots):
 			if slot.status != slotStatuses.READY and slot.user is not None:
-				_match.toggleSlotReady(i)
+				someoneNotReady = True
+				if force:
+					_match.toggleSlotReady(i)
+
+		if someoneNotReady and not force:
+			return "Some users aren't ready yet. Use '!mp start force' if you want to start the match, " \
+				   "even with non-ready players."
 
 		if startTime == 0:
 			_start()

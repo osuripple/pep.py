@@ -739,7 +739,7 @@ class match:
 		# Set playing to ready players and set load, skip and complete to False
 		# Make clients join playing stream
 		for i in range(0, 16):
-			if (self.slots[i].status & slotStatuses.READY) > 0 and self.slots[i].user in glob.tokens.tokens:
+			if self.slots[i].user in glob.tokens.tokens:
 				self.slots[i].status = slotStatuses.PLAYING
 				self.slots[i].loaded = False
 				self.slots[i].skip = False
