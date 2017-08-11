@@ -88,8 +88,6 @@ class token:
 		# Locks
 		self.processingLock = threading.Lock()	# Acquired while there's an incoming packet from this user
 		self._bufferLock = threading.Lock()		# Acquired while writing to packets buffer
-		self._internalLock = threading.Lock()	# Acquired while performing internal operations on this token
-		self._chatLock = threading.Lock()		# Acquired while performing chat operations
 		self._streamsLock = threading.Lock()	# Acquired while joining/leaving streams
 		self._spectatorLock = threading.Lock()	# Acquired while starting/stopping spectating
 		self._multiplayerLock = threading.Lock()# Acquired while joining/leaving streams
@@ -143,17 +141,13 @@ class token:
 		:raises: exceptions.userAlreadyInChannelException()
 				 exceptions.channelNoPermissionsException()
 		"""
-		try:
-			self._chatLock.acquire()
-			if channelObject.name in self.joinedChannels:
-				raise exceptions.userAlreadyInChannelException()
-			if channelObject.publicRead == False and self.admin == False:
-				raise exceptions.channelNoPermissionsException()
-			self.joinedChannels.append(channelObject.name)
-			self.joinStream("chat/{}".format(channelObject.name))
-			self.enqueue(serverPackets.channelJoinSuccess(self.userID, channelObject.clientName))
-		finally:
-			self._chatLock.release()
+		if channelObject.name in self.joinedChannels:
+			raise exceptions.userAlreadyInChannelException()
+		if channelObject.publicRead == False and self.admin == False:
+			raise exceptions.channelNoPermissionsException()
+		self.joinedChannels.append(channelObject.name)
+		self.joinStream("chat/{}".format(channelObject.name))
+		self.enqueue(serverPackets.channelJoinSuccess(self.userID, channelObject.clientName))
 
 	def partChannel(self, channelObject):
 		"""
@@ -161,12 +155,8 @@ class token:
 
 		:param channelObject: channel object
 		"""
-		try:
-			self._chatLock.acquire()
-			self.joinedChannels.remove(channelObject.name)
-			self.leaveStream("chat/{}".format(channelObject.name))
-		finally:
-			self._chatLock.release()
+		self.joinedChannels.remove(channelObject.name)
+		self.leaveStream("chat/{}".format(channelObject.name))
 
 	def setLocation(self, latitude, longitude):
 		"""
@@ -387,19 +377,14 @@ class token:
 		:param reason: Kick reason, used in logs. Default: "kick"
 		:return:
 		"""
-		try:
-			self._internalLock.acquire()
+		# Send packet to target
+		log.info("{} has been disconnected. ({})".format(self.username, reason))
+		if message != "":
+			self.enqueue(serverPackets.notification(message))
+		self.enqueue(serverPackets.loginFailed())
 
-			# Send packet to target
-			log.info("{} has been disconnected. ({})".format(self.username, reason))
-			if message != "":
-				self.enqueue(serverPackets.notification(message))
-			self.enqueue(serverPackets.loginFailed())
-
-			# Logout event
-			logoutEvent.handle(self, deleteToken=self.irc)
-		finally:
-			self._internalLock.release()
+		# Logout event
+		logoutEvent.handle(self, deleteToken=self.irc)
 
 	def silence(self, seconds = None, reason = "", author = 999):
 		"""
@@ -410,26 +395,21 @@ class token:
 		:param author: userID of who has silenced the user. Default: 999 (FokaBot)
 		:return:
 		"""
-		try:
-			self._chatLock.acquire()
+		if seconds is None:
+			# Get silence expire from db if needed
+			seconds = max(0, userUtils.getSilenceEnd(self.userID) - int(time.time()))
+		else:
+			# Silence in db and token
+			userUtils.silence(self.userID, seconds, reason, author)
 
-			if seconds is None:
-				# Get silence expire from db if needed
-				seconds = max(0, userUtils.getSilenceEnd(self.userID) - int(time.time()))
-			else:
-				# Silence in db and token
-				userUtils.silence(self.userID, seconds, reason, author)
+		# Silence token
+		self.silenceEndTime = int(time.time()) + seconds
 
-			# Silence token
-			self.silenceEndTime = int(time.time()) + seconds
+		# Send silence packet to user
+		self.enqueue(serverPackets.silenceEndTime(seconds))
 
-			# Send silence packet to user
-			self.enqueue(serverPackets.silenceEndTime(seconds))
-
-			# Send silenced packet to everyone else
-			glob.streams.broadcast("main", serverPackets.userSilenced(self.userID))
-		finally:
-			self._chatLock.release()
+		# Send silenced packet to everyone else
+		glob.streams.broadcast("main", serverPackets.userSilenced(self.userID))
 
 	def spamProtection(self, increaseSpamRate = True):
 		"""
@@ -438,18 +418,13 @@ class token:
 		:param increaseSpamRate: set to True if the user has sent a new message. Default: True
 		:return:
 		"""
-		try:
-			self._chatLock.acquire()
+		# Increase the spam rate if needed
+		if increaseSpamRate:
+			self.spamRate += 1
 
-			# Increase the spam rate if needed
-			if increaseSpamRate:
-				self.spamRate += 1
-
-			# Silence the user if needed
-			if self.spamRate > 10:
-				self.silence(1800, "Spamming (auto spam protection)")
-		finally:
-			self._chatLock.release()
+		# Silence the user if needed
+		if self.spamRate > 10:
+			self.silence(1800, "Spamming (auto spam protection)")
 
 	def isSilenced(self):
 		"""
@@ -474,22 +449,17 @@ class token:
 
 		:return:
 		"""
-		try:
-			self._internalLock.acquire()
-
-			stats = userUtils.getUserStats(self.userID, self.gameMode)
-			log.debug(str(stats))
-			if stats is None:
-				log.warning("Stats query returned None")
-				return
-			self.rankedScore = stats["rankedScore"]
-			self.accuracy = stats["accuracy"]/100
-			self.playcount = stats["playcount"]
-			self.totalScore = stats["totalScore"]
-			self.gameRank = stats["gameRank"]
-			self.pp = stats["pp"]
-		finally:
-			self._internalLock.release()
+		stats = userUtils.getUserStats(self.userID, self.gameMode)
+		log.debug(str(stats))
+		if stats is None:
+			log.warning("Stats query returned None")
+			return
+		self.rankedScore = stats["rankedScore"]
+		self.accuracy = stats["accuracy"]/100
+		self.playcount = stats["playcount"]
+		self.totalScore = stats["totalScore"]
+		self.gameRank = stats["gameRank"]
+		self.pp = stats["pp"]
 
 	def checkRestricted(self):
 		"""
