@@ -71,6 +71,7 @@ def handle(userToken, packetData):
 
 	oldBeatmapMD5 = match.beatmapMD5
 	oldMods = match.mods
+	oldMatchTeamType = match.matchTeamType
 
 	match.mods = packetData["mods"]
 	match.beatmapMD5 = packetData["beatmapMD5"]
@@ -80,31 +81,19 @@ def handle(userToken, packetData):
 
 	# Reset ready if needed
 	if oldMods != match.mods or oldBeatmapMD5 != match.beatmapMD5:
-		for i in range(0,16):
-			if match.slots[i].status == slotStatuses.READY:
-				match.slots[i].status = slotStatuses.NOT_READY
+		match.resetReady()
 
 	# Reset mods if needed
 	if match.matchModMode == matchModModes.NORMAL:
 		# Reset slot mods if not freeMods
-		for i in range(0,16):
-			match.slots[i].mods = 0
+		match.resetMods()
 	else:
 		# Reset match mods if freemod
 		match.mods = 0
 
-	# Set/reset teams
-	if match.matchTeamType == matchTeamTypes.TEAM_VS or match.matchTeamType == matchTeamTypes.TAG_TEAM_VS:
-		# Set teams
-		c=0
-		for i in range(0,16):
-			if match.slots[i].team == matchTeams.NO_TEAM:
-				match.slots[i].team = matchTeams.RED if c % 2 == 0 else matchTeams.BLUE
-				c+=1
-	else:
-		# Reset teams
-		for i in range(0,16):
-			match.slots[i].team = matchTeams.NO_TEAM
+	# Initialize teams if team type changed
+	if match.matchTeamType != oldMatchTeamType:
+		match.initializeTeams()
 
 	# Force no freemods if tag coop
 	if match.matchTeamType == matchTeamTypes.TAG_COOP or match.matchTeamType == matchTeamTypes.TAG_TEAM_VS:

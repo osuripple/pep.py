@@ -10,7 +10,7 @@ from common import generalUtils
 from common.constants import mods
 from common.log import logUtils as log
 from common.ripple import userUtils
-from constants import exceptions, slotStatuses, matchModModes, matchTeams
+from constants import exceptions, slotStatuses, matchModModes, matchTeams, matchTeamTypes
 from common.constants import gameModes
 from common.constants import privileges
 from constants import serverPackets
@@ -924,6 +924,7 @@ def multiplayer(fro, chan, message):
 		_match.beatmapName = beatmapData["song_name"]
 		_match.beatmapMD5 = beatmapData["beatmap_md5"]
 		_match.gameMode = gameMode
+		_match.resetReady()
 		_match.sendUpdates()
 		return "Match map has been updated"
 
@@ -939,10 +940,16 @@ def multiplayer(fro, chan, message):
 			raise exceptions.invalidArgumentsException("Match team type must be between 0 and 3")
 		if not 0 <= matchScoringType <= 3:
 			raise exceptions.invalidArgumentsException("Match scoring type must be between 0 and 3")
+		oldMatchTeamType = _match.matchTeamType
 		_match.matchTeamType = matchTeamType
 		_match.matchScoringType = matchScoringType
 		if len(message) >= 4:
 			_match.forceSize(int(message[3]))
+		if _match.matchTeamType != oldMatchTeamType:
+			_match.initializeTeams()
+		if _match.matchTeamType == matchTeamTypes.TAG_COOP or _match.matchTeamType == matchTeamTypes.TAG_TEAM_VS:
+			_match.matchModMode = matchModModes.NORMAL
+
 		_match.sendUpdates()
 		return "Match settings have been updated!"
 
@@ -1002,8 +1009,10 @@ def multiplayer(fro, chan, message):
 				freeMod = True
 
 		_match.matchModMode = matchModModes.FREE_MOD if freeMod else matchModModes.NORMAL
+		_match.resetReady()
+		if _match.matchModMode == matchModModes.FREE_MOD:
+			_match.resetMods()
 		_match.changeMods(newMods)
-
 		return "Match mods have been updated!"
 
 	def mpTeam():
@@ -1039,10 +1048,10 @@ def multiplayer(fro, chan, message):
 				readableStatus = readableStatuses[slot.status]
 			empty = False
 			msg += "* [{team}] <{status}> ~ {username}{mods}\n".format(
-				team="red" if slot.team == 0 else "blue",
+				team="red" if slot.team == matchTeams.RED else "blue" if slot.team == matchTeams.BLUE else "!! no team !!",
 				status=readableStatus,
 				username=glob.tokens.tokens[slot.user].username,
-				mods=" (+ {})".format(generalUtils.readableMods(slot.mods))
+				mods=" (+ {})".format(generalUtils.readableMods(slot.mods)) if slot.mods > 0 else ""
 			)
 		if empty:
 			msg += "\nNobody."

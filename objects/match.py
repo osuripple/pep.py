@@ -15,7 +15,7 @@ from objects import glob
 class slot:
 	def __init__(self):
 		self.status = slotStatuses.FREE
-		self.team = 0
+		self.team = matchTeams.NO_TEAM
 		self.userID = -1
 		self.user = None
 		self.mods = 0
@@ -76,6 +76,7 @@ class match:
 
 	def getMatchData(self, censored = False):
 		"""
+		Return binary match data structure for packetHelper
 		Return binary match data structure for packetHelper
 
 		:return:
@@ -411,7 +412,7 @@ class match:
 		self.inProgress = False
 
 		# Reset slots
-		self.resetSlotsReady()
+		self.resetSlots()
 
 		# Send match update
 		self.sendUpdates()
@@ -426,7 +427,7 @@ class match:
 		# Console output
 		log.info("MPROOM{}: Match completed".format(self.matchID))
 
-	def resetSlotsReady(self):
+	def resetSlots(self):
 		for i in range(0,16):
 			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
 				self.slots[i].status = slotStatuses.NOT_READY
@@ -465,7 +466,10 @@ class match:
 		for i in range(0,16):
 			if self.slots[i].status == slotStatuses.FREE:
 				# Occupy slot
-				self.setSlot(i, slotStatuses.NOT_READY, 0, user.token, 0)
+				team = matchTeams.NO_TEAM
+				if self.matchTeamType == matchTeamTypes.TEAM_VS or self.matchTeamType == matchTeamTypes.TAG_TEAM_VS:
+					team = matchTeams.RED if i % 2 == 0 else matchTeams.BLUE
+				self.setSlot(i, slotStatuses.NOT_READY, team, user.token, 0)
 
 				# Send updated match data
 				self.sendUpdates()
@@ -786,9 +790,28 @@ class match:
 			return
 		self.inProgress = False
 		self.isStarting = False
-		self.resetSlotsReady()
+		self.resetSlots()
 		self.sendUpdates()
 		glob.streams.broadcast(self.playingStreamName, serverPackets.matchAbort())
 		glob.streams.dispose(self.playingStreamName)
 		glob.streams.remove(self.playingStreamName)
 		log.info("MPROOM{}: Match aborted".format(self.matchID))
+
+	def initializeTeams(self):
+		if self.matchTeamType == matchTeamTypes.TEAM_VS or self.matchTeamType == matchTeamTypes.TAG_TEAM_VS:
+			# Set teams
+			for i, _slot in enumerate(self.slots):
+				_slot.team = matchTeams.RED if i % 2 == 0 else matchTeams.BLUE
+		else:
+			# Reset teams
+			for _slot in self.slots:
+				_slot.team = matchTeams.NO_TEAM
+
+	def resetMods(self):
+		for _slot in self.slots:
+			_slot.mods = 0
+
+	def resetReady(self):
+		for _slot in self.slots:
+			if _slot.status == slotStatuses.READY:
+				_slot.status = slotStatuses.NOT_READY

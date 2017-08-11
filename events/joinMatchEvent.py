@@ -26,7 +26,7 @@ def handle(userToken, packetData):
 
 		# Check password
 		if match.matchPassword != "" and match.matchPassword != password:
-			raise exceptions.matchWrongPasswordException
+			raise exceptions.matchWrongPasswordException()
 
 		# Password is correct, join match
 		userToken.joinMatch(matchID)
