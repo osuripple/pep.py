@@ -114,9 +114,10 @@ def moderated(fro, chan, message):
 def kickAll(fro, chan, message):
 	# Kick everyone but mods/admins
 	toKick = []
-	for key, value in glob.tokens.tokens.items():
-		if not value.admin:
-			toKick.append(key)
+	with glob.tokens:
+		for key, value in glob.tokens.tokens.items():
+			if not value.admin:
+				toKick.append(key)
 
 	# Loop though users to kick (we can't change dictionary size while iterating)
 	for i in toKick:
@@ -336,9 +337,10 @@ def systemMaintenance(fro, chan, message):
 		who = []
 
 		# Disconnect everyone but mod/admins
-		for _, value in glob.tokens.tokens.items():
-			if not value.admin:
-				who.append(value.userID)
+		with glob.tokens:
+			for _, value in glob.tokens.tokens.items():
+				if not value.admin:
+					who.append(value.userID)
 
 		glob.streams.broadcast("main", serverPackets.notification("Our bancho server is in maintenance mode. Please try to login again later."))
 		glob.tokens.multipleEnqueue(serverPackets.loginError(), who)
