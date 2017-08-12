@@ -88,8 +88,6 @@ class token:
 		# Locks
 		self.processingLock = threading.Lock()	# Acquired while there's an incoming packet from this user
 		self._bufferLock = threading.Lock()		# Acquired while writing to packets buffer
-		self._spectatorLock = threading.Lock()	# Acquired while starting/stopping spectating
-		self._multiplayerLock = threading.Lock()# Acquired while joining/leaving streams
 
 		# Set stats
 		self.updateCachedStats()
@@ -189,48 +187,42 @@ class token:
 
 		:param host: host osuToken object
 		"""
-		try:
-			# Stop spectating old client
-			self.stopSpectating()
+		# Stop spectating old client
+		self.stopSpectating()
 
-			# Acquire token's lock
-			self._spectatorLock.acquire()
+		# Set new spectator host
+		self.spectating = host.token
+		self.spectatingUserID = host.userID
 
-			# Set new spectator host
-			self.spectating = host.token
-			self.spectatingUserID = host.userID
+		# Add us to host's spectator list
+		host.spectators.append(self.token)
 
-			# Add us to host's spectator list
-			host.spectators.append(self.token)
+		# Create and join spectator stream
+		streamName = "spect/{}".format(host.userID)
+		glob.streams.add(streamName)
+		self.joinStream(streamName)
+		host.joinStream(streamName)
 
-			# Create and join spectator stream
-			streamName = "spect/{}".format(host.userID)
-			glob.streams.add(streamName)
-			self.joinStream(streamName)
-			host.joinStream(streamName)
+		# Send spectator join packet to host
+		host.enqueue(serverPackets.addSpectator(self.userID))
 
-			# Send spectator join packet to host
-			host.enqueue(serverPackets.addSpectator(self.userID))
+		# Create and join #spectator (#spect_userid) channel
+		glob.channels.addTempChannel("#spect_{}".format(host.userID))
+		chat.joinChannel(token=self, channel="#spect_{}".format(host.userID))
+		if len(host.spectators) == 1:
+			# First spectator, send #spectator join to host too
+			chat.joinChannel(token=host, channel="#spect_{}".format(host.userID))
 
-			# Create and join #spectator (#spect_userid) channel
-			glob.channels.addTempChannel("#spect_{}".format(host.userID))
-			chat.joinChannel(token=self, channel="#spect_{}".format(host.userID))
-			if len(host.spectators) == 1:
-				# First spectator, send #spectator join to host too
-				chat.joinChannel(token=host, channel="#spect_{}".format(host.userID))
+		# Send fellow spectator join to all clients
+		glob.streams.broadcast(streamName, serverPackets.fellowSpectatorJoined(self.userID))
 
-			# Send fellow spectator join to all clients
-			glob.streams.broadcast(streamName, serverPackets.fellowSpectatorJoined(self.userID))
+		# Get current spectators list
+		for i in host.spectators:
+			if i != self.token and i in glob.tokens.tokens:
+				self.enqueue(serverPackets.fellowSpectatorJoined(glob.tokens.tokens[i].userID))
 
-			# Get current spectators list
-			for i in host.spectators:
-				if i != self.token and i in glob.tokens.tokens:
-					self.enqueue(serverPackets.fellowSpectatorJoined(glob.tokens.tokens[i].userID))
-
-			# Log
-			log.info("{} is spectating {}".format(self.username, host.username))
-		finally:
-			self._spectatorLock.release()
+		# Log
+		log.info("{} is spectating {}".format(self.username, host.username))
 
 	def stopSpectating(self):
 		"""
@@ -239,49 +231,43 @@ class token:
 
 		:return:
 		"""
-		try:
-			# Acquire token lock
-			self._spectatorLock.acquire()
+		# Remove our userID from host's spectators
+		if self.spectating is None:
+			return
+		if self.spectating in glob.tokens.tokens:
+			hostToken = glob.tokens.tokens[self.spectating]
+		else:
+			hostToken = None
+		streamName = "spect/{}".format(self.spectatingUserID)
 
-			# Remove our userID from host's spectators
-			if self.spectating is None:
-				return
-			if self.spectating in glob.tokens.tokens:
-				hostToken = glob.tokens.tokens[self.spectating]
-			else:
-				hostToken = None
-			streamName = "spect/{}".format(self.spectatingUserID)
+		# Remove us from host's spectators list,
+		# leave spectator stream
+		# and end the spectator left packet to host
+		self.leaveStream(streamName)
+		if hostToken is not None:
+			hostToken.spectators.remove(self.token)
+			hostToken.enqueue(serverPackets.removeSpectator(self.userID))
 
-			# Remove us from host's spectators list,
-			# leave spectator stream
-			# and end the spectator left packet to host
-			self.leaveStream(streamName)
-			if hostToken is not None:
-				hostToken.spectators.remove(self.token)
-				hostToken.enqueue(serverPackets.removeSpectator(self.userID))
+			# and to all other spectators
+			for i in hostToken.spectators:
+				if i in glob.tokens.tokens:
+					glob.tokens.tokens[i].enqueue(serverPackets.fellowSpectatorLeft(self.userID))
 
-				# and to all other spectators
-				for i in hostToken.spectators:
-					if i in glob.tokens.tokens:
-						glob.tokens.tokens[i].enqueue(serverPackets.fellowSpectatorLeft(self.userID))
+			# If nobody is spectating the host anymore, close #spectator channel
+			# and remove host from spect stream too
+			if len(hostToken.spectators) == 0:
+				chat.partChannel(token=hostToken, channel="#spect_{}".format(hostToken.userID), kick=True)
+				hostToken.leaveStream(streamName)
 
-				# If nobody is spectating the host anymore, close #spectator channel
-				# and remove host from spect stream too
-				if len(hostToken.spectators) == 0:
-					chat.partChannel(token=hostToken, channel="#spect_{}".format(hostToken.userID), kick=True)
-					hostToken.leaveStream(streamName)
+			# Console output
+			log.info("{} is no longer spectating {}. Current spectators: {}".format(self.username, self.spectatingUserID, hostToken.spectators))
 
-				# Console output
-				log.info("{} is no longer spectating {}. Current spectators: {}".format(self.username, self.spectatingUserID, hostToken.spectators))
+		# Part #spectator channel
+		chat.partChannel(token=self, channel="#spect_{}".format(self.spectatingUserID), kick=True)
 
-			# Part #spectator channel
-			chat.partChannel(token=self, channel="#spect_{}".format(self.spectatingUserID), kick=True)
-
-			# Set our spectating user to 0
-			self.spectating = None
-			self.spectatingUserID = 0
-		finally:
-			self._spectatorLock.release()
+		# Set our spectating user to 0
+		self.spectating = None
+		self.spectatingUserID = 0
 
 	def updatePingTime(self):
 		"""
@@ -298,40 +284,35 @@ class token:
 		:param matchID: new match ID
 		:return:
 		"""
-		try:
-			self._multiplayerLock.acquire()
+		# Make sure the match exists
+		if matchID not in glob.matches.matches:
+			return
 
-			# Make sure the match exists
-			if matchID not in glob.matches.matches:
-				return
+		# Match exists, get object
+		match = glob.matches.matches[matchID]
 
-			# Match exists, get object
-			match = glob.matches.matches[matchID]
+		# Stop spectating
+		self.stopSpectating()
 
-			# Stop spectating
-			self.stopSpectating()
+		# Leave other matches
+		if self.matchID > -1 and self.matchID != matchID:
+			self.leaveMatch()
 
-			# Leave other matches
-			if self.matchID > -1 and self.matchID != matchID:
-				self.leaveMatch()
+		# Try to join match
+		joined = match.userJoin(self)
+		if not joined:
+			self.enqueue(serverPackets.matchJoinFail())
+			return
 
-			# Try to join match
-			joined = match.userJoin(self)
-			if not joined:
-				self.enqueue(serverPackets.matchJoinFail())
-				return
+		# Set matchID, join stream, channel and send packet
+		self.matchID = matchID
+		self.joinStream(match.streamName)
+		chat.joinChannel(token=self, channel="#multi_{}".format(self.matchID))
+		self.enqueue(serverPackets.matchJoinSuccess(matchID))
 
-			# Set matchID, join stream, channel and send packet
-			self.matchID = matchID
-			self.joinStream(match.streamName)
-			chat.joinChannel(token=self, channel="#multi_{}".format(self.matchID))
-			self.enqueue(serverPackets.matchJoinSuccess(matchID))
-
-			# Alert the user if we have just joined a tourney match
-			if match.isTourney:
-				self.enqueue(serverPackets.notification("You are now in a tournament match."))
-		finally:
-			self._multiplayerLock.release()
+		# Alert the user if we have just joined a tourney match
+		if match.isTourney:
+			self.enqueue(serverPackets.notification("You are now in a tournament match."))
 
 	def leaveMatch(self):
 		"""
@@ -339,33 +320,28 @@ class token:
 
 		:return:
 		"""
-		try:
-			self._multiplayerLock.acquire()
+		# Make sure we are in a match
+		if self.matchID == -1:
+			return
 
-			# Make sure we are in a match
-			if self.matchID == -1:
-				return
+		# Part #multiplayer channel and streams (/ and /playing)
+		chat.partChannel(token=self, channel="#multi_{}".format(self.matchID), kick=True)
+		self.leaveStream("multi/{}".format(self.matchID))
+		self.leaveStream("multi/{}/playing".format(self.matchID))	# optional
 
-			# Part #multiplayer channel and streams (/ and /playing)
-			chat.partChannel(token=self, channel="#multi_{}".format(self.matchID), kick=True)
-			self.leaveStream("multi/{}".format(self.matchID))
-			self.leaveStream("multi/{}/playing".format(self.matchID))	# optional
+		# Set usertoken match to -1
+		leavingMatchID = self.matchID
+		self.matchID = -1
 
-			# Set usertoken match to -1
-			leavingMatchID = self.matchID
-			self.matchID = -1
+		# Make sure the match exists
+		if leavingMatchID not in glob.matches.matches:
+			return
 
-			# Make sure the match exists
-			if leavingMatchID not in glob.matches.matches:
-				return
+		# The match exists, get object
+		match = glob.matches.matches[leavingMatchID]
 
-			# The match exists, get object
-			match = glob.matches.matches[leavingMatchID]
-
-			# Set slot to free
-			match.userLeft(self)
-		finally:
-			self._multiplayerLock.release()
+		# Set slot to free
+		match.userLeft(self)
 
 	def kick(self, message="You have been kicked from the server. Please login again.", reason="kick"):
 		"""
