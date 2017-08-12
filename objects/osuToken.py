@@ -88,7 +88,6 @@ class token:
 		# Locks
 		self.processingLock = threading.Lock()	# Acquired while there's an incoming packet from this user
 		self._bufferLock = threading.Lock()		# Acquired while writing to packets buffer
-		self._streamsLock = threading.Lock()	# Acquired while joining/leaving streams
 		self._spectatorLock = threading.Lock()	# Acquired while starting/stopping spectating
 		self._multiplayerLock = threading.Lock()# Acquired while joining/leaving streams
 
@@ -511,13 +510,9 @@ class token:
 		:param name: stream name
 		:return:
 		"""
-		try:
-			self._streamsLock.acquire()
-			glob.streams.join(name, token=self.token)
-			if name not in self.streams:
-				self.streams.append(name)
-		finally:
-			self._streamsLock.release()
+		glob.streams.join(name, token=self.token)
+		if name not in self.streams:
+			self.streams.append(name)
 
 	def leaveStream(self, name):
 		"""
@@ -526,13 +521,9 @@ class token:
 		:param name: stream name
 		:return:
 		"""
-		try:
-			self._streamsLock.acquire()
-			glob.streams.leave(name, token=self.token)
-			if name in self.streams:
-				self.streams.remove(name)
-		finally:
-			self._streamsLock.release()
+		glob.streams.leave(name, token=self.token)
+		if name in self.streams:
+			self.streams.remove(name)
 
 	def leaveAllStreams(self):
 		"""
