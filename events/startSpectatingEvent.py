@@ -11,6 +11,7 @@ def handle(userToken, packetData):
 		# If the user id is less than 0, treat this as a stop spectating packet
 		if packetData["userID"] < 0:
 			userToken.stopSpectating()
+			return
 
 		# Get host token
 		targetToken = glob.tokens.getTokenFromUserID(packetData["userID"])
