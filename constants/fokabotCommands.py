@@ -1032,7 +1032,7 @@ def multiplayer(fro, chan, message):
 	def mpSettings():
 		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
 		msg = "PLAYERS IN THIS MATCH:\n"
-		empty = None
+		empty = True
 		for slot in _match.slots:
 			if slot.user is None:
 				continue
@@ -1054,7 +1054,7 @@ def multiplayer(fro, chan, message):
 				mods=" (+ {})".format(generalUtils.readableMods(slot.mods)) if slot.mods > 0 else ""
 			)
 		if empty:
-			msg += "\nNobody."
+			msg += "Nobody.\n"
 		return msg
 
 

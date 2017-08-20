@@ -256,6 +256,8 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		if glob.irc == True and toIRC == True:
 			messageSplitInLines = message.encode("latin-1").decode("utf-8").split("\n")
 			for line in messageSplitInLines:
+				if line == messageSplitInLines[:1] and line == "":
+					continue
 				glob.ircServer.banchoMessage(fro, to, line)
 
 		# Spam protection (ignore FokaBot)
