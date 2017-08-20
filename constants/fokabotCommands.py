@@ -788,10 +788,8 @@ def multiplayer(fro, chan, message):
 		return "Attempting to join match #{}!".format(matchID)
 
 	def mpClose():
-		myToken = glob.tokens.getTokenFromUsername(fro)
-		if myToken.matchID == -1:
-			return "You're not in a multiplayer match"
-		glob.matches.disposeMatch(myToken.matchID)
+		matchID = getMatchIDFromChannel(chan)
+		glob.matches.disposeMatch(matchID)
 		return "Multiplayer match #{} disposed successfully".format(myToken.matchID)
 
 	def mpLock():
