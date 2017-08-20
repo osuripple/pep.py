@@ -254,7 +254,9 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 		# Send the message to IRC
 		if glob.irc == True and toIRC == True:
-			glob.ircServer.banchoMessage(fro, to, message.encode("latin-1").decode("utf-8"))
+			messageSplitInLines = message.encode("latin-1").decode("utf-8").split("\n")
+			for line in messageSplitInLines:
+				glob.ircServer.banchoMessage(fro, to, line)
 
 		# Spam protection (ignore FokaBot)
 		if token.userID > 999:
