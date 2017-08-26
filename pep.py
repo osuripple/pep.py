@@ -212,7 +212,7 @@ if __name__ == "__main__":
 		try:
 			glob.sentry = generalUtils.stringToBool(glob.conf.config["sentry"]["enable"])
 			if glob.sentry:
-				glob.application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodns"], release=glob.VERSION)
+				glob.application.sentry_client = AsyncSentryClient(glob.conf.config["sentry"]["banchodsn"], release=glob.VERSION)
 			else:
 				consoleHelper.printColored("[!] Warning! Sentry logging is disabled!", bcolors.YELLOW)
 		except:
