@@ -14,3 +14,8 @@ def handle(userToken, _):
 	slotID = match.getUserSlotID(userID)
 	if slotID is not None:
 		match.toggleSlotReady(slotID)
+
+	# If this is a tournament match, we should send the current status of ready
+	# players.
+	if match.isTourney:
+		match.sendReadyStatus()

@@ -427,6 +427,12 @@ class match:
 		# Console output
 		log.info("MPROOM{}: Match completed".format(self.matchID))
 
+		# If this is a tournament match, then we send a notification in the chat
+		# saying that the match has completed.
+		chanName = "#multi_{}".format(self.matchID)
+		if self.isTourney and (chanName in glob.channels.channels):
+			chat.sendMessage("FokaBot", chanName, "Match has just finished.")
+
 	def resetSlots(self):
 		for i in range(0,16):
 			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
@@ -815,3 +821,36 @@ class match:
 		for _slot in self.slots:
 			if _slot.status == slotStatuses.READY:
 				_slot.status = slotStatuses.NOT_READY
+
+	def sendReadyStatus(self):
+		chanName = "#multi_{}".format(self.matchID)
+
+		# Make sure match exists before attempting to do anything else
+		if chanName not in glob.channels.channels:
+			return
+
+		totalUsers = 0
+		readyUsers = 0
+
+		for slot in self.slots:
+			# Make sure there is a user in this slot
+			if slot.user is None:
+				continue
+
+			# In this slot there is a user, so we increase the amount of total users
+			# in this multi room.
+			totalUsers += 1
+
+			if slot.status == slotStatuses.READY:
+				readyUsers += 1
+
+		message = "{} users ready out of {}.".format(readyUsers, totalUsers)
+
+		if totalUsers == readyUsers:
+			message += " All users ready!"
+
+		# Check whether there is anyone left in this match.
+		if totalUsers == 0:
+			message = "The match is now empty."
+
+		chat.sendMessage("FokaBot", chanName, message)
