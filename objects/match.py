@@ -815,3 +815,36 @@ class match:
 		for _slot in self.slots:
 			if _slot.status == slotStatuses.READY:
 				_slot.status = slotStatuses.NOT_READY
+
+	def sendReadyStatus(self):
+		chanName = "#multi_{}".format(self.matchID)
+
+		# Make sure match exists before attempting to do anything else
+		if chanName not in glob.channels.channels:
+			return
+
+		totalUsers = 0
+		readyUsers = 0
+
+		for slot in match.slots:
+			# Make sure there is a user in this slot
+			if slot.user is None:
+				continue
+
+			# In this slot there is a user, so we increase the amount of total users
+			# in this multi room.
+			totalUsers += 1
+
+			if slot.status == slotStatuses.READY:
+				readyUsers += 1
+
+		message = "{} users ready out of {}.".format(readyUsers, totalUsers)
+
+		if totalUsers == readyUsers:
+			message += " All users ready!"
+
+		# Check whether there is anyone left in this match.
+		if totalUsers == 0:
+			message = "The match is now empty."
+
+		chat.sendMessage("FokaBot", chanName, message)

@@ -321,9 +321,12 @@ class token:
 		chat.joinChannel(token=self, channel="#multi_{}".format(self.matchID))
 		self.enqueue(serverPackets.matchJoinSuccess(matchID))
 
-		# Alert the user if we have just joined a tourney match
 		if match.isTourney:
+			# Alert the user if we have just joined a tourney match
 			self.enqueue(serverPackets.notification("You are now in a tournament match."))
+			# If an user joins, then the ready status of the match changes and
+			# maybe not all users are ready.
+			match.sendReadyStatus(match)
 
 	def leaveMatch(self):
 		"""
@@ -354,10 +357,15 @@ class token:
 		# Set slot to free
 		match.userLeft(self)
 
+		if match.isTourney:
+			# If an user leaves, then the ready status of the match changes and
+			# maybe all users are ready. Or maybe nobody is in the match anymore
+			match.sendReadyStatus(match)
+
 	def kick(self, message="You have been kicked from the server. Please login again.", reason="kick"):
 		"""
 		Kick this user from the server
-		
+
 		:param message: Notification message to send to this user.
 						Default: "You have been kicked from the server. Please login again."
 		:param reason: Kick reason, used in logs. Default: "kick"
