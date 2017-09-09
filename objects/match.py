@@ -427,6 +427,12 @@ class match:
 		# Console output
 		log.info("MPROOM{}: Match completed".format(self.matchID))
 
+		# If this is a tournament match, then we send a notification in the chat
+		# saying that the match has completed.
+		chanName = "#multi_{}".format(self.matchID)
+		if self.isTourney and (chanName in glob.channels.channels):
+			chat.sendMessage("FokaBot", chanName, "Match has just finished.")
+
 	def resetSlots(self):
 		for i in range(0,16):
 			if self.slots[i].user is not None and self.slots[i].status == slotStatuses.PLAYING:
@@ -826,7 +832,7 @@ class match:
 		totalUsers = 0
 		readyUsers = 0
 
-		for slot in match.slots:
+		for slot in self.slots:
 			# Make sure there is a user in this slot
 			if slot.user is None:
 				continue
