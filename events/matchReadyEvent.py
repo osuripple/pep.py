@@ -18,4 +18,4 @@ def handle(userToken, _):
 	# If this is a tournament match, we should send the current status of ready
 	# players.
 	if match.isTourney:
-		match.sendReadyStatus(match)
+		match.sendReadyStatus()

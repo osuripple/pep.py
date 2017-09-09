@@ -326,7 +326,7 @@ class token:
 			self.enqueue(serverPackets.notification("You are now in a tournament match."))
 			# If an user joins, then the ready status of the match changes and
 			# maybe not all users are ready.
-			match.sendReadyStatus(match)
+			match.sendReadyStatus()
 
 	def leaveMatch(self):
 		"""
@@ -360,7 +360,7 @@ class token:
 		if match.isTourney:
 			# If an user leaves, then the ready status of the match changes and
 			# maybe all users are ready. Or maybe nobody is in the match anymore
-			match.sendReadyStatus(match)
+			match.sendReadyStatus()
 
 	def kick(self, message="You have been kicked from the server. Please login again.", reason="kick"):
 		"""
