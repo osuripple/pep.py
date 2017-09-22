@@ -276,3 +276,6 @@ def notification(message):
 
 def banchoRestart(msUntilReconnection):
 	return packetHelper.buildPacket(packetIDs.server_restart, [[msUntilReconnection, dataTypes.UINT32]])
+
+def rtx(message):
+	return packetHelper.buildPacket(0x69, [[message, dataTypes.STRING]])

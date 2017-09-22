@@ -600,7 +600,7 @@ def tillerinoLast(fro, chan, message):
 		ifFc = " (FC)" if data["max_combo"] == data["fc"] else " {0}x/{1}x".format(data["max_combo"], data["fc"])
 		beatmapLink = "[http://osu.ppy.sh/b/{1} {0}]".format(data["sn"], data["bid"])
 
-		hasPP = data["play_mode"] == gameModes.STD or data["play_mode"] == gameModes.MANIA
+		hasPP = data["play_mode"] != gameModes.CTB
 
 		msg = ifPlayer
 		msg += beatmapLink
@@ -1113,6 +1113,16 @@ def switchServer(fro, chan, message):
 	# userToken.kick()
 	return "{} has been connected to {}".format(target, newServer)
 
+def rtx(fro, chan, message):
+	target = message[0]
+	message = message[1]
+	targetUserID = userUtils.getIDSafe(target)
+	if not targetUserID:
+		return "{}: user not found".format(target)
+	userToken = glob.tokens.getTokenFromUserID(targetUserID, ignoreIRC=True, _all=False)
+	userToken.enqueue(serverPackets.rtx(message))
+	return ":ok_hand:"
+
 
 
 
@@ -1260,6 +1270,11 @@ commands = [
 		"privileges": privileges.ADMIN_MANAGE_SERVERS,
 		"syntax": "<username> <server_address>",
 		"callback": switchServer
+	}, {
+		"trigger": "!rtx",
+		"privileges": privileges.ADMIN_MANAGE_SERVERS,
+		"syntax": "<username> <message>",
+		"callback": rtx
 	}
 	#
 	#	"trigger": "!acc",
