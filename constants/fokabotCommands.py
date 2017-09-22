@@ -1115,7 +1115,7 @@ def switchServer(fro, chan, message):
 
 def rtx(fro, chan, message):
 	target = message[0]
-	message = message[1]
+	message = " ".join(message[1:])
 	targetUserID = userUtils.getIDSafe(target)
 	if not targetUserID:
 		return "{}: user not found".format(target)
