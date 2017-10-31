@@ -27,7 +27,11 @@ class handler(requestsManager.asyncRequestHandler):
 			if key is None or key != glob.conf.config["server"]["cikey"]:
 				raise exceptions.invalidArgumentsException()
 
-			chatHelper.sendMessage("FokaBot", self.get_argument("to"), self.get_argument("msg"))
+			chatHelper.sendMessage(
+				"FokaBot",
+				self.get_argument("to").encode().decode("ASCII", "ignore"),
+				self.get_argument("msg").encode().decode("ASCII", "ignore")
+			)
 
 			# Status code and message
 			statusCode = 200
