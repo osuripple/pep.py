@@ -1272,7 +1272,7 @@ commands = [
 		"callback": switchServer
 	}, {
 		"trigger": "!rtx",
-		"privileges": privileges.ADMIN_MANAGE_SERVERS,
+		"privileges": privileges.ADMIN_KICK_USERS,
 		"syntax": "<username> <message>",
 		"callback": rtx
 	}
