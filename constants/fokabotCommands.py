@@ -81,14 +81,20 @@ def roll(fro, chan, message):
 #	return random.choice(["yes", "no", "maybe"])
 
 def alert(fro, chan, message):
-	glob.streams.broadcast("main", serverPackets.notification(' '.join(message[:])))
+	msg = ' '.join(message[:])
+	if not msg.strip():
+		return False
+	glob.streams.broadcast("main", serverPackets.notification(msg))
 	return False
 
 def alertUser(fro, chan, message):
 	target = message[0].lower()
 	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 	if targetToken is not None:
-		targetToken.enqueue(serverPackets.notification(' '.join(message[1:])))
+		msg = ' '.join(message[1:])
+		if not msg.strip():
+			return False
+		targetToken.enqueue(serverPackets.notification(msg))
 		return False
 	else:
 		return "User offline."
