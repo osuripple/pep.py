@@ -15,8 +15,6 @@ def handle(userToken, _):
 	if matchID not in glob.matches.matches:
 		return
 
-	# The match exists, get object
-	match = glob.matches.matches[matchID]
-
 	# Skip
-	match.playerSkip(userID)
+	with glob.matches.matches[matchID] as match:
+		match.playerSkip(userID)

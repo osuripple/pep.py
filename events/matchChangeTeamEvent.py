@@ -15,8 +15,6 @@ def handle(userToken, _):
 	if matchID not in glob.matches.matches:
 		return
 
-	# Get match object
-	match = glob.matches.matches[matchID]
-
 	# Change team
-	match.changeTeam(userID)
+	with glob.matches.matches[matchID] as match:
+		match.changeTeam(userID)

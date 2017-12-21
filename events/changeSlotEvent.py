@@ -8,8 +8,6 @@ def handle(userToken, packetData):
 	# Read packet data
 	packetData = clientPackets.changeSlot(packetData)
 
-	# Get match
-	match = glob.matches.matches[userToken.matchID]
-
-	# Change slot
-	match.userChangeSlot(userID, packetData["slotID"])
+	with glob.matches.matches[userToken.matchID] as match:
+		# Change slot
+		match.userChangeSlot(userID, packetData["slotID"])

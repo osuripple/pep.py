@@ -15,8 +15,6 @@ def handle(userToken, _):
 	if matchID not in glob.matches.matches:
 		return
 
-	# Match exists, get object
-	match = glob.matches.matches[matchID]
-
 	# Fail user
-	match.playerFailed(userID)
+	with glob.matches.matches[matchID] as match:
+		match.playerFailed(userID)

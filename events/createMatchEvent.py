@@ -20,15 +20,13 @@ def handle(userToken, packetData):
 		if matchID not in glob.matches.matches:
 			raise exceptions.matchCreateError()
 
-		# Get match object
-		match = glob.matches.matches[matchID]
+		with glob.matches.matches[matchID] as match:
+			# Join that match
+			userToken.joinMatch(matchID)
 
-		# Join that match
-		userToken.joinMatch(matchID)
-
-		# Give host to match creator
-		match.setHost(userID)
-		match.sendUpdates()
-		match.changePassword(packetData["matchPassword"])
+			# Give host to match creator
+			match.setHost(userID)
+			match.sendUpdates()
+			match.changePassword(packetData["matchPassword"])
 	except exceptions.matchCreateError:
 		log.error("Error while creating match!")

@@ -15,29 +15,29 @@ def handle(userToken, packetData):
 	matchID = userToken.matchID
 	if matchID not in glob.matches.matches:
 		return
-	match = glob.matches.matches[matchID]
 
 	# Set slot or match mods according to modType
-	if match.matchModMode == matchModModes.FREE_MOD:
-		# Freemod
-		# Host can set global DT/HT
-		if userID == match.hostUserID:
-			# If host has selected DT/HT and Freemod is enabled, set DT/HT as match mod
-			if (packetData["mods"] & mods.DOUBLETIME) > 0:
-				match.changeMods(mods.DOUBLETIME)
-				# Nightcore
-				if (packetData["mods"] & mods.NIGHTCORE) > 0:
-					match.changeMods(match.mods + mods.NIGHTCORE)
-			elif (packetData["mods"] & mods.HALFTIME) > 0:
-				match.changeMods(mods.HALFTIME)
-			else:
-				# No DT/HT, set global mods to 0 (we are in freemod mode)
-				match.changeMods(0)
+	with glob.matches.matches[matchID] as match:
+		if match.matchModMode == matchModModes.FREE_MOD:
+			# Freemod
+			# Host can set global DT/HT
+			if userID == match.hostUserID:
+				# If host has selected DT/HT and Freemod is enabled, set DT/HT as match mod
+				if (packetData["mods"] & mods.DOUBLETIME) > 0:
+					match.changeMods(mods.DOUBLETIME)
+					# Nightcore
+					if (packetData["mods"] & mods.NIGHTCORE) > 0:
+						match.changeMods(match.mods + mods.NIGHTCORE)
+				elif (packetData["mods"] & mods.HALFTIME) > 0:
+					match.changeMods(mods.HALFTIME)
+				else:
+					# No DT/HT, set global mods to 0 (we are in freemod mode)
+					match.changeMods(0)
 
-		# Set slot mods
-		slotID = match.getUserSlotID(userID)
-		if slotID is not None:
-			match.setSlotMods(slotID, packetData["mods"])
-	else:
-		# Not freemod, set match mods
-		match.changeMods(packetData["mods"])
+			# Set slot mods
+			slotID = match.getUserSlotID(userID)
+			if slotID is not None:
+				match.setSlotMods(slotID, packetData["mods"])
+		else:
+			# Not freemod, set match mods
+			match.changeMods(packetData["mods"])

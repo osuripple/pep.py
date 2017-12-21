@@ -17,8 +17,6 @@ def handle(userToken, packetData):
 	if matchID not in glob.matches.matches:
 		return
 
-	# Get match object
-	match = glob.matches.matches[matchID]
-
 	# Send invite
-	match.invite(userID, packetData["userID"])
+	with glob.matches.matches[matchID] as match:
+		match.invite(userID, packetData["userID"])

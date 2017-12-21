@@ -15,8 +15,6 @@ def handle(userToken, _, has):
 	if matchID not in glob.matches.matches:
 		return
 
-	# The match exists, get object
-	match = glob.matches.matches[matchID]
-
 	# Set has beatmap/no beatmap
-	match.userHasBeatmap(userID, has)
+	with glob.matches.matches[matchID] as match:
+		match.userHasBeatmap(userID, has)

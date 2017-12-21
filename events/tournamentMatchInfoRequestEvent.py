@@ -6,4 +6,5 @@ def handle(userToken, packetData):
 	matchID = packetData["matchID"]
 	if matchID not in glob.matches.matches or not userToken.tournament:
 		return
-	userToken.enqueue(glob.matches.matches[matchID].matchDataCache)
+	with glob.matches.matches[matchID] as m:
+		userToken.enqueue(m.matchDataCache)

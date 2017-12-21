@@ -13,11 +13,9 @@ def handle(userToken, _):
 	if matchID not in glob.matches.matches:
 		return
 
-	# The match exists, get object
-	match = glob.matches.matches[matchID]
+	with glob.matches.matches[matchID] as match:
+		# Host check
+		if userToken.userID != match.hostUserID:
+			return
 
-	# Host check
-	if userToken.userID != match.hostUserID:
-		return
-
-	match.start()
+		match.start()

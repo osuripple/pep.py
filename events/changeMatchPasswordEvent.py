@@ -10,12 +10,10 @@ def handle(userToken, packetData):
 	if matchID not in glob.matches.matches:
 		return
 
-	# Get our match
-	match = glob.matches.matches[matchID]
+	with glob.matches.matches[matchID] as match:
+		# Host check
+		if userToken.userID != match.hostUserID:
+			return
 
-	# Host check
-	if userToken.userID != match.hostUserID:
-		return
-
-	# Update match password
-	match.changePassword(packetData["matchPassword"])
+		# Update match password
+		match.changePassword(packetData["matchPassword"])

@@ -16,18 +16,16 @@ def handle(userToken, packetData):
 	if matchID not in glob.matches.matches:
 		return
 
-	# The match exists, get object
-	match = glob.matches.matches[matchID]
-
-	# Change slot id in packetData
-	slotID = match.getUserSlotID(userID)
-
 	# Parse the data
 	data = clientPackets.matchFrames(packetData)
 
-	# Update the score
-	match.updateScore(slotID, data["totalScore"])
-	match.updateHP(slotID, data["currentHp"])
+	with glob.matches.matches[matchID] as match:
+		# Change slot id in packetData
+		slotID = match.getUserSlotID(userID)
 
-	# Enqueue frames to who's playing
-	glob.streams.broadcast(match.playingStreamName, serverPackets.matchFrames(slotID, packetData))
+		# Update the score
+		match.updateScore(slotID, data["totalScore"])
+		match.updateHP(slotID, data["currentHp"])
+
+		# Enqueue frames to who's playing
+		glob.streams.broadcast(match.playingStreamName, serverPackets.matchFrames(slotID, packetData))

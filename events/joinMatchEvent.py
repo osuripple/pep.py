@@ -17,19 +17,17 @@ def handle(userToken, packetData):
 		if matchID not in glob.matches.matches:
 			return
 
-		# Match exists, get object
-		match = glob.matches.matches[matchID]
-
 		# Hash password if needed
-		#if password != "":
+		# if password != "":
 		#	password = generalUtils.stringMd5(password)
 
 		# Check password
-		if match.matchPassword != "" and match.matchPassword != password:
-			raise exceptions.matchWrongPasswordException()
+		with glob.matches.matches[matchID] as match:
+			if match.matchPassword != "" and match.matchPassword != password:
+				raise exceptions.matchWrongPasswordException()
 
-		# Password is correct, join match
-		userToken.joinMatch(matchID)
+			# Password is correct, join match
+			userToken.joinMatch(matchID)
 	except exceptions.matchWrongPasswordException:
 		userToken.enqueue(serverPackets.matchJoinFail())
 		log.warning("{} has tried to join a mp room, but he typed the wrong password".format(userToken.username))
