@@ -79,7 +79,7 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 			token = glob.tokens.getTokenFromUserID(userID)
 			# Make sure the token exists
 			if token is None:
-				raise exceptions.userNotFoundException
+				raise exceptions.userNotFoundException()
 		else:
 			token = token
 
@@ -157,7 +157,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 		if token is None:
 			token = glob.tokens.getTokenFromUsername(fro)
 			if token is None:
-				raise exceptions.userNotFoundException
+				raise exceptions.userNotFoundException()
 		else:
 			# token object alredy passed, get its string and its username (fro)
 			fro = token.username
@@ -194,6 +194,11 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			toClient = "#spectator"
 		elif to.startswith("#multi_"):
 			toClient = "#multiplayer"
+
+		# Make sure the message is valid
+		if not message.strip():
+			raise exceptions.invalidArgumentsException()
+
 		# Truncate message if > 2048 characters
 		message = message[:2048]+"..." if len(message) > 2048 else message
 
@@ -297,6 +302,9 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 	except exceptions.userNotFoundException:
 		log.warning("User not connected to IRC/Bancho")
 		return 401
+	except exceptions.invalidArgumentsException:
+		log.warning("{} tried to send an invalid message to {}".format(token.username, to))
+		return 404
 
 
 """ IRC-Bancho Connect/Disconnect/Join/Part interfaces"""
