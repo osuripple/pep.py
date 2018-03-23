@@ -1,5 +1,5 @@
 from common.log import logUtils as log
-from constants import clientPackets
+from constants import clientPackets, serverPackets
 from constants import exceptions
 from objects import glob
 
@@ -12,9 +12,14 @@ def handle(userToken, packetData):
 		# Read packet data
 		packetData = clientPackets.createMatch(packetData)
 
+		# Make sure the name is valid
+		matchName = packetData["matchName"].strip()
+		if not matchName:
+			raise exceptions.matchCreateError()
+
 		# Create a match object
 		# TODO: Player number check
-		matchID = glob.matches.createMatch(packetData["matchName"], packetData["matchPassword"], packetData["beatmapID"], packetData["beatmapName"], packetData["beatmapMD5"], packetData["gameMode"], userID)
+		matchID = glob.matches.createMatch(matchName, packetData["matchPassword"].strip(), packetData["beatmapID"], packetData["beatmapName"], packetData["beatmapMD5"], packetData["gameMode"], userID)
 
 		# Make sure the match has been created
 		if matchID not in glob.matches.matches:
@@ -30,3 +35,4 @@ def handle(userToken, packetData):
 			match.changePassword(packetData["matchPassword"])
 	except exceptions.matchCreateError:
 		log.error("Error while creating match!")
+		userToken.enqueue(serverPackets.matchJoinFail())
