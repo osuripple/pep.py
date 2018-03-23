@@ -41,32 +41,24 @@ def instantRestart(fro, chan, message):
 
 def faq(fro, chan, message):
 	# TODO: Unhardcode this
-	if message[0] == "rules":
-		return "Please make sure to check (Ripple's rules)[http://ripple.moe/?p=23]."
-	elif message[0] == "swearing":
-		return "Please don't abuse swearing"
-	elif message[0] == "spam":
-		return "Please don't spam"
-	elif message[0] == "offend":
-		return "Please don't offend other players"
-	elif message[0] == "github":
-		return "(Ripple's Github page!)[https://github.com/osuripple/ripple]"
-	elif message[0] == "discord":
-		return "(Join Ripple's Discord!)[https://discord.gg/0rJcZruIsA6rXuIx]"
-	elif message[0] == "blog":
-		return "You can find the latest Ripple news on the (blog)[https://ripple.moe/blog/]!"
-	elif message[0] == "changelog":
-		return "Check the (changelog)[https://ripple.moe/index.php?p=17] !"
-	elif message[0] == "status":
-		return "Check the server status (here!)[https://ripple.moe/index.php?p=27]"
-	elif message[0] == "english":
-		return "Please keep this channel in english."
-	elif message[0] == "topic":
-		return "Can you please drop the topic and talk about something else?"
-	elif message[0] == "lines":
-		return "Please try to keep your sentences on a single line to avoid getting silenced."
-	else:
+	messages = {
+		"rules": "Please make sure to check (Ripple's rules)[https://ripple.moe/doc/rules].",
+		"swearing": "Please don't abuse swearing",
+		"spam": "Please don't spam",
+		"offend": "Please don't offend other players",
+		"github": "(Ripple's Github page!)[https://github.com/osuripple/ripple]",
+		"discord": "(Join Ripple's Discord!)[https://discord.gg/0rJcZruIsA6rXuIx]",
+		"blog": "You can find the latest Ripple news on the (blog)[https://blog.ripple.moe]!",
+		"changelog": "Check the (changelog)[https://ripple.moe/changelog] !",
+		"status": "Check the server status (here!)[https://status.ripple.moe]",
+		"english": "Please keep this channel in english.",
+		"topic": "Can you please drop the topic and talk about something else?",
+		"lines": "Please try to keep your sentences on a single line to avoid getting silenced."
+	}
+	key = message[0].lower()
+	if key not in messages:
 		return False
+	return messages[key]
 
 def roll(fro, chan, message):
 	maxPoints = 100
@@ -81,8 +73,8 @@ def roll(fro, chan, message):
 #	return random.choice(["yes", "no", "maybe"])
 
 def alert(fro, chan, message):
-	msg = ' '.join(message[:])
-	if not msg.strip():
+	msg = ' '.join(message[:]).strip()
+	if not msg:
 		return False
 	glob.streams.broadcast("main", serverPackets.notification(msg))
 	return False
@@ -91,8 +83,8 @@ def alertUser(fro, chan, message):
 	target = message[0].lower()
 	targetToken = glob.tokens.getTokenFromUsername(userUtils.safeUsername(target), safe=True)
 	if targetToken is not None:
-		msg = ' '.join(message[1:])
-		if not msg.strip():
+		msg = ' '.join(message[1:]).strip()
+		if not msg:
 			return False
 		targetToken.enqueue(serverPackets.notification(msg))
 		return False
@@ -160,12 +152,15 @@ def fokabotReconnect(fro, chan, message):
 	return False
 
 def silence(fro, chan, message):
-	for i in message:
-		i = i.lower()
+	message = [x.lower() for x in message]
 	target = message[0]
 	amount = message[1]
 	unit = message[2]
-	reason = ' '.join(message[3:])
+	reason = ' '.join(message[3:]).strip()
+	if not reason:
+		return "Please provide a valid reason."
+	if not amount.isdigit():
+		return "The amount must be a number."
 
 	# Get target user ID
 	targetUserID = userUtils.getIDSafe(target)
@@ -1114,7 +1109,9 @@ def multiplayer(fro, chan, message):
 def switchServer(fro, chan, message):
 	# Get target user ID
 	target = message[0]
-	newServer = message[1]
+	newServer = message[1].strip()
+	if not newServer:
+		return "Invalid server IP"
 	targetUserID = userUtils.getIDSafe(target)
 	userID = userUtils.getID(fro)
 
@@ -1132,7 +1129,9 @@ def switchServer(fro, chan, message):
 
 def rtx(fro, chan, message):
 	target = message[0]
-	message = " ".join(message[1:])
+	message = " ".join(message[1:]).strip()
+	if not message:
+		return "Invalid message"
 	targetUserID = userUtils.getIDSafe(target)
 	if not targetUserID:
 		return "{}: user not found".format(target)
