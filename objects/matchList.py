@@ -1,3 +1,6 @@
+import threading
+import time
+
 from objects import match
 from objects import glob
 from constants import serverPackets
@@ -63,3 +66,31 @@ class matchList:
 		glob.streams.broadcast("lobby", serverPackets.disposeMatch(matchID))
 		del self.matches[matchID]
 		log.info("MPROOM{}: Room disposed manually".format(_match.matchID))
+
+	def cleanupLoop(self):
+		"""
+		Start match cleanup loop.
+		Empty matches that have been created more than 60 seconds ago will get deleted.
+		Useful when people create useless lobbies with `!mp make`.
+		The check is done every 30 seconds.
+		This method starts an infinite loop, call it only once!
+		:return:
+		"""
+		log.debug("Checking empty matches")
+		t = int(time.time())
+		emptyMatches = []
+
+		# Collect all empty matches
+		for key, m in self.matches.items():
+			if [x for x in m.slots if x.user is not None]:
+				continue
+			if t - m.createTime >= 120:
+				log.debug("Match #{} marked for cleanup".format(m.matchID))
+				emptyMatches.append(m.matchID)
+
+		# Dispose all empty matches
+		for matchID in emptyMatches:
+			self.disposeMatch(matchID)
+
+		# Schedule a new check (endless loop)
+		threading.Timer(30, self.cleanupLoop).start()

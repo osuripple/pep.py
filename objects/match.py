@@ -1,6 +1,9 @@
 import copy
 import json
 import threading
+
+import time
+
 from common.log import logUtils as log
 from constants import dataTypes
 from constants import matchModModes
@@ -62,6 +65,7 @@ class match:
 		self.isLocked = False 	# if True, users can't change slots/teams. Used in tourney matches
 		self.isStarting = False
 		self._lock = threading.Lock()
+		self.createTime = int(time.time())
 
 		# Create all slots and reset them
 		self.slots = []

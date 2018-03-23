@@ -181,6 +181,11 @@ if __name__ == "__main__":
 		glob.tokens.spamProtectionResetLoop()
 		consoleHelper.printDone()
 
+		# Initialize multiplayer cleanup loop
+		consoleHelper.printNoNl("> Initializing multiplayer cleanup loop... ")
+		glob.matches.cleanupLoop()
+		consoleHelper.printDone()
+
 		# Localize warning
 		glob.localize = generalUtils.stringToBool(glob.conf.config["localize"]["enable"])
 		if not glob.localize:
