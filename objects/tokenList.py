@@ -171,19 +171,16 @@ class tokenList:
 		for _, value in self.tokens.items():
 			value.enqueue(packet)
 
-	def usersTimeoutCheckLoop(self, timeoutTime = 100, checkTime = 100):
+	def usersTimeoutCheckLoop(self):
 		"""
 		Start timed out users disconnect loop.
 		This function will be called every `checkTime` seconds and so on, forever.
 		CALL THIS FUNCTION ONLY ONCE!
-
-		:param timeoutTime: seconds of inactivity required to disconnect someone. Default: 100
-		:param checkTime: seconds between loops. Default: 100
 		:return:
 		"""
 		log.debug("Checking timed out clients")
 		timedOutTokens = []		# timed out users
-		timeoutLimit = int(time.time())-timeoutTime
+		timeoutLimit = int(time.time()) - 100
 		for key, value in self.tokens.items():
 			# Check timeout (fokabot is ignored)
 			if value.pingTime < timeoutLimit and value.userID != 999 and value.irc == False and value.tournament == False:
@@ -200,7 +197,7 @@ class tokenList:
 		del timedOutTokens
 
 		# Schedule a new check (endless loop)
-		threading.Timer(checkTime, self.usersTimeoutCheckLoop, [timeoutTime, checkTime]).start()
+		threading.Timer(100, self.usersTimeoutCheckLoop).start()
 
 	def spamProtectionResetLoop(self):
 		"""
