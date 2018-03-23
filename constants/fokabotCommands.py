@@ -796,7 +796,7 @@ def multiplayer(fro, chan, message):
 	def mpClose():
 		matchID = getMatchIDFromChannel(chan)
 		glob.matches.disposeMatch(matchID)
-		return "Multiplayer match #{} disposed successfully".format(myToken.matchID)
+		return "Multiplayer match #{} disposed successfully".format(matchID)
 
 	def mpLock():
 		matchID = getMatchIDFromChannel(chan)
