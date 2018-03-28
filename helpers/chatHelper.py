@@ -1,3 +1,6 @@
+import random
+from collections import namedtuple
+
 from common.log import logUtils as log
 from common.ripple import userUtils
 from constants import exceptions
@@ -6,6 +9,9 @@ from constants import serverPackets
 from events import logoutEvent
 from objects import fokabot
 from objects import glob
+
+
+TalkativeFokaTrigger = namedtuple("TalkativeFokaTrigger", ["trigger", "value"])
 
 
 def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
@@ -229,6 +235,38 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 
 			# Everything seems fine, build recipients list and send packet
 			glob.streams.broadcast("chat/{}".format(to), packet, but=[token.token])
+
+			# Foka mashin lrning memes
+			if fro.lower() != "fokabot":
+				m = message.lower()
+				triggers = [
+					TalkativeFokaTrigger(k, v) for k, v in {
+						"!": 1, "?": 1,
+						"foka": 6, "april": 4, "happy": 4, "fool": 4, "bot": 2,
+						"hello": 3, "hi": 3, "sup": 3, "good": 3
+					}.items()
+				]
+				maxIncrement = sum([x.value for x in triggers])
+				currentIncrement = sum([x.value for x in triggers if x.trigger in m])
+				actualIncrement = max(min(currentIncrement, maxIncrement), 1)
+				log.debug("actual threshold: {}, max threshold: {}, current: {}".format(
+					actualIncrement, maxIncrement, currentIncrement
+				))
+
+				base = 0.5 if glob.channels.channels[to].lastSender == fro.lower() else 1
+				glob.channels.channels[to].increaseActivity(base + actualIncrement / maxIncrement)
+				glob.channels.channels[to].lastSender = fro.lower()
+				if glob.channels.channels[to].isMashinLrnable():
+					glob.channels.channels[to].mashinLrn()
+					sendMessage("FokaBot", to, random.choice(glob.mashin))
+
+				# Randomly ping inactive channels as well
+				for inactiveChannel in glob.channels.inactiveChannels():
+					if random.randint(0, 2) == 0 and not inactiveChannel.temp \
+						and inactiveChannel.publicRead and inactiveChannel.publicWrite:
+						log.debug("{} inactive!".format(inactiveChannel.name))
+						inactiveChannel.increaseActivity()
+						sendMessage("FokaBot", inactiveChannel.name, random.choice(glob.mashin))
 		else:
 			# USER
 			# Make sure recipient user is connected
@@ -270,7 +308,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			token.spamProtection()
 
 		# Fokabot message
-		if isChannel == True or to.lower() == "fokabot":
+		if isChannel == True or to.lower() == "fokabot" and fro.lower() != "fokabot":
 			fokaMessage = fokabot.fokabotResponse(token.username, to, message)
 			if fokaMessage:
 				sendMessage("FokaBot", to if isChannel else fro, fokaMessage)

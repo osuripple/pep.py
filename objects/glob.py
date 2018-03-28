@@ -48,3 +48,5 @@ restarting = False
 startTime = int(time.time())
 
 streams = streamList.streamList()
+
+mashin = []

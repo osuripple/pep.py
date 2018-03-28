@@ -1,3 +1,6 @@
+import time
+
+from common.log import logUtils as log
 from objects import glob
 
 class channel:
@@ -20,6 +23,11 @@ class channel:
 		self.temp = temp
 		self.hidden = hidden
 
+		self.activity = 0.
+		self._lastActivityTime = time.time()
+		self._lastMashinLrningTime = 0
+		self.lastSender = ""
+
 		# Client name (#spectator/#multiplayer)
 		self.clientName = self.name
 		if self.name.startswith("#spect_"):
@@ -31,3 +39,23 @@ class channel:
 		fokaToken = glob.tokens.getTokenFromUserID(999)
 		if fokaToken is not None:
 			fokaToken.joinChannel(self)
+
+	def increaseActivity(self, increment=1.0):
+		if time.time() - self._lastActivityTime > 10:
+			self.activity = 0
+		self.activity += increment
+		self._lastActivityTime = time.time()
+		log.debug("{} activity is now {} (inc {}), time is {}".format(
+			self.name, self.activity, increment, self._lastActivityTime
+		))
+
+	@property
+	def isInactive(self):
+		return self._lastActivityTime < time.time() - 60
+
+	def isMashinLrnable(self):
+		return self.activity >= 5 and time.time() > self._lastMashinLrningTime - 20
+
+	def mashinLrn(self):
+		self.activity = 0
+		self._lastMashinLrningTime = time.time()

@@ -87,3 +87,8 @@ class channelList:
 		glob.streams.remove("chat/{}".format(name))
 		self.channels.pop(name)
 		log.info("Removed channel {}".format(name))
+
+	def inactiveChannels(self):
+		for _, v in self.channels.items():
+			if v.isInactive:
+				yield v

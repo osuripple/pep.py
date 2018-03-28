@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import threading
 from multiprocessing.pool import ThreadPool
@@ -185,6 +186,16 @@ if __name__ == "__main__":
 		consoleHelper.printNoNl("> Initializing multiplayer cleanup loop... ")
 		glob.matches.cleanupLoop()
 		consoleHelper.printDone()
+
+		# MASHIN LRNING CLAUD COMPIUTING BIG DEITA AIOTTI
+		if os.path.isfile("mashin_lrning.txt"):
+			action_regex = re.compile(r"(?<!^)\x01")
+			with open("mashin_lrning.txt", "r", encoding="latin-1") as f:
+				for sentence in f.readlines():
+					sanitized_sentence = action_regex.sub("", sentence.strip())
+					if sanitized_sentence:
+						glob.mashin.append(sanitized_sentence)
+		consoleHelper.printColored("> Loaded {} mashin lrning sentences".format(len(glob.mashin)), bcolors.GREEN)
 
 		# Localize warning
 		glob.localize = generalUtils.stringToBool(glob.conf.config["localize"]["enable"])
