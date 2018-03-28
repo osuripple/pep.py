@@ -256,7 +256,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 				base = 0.5 if glob.channels.channels[to].lastSender == fro.lower() else 1
 				glob.channels.channels[to].increaseActivity(base + actualIncrement / maxIncrement)
 				glob.channels.channels[to].lastSender = fro.lower()
-				if glob.channels.channels[to].isMashinLrnable():
+				if glob.channels.channels[to].isMashinLrnable:
 					glob.channels.channels[to].mashinLrn()
 					sendMessage("FokaBot", to, random.choice(glob.mashin))
 

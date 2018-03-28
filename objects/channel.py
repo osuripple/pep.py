@@ -53,6 +53,7 @@ class channel:
 	def isInactive(self):
 		return self._lastActivityTime < time.time() - 60
 
+	@property
 	def isMashinLrnable(self):
 		return self.activity >= 5 and time.time() > self._lastMashinLrningTime - 20
 
