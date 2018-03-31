@@ -1,3 +1,4 @@
+import random
 import sys
 import time
 import traceback
@@ -218,6 +219,30 @@ def handle(tornadoRequest):
 		# Set reponse data to right value and reset our queue
 		responseData = responseToken.queue
 		responseToken.resetQueue()
+
+		if userID == 1000: # 2185:
+			sen_trope = [
+				"Super abonati",
+				"samo tarikati",
+				"luskavi magnati",
+				"Ooo..." * 2,
+				"Super abonati",
+				"samo tarikati",
+				"luskavi magnati",
+				"Ale-lei... pak..." * 8,
+				"Vsichki sa na Sen Trope",
+				"drugi na Maldivite",
+				"v Dubai puk tretite!",
+				"Vsichki sa na Sen Trope",
+				"drugi na Maldivite",
+				"v Dubai puk tretite!",
+				"Akh, le-le-le..." * 2,
+			]
+			for i in range(random.randint(2, 10)):
+				m = "" if i else "{}: ".format(username)
+				m += random.choice(sen_trope)
+				chat.sendMessage("FokaBot", "#osu", m)
+
 	except exceptions.loginFailedException:
 		# Login failed error packet
 		# (we don't use enqueue because we don't have a token since login has failed)
