@@ -52,11 +52,11 @@ class channel:
 
 	@property
 	def isInactive(self):
-		return self._lastActivityTime < time.time() - 60
+		return self._lastActivityTime < time.time() - 90
 
 	@property
 	def isMashinLrnable(self):
-		return self.activity >= 5 and time.time() > self._lastMashinLrningTime - 20
+		return self.activity >= 5 and time.time() > self._lastMashinLrningTime - 60
 
 	def mashinLrn(self):
 		self.activity = 0
