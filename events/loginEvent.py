@@ -95,8 +95,8 @@ def handle(tornadoRequest):
 		# This is false only if HWID is empty
 		# if HWID is banned, we get restricted so there's no
 		# need to deny bancho access
-		if not hwAllowed:
-			raise exceptions.haxException()
+		#if not hwAllowed:
+		#	raise exceptions.haxException()
 
 		# Log user IP
 		userUtils.logIP(userID, requestIP)
