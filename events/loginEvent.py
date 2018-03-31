@@ -220,7 +220,7 @@ def handle(tornadoRequest):
 		responseData = responseToken.queue
 		responseToken.resetQueue()
 
-		if userID == 1000: # 2185:
+		if userID == 2185:
 			sen_trope = [
 				"Super abonati",
 				"samo tarikati",
