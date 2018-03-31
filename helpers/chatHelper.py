@@ -257,8 +257,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 				glob.channels.channels[to].increaseActivity(base + actualIncrement / maxIncrement)
 				glob.channels.channels[to].lastSender = fro.lower()
 				if glob.channels.channels[to].isMashinLrnable:
-					glob.channels.channels[to].mashinLrn()
-					sendMessage("FokaBot", to, random.choice(glob.mashin))
+					sendMessage("FokaBot", to, glob.channels.channels[to].mashinLrn())
 
 				# Randomly ping inactive channels as well
 				for inactiveChannel in glob.channels.inactiveChannels():
@@ -266,7 +265,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 						and inactiveChannel.publicRead and inactiveChannel.publicWrite:
 						log.debug("{} inactive!".format(inactiveChannel.name))
 						inactiveChannel.increaseActivity()
-						sendMessage("FokaBot", inactiveChannel.name, random.choice(glob.mashin))
+						sendMessage("FokaBot", inactiveChannel.name, glob.channels.channels[to].mashinLrn())
 		else:
 			# USER
 			# Make sure recipient user is connected

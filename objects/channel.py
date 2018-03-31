@@ -1,3 +1,4 @@
+import random
 import time
 
 from common.log import logUtils as log
@@ -60,3 +61,8 @@ class channel:
 	def mashinLrn(self):
 		self.activity = 0
 		self._lastMashinLrningTime = time.time()
+		idx = glob.lastMashin
+		while idx == glob.lastMashin:
+			idx = random.randrange(0, len(glob.mashin))
+		glob.lastMashin = idx
+		return glob.mashin[idx]

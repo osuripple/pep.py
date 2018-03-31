@@ -50,3 +50,4 @@ startTime = int(time.time())
 streams = streamList.streamList()
 
 mashin = []
+lastMashin = -1
