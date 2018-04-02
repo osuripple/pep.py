@@ -1,4 +1,5 @@
 ## pep.py [![Code Health](https://landscape.io/github/osuripple/pep.py/master/landscape.svg?style=flat)](https://landscape.io/github/osuripple/pep.py/master)
+### April Fool's 2018 branch
 
 - Origin: https://git.zxq.co/ripple/pep.py
 - Mirror: https://github.com/osuripple/pep.py
@@ -43,6 +44,10 @@ you can run pep.py by typing
 ```
 $ python3 pep.py
 ```
+
+## April Fool's 2018 Changes
+- FokaBot randomly sends messages generated with a very hipster machine learning procedure (I'm not kidding)
+- FokaBot spams [Sen Trope](https://www.youtube.com/watch?v=BplsGX5eLLo) lyrics when AiAe logs in (he hates that song)
 
 ## License
 All code in this repository is licensed under the GNU AGPL 3 License.  
