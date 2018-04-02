@@ -1097,7 +1097,7 @@ def multiplayer(fro, chan, message):
 		if requestedSubcommand not in subcommands:
 			raise exceptions.invalidArgumentsException("Invalid subcommand")
 		return subcommands[requestedSubcommand]()
-	except (exceptions.invalidArgumentsException, exceptions.userNotFoundException) as e:
+	except (exceptions.invalidArgumentsException, exceptions.userNotFoundException, exceptions.invalidUserException) as e:
 		return str(e)
 	except exceptions.wrongChannelException:
 		return "This command only works in multiplayer chat channels"
