@@ -9,7 +9,7 @@ import tornado.web
 from raven.contrib.tornado import AsyncSentryClient
 import redis
 
-from common import generalUtils
+from common import generalUtils, agpl
 from common.constants import bcolors
 from common.db import dbConnector
 from common.ddog import datadogClient
@@ -40,6 +40,7 @@ from pubSubHandlers import notificationHandler
 from pubSubHandlers import updateSilenceHandler
 from pubSubHandlers import updateStatsHandler
 
+
 def make_app():
 	return tornado.web.Application([
 		(r"/", mainHandler.handler),
@@ -52,7 +53,15 @@ def make_app():
 		(r"/stress", heavyHandler.handler)
 	])
 
+
 if __name__ == "__main__":
+	# AGPL license agreement
+	try:
+		agpl.check_license("ripple", "pep.py")
+	except agpl.LicenseError as e:
+		print(str(e))
+		sys.exit(1)
+
 	try:
 		# Server start
 		consoleHelper.printServerStartHeader(True)
