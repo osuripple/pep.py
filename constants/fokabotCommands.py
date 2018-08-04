@@ -1012,6 +1012,8 @@ def multiplayer(fro, chan, message):
 				newMods |= mods.FLASHLIGHT
 			elif _mod.lower().strip() == "fi":
 				newMods |= mods.FADEIN
+			elif _mod.lower().strip() == "ez":
+				newMods |= mods.EASY
 			if _mod.lower().strip() == "none":
 				newMods = 0
 
