@@ -648,7 +648,7 @@ class Server:
 		# Sentry
 		sentryClient = None
 		if glob.sentry:
-			sentryClient = raven.Client(glob.conf.config["sentry"]["ircdns"])
+			sentryClient = raven.Client(glob.conf.config["sentry"]["ircdsn"])
 
 		serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		serversocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
