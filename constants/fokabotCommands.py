@@ -1045,7 +1045,13 @@ def multiplayer(fro, chan, message):
 
 	def mpSettings():
 		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
-		msg = "PLAYERS IN THIS MATCH:\n"
+		single = False if len(message) < 2 else message[1].strip().lower() == "single"
+		msg = "PLAYERS IN THIS MATCH "
+		if not single:
+			msg += "(use !mp settings single for a single-line version):"
+			msg += "\n"
+		else:
+			msg += ": "
 		empty = True
 		for slot in _match.slots:
 			if slot.user is None:
@@ -1061,14 +1067,16 @@ def multiplayer(fro, chan, message):
 			else:
 				readableStatus = readableStatuses[slot.status]
 			empty = False
-			msg += "* [{team}] <{status}> ~ {username}{mods}\n".format(
+			msg += "* [{team}] <{status}> ~ {username}{mods}{nl}".format(
 				team="red" if slot.team == matchTeams.RED else "blue" if slot.team == matchTeams.BLUE else "!! no team !!",
 				status=readableStatus,
 				username=glob.tokens.tokens[slot.user].username,
-				mods=" (+ {})".format(generalUtils.readableMods(slot.mods)) if slot.mods > 0 else ""
+				mods=" (+ {})".format(generalUtils.readableMods(slot.mods)) if slot.mods > 0 else "",
+				nl=" | " if single else "\n"
 			)
 		if empty:
 			msg += "Nobody.\n"
+		msg = msg.rstrip(" | " if single else "\n")
 		return msg
 
 	def mpScoreV():
