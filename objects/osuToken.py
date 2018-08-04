@@ -212,10 +212,10 @@ class token:
 
 			# Create and join #spectator (#spect_userid) channel
 			glob.channels.addTempChannel("#spect_{}".format(host.userID))
-			chat.joinChannel(token=self, channel="#spect_{}".format(host.userID))
+			chat.joinChannel(token=self, channel="#spect_{}".format(host.userID), force=True)
 			if len(host.spectators) == 1:
 				# First spectator, send #spectator join to host too
-				chat.joinChannel(token=host, channel="#spect_{}".format(host.userID))
+				chat.joinChannel(token=host, channel="#spect_{}".format(host.userID), force=True)
 
 			# Send fellow spectator join to all clients
 			glob.streams.broadcast(streamName, serverPackets.fellowSpectatorJoined(self.userID))
@@ -265,14 +265,14 @@ class token:
 				# If nobody is spectating the host anymore, close #spectator channel
 				# and remove host from spect stream too
 				if len(hostToken.spectators) == 0:
-					chat.partChannel(token=hostToken, channel="#spect_{}".format(hostToken.userID), kick=True)
+					chat.partChannel(token=hostToken, channel="#spect_{}".format(hostToken.userID), kick=True, force=True)
 					hostToken.leaveStream(streamName)
 
 				# Console output
 				log.info("{} is no longer spectating {}. Current spectators: {}".format(self.username, self.spectatingUserID, hostToken.spectators))
 
 			# Part #spectator channel
-			chat.partChannel(token=self, channel="#spect_{}".format(self.spectatingUserID), kick=True)
+			chat.partChannel(token=self, channel="#spect_{}".format(self.spectatingUserID), kick=True, force=True)
 
 			# Set our spectating user to 0
 			self.spectating = None
@@ -318,7 +318,7 @@ class token:
 		# Set matchID, join stream, channel and send packet
 		self.matchID = matchID
 		self.joinStream(match.streamName)
-		chat.joinChannel(token=self, channel="#multi_{}".format(self.matchID))
+		chat.joinChannel(token=self, channel="#multi_{}".format(self.matchID), force=True)
 		self.enqueue(serverPackets.matchJoinSuccess(matchID))
 
 		if match.isTourney:
@@ -339,7 +339,7 @@ class token:
 			return
 
 		# Part #multiplayer channel and streams (/ and /playing)
-		chat.partChannel(token=self, channel="#multi_{}".format(self.matchID), kick=True)
+		chat.partChannel(token=self, channel="#multi_{}".format(self.matchID), kick=True, force=True)
 		self.leaveStream("multi/{}".format(self.matchID))
 		self.leaveStream("multi/{}/playing".format(self.matchID))	# optional
 

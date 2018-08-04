@@ -7,5 +7,5 @@ def handle(userToken, packetData):
 	matchID = packetData["matchID"]
 	if matchID not in glob.matches.matches or not userToken.tournament:
 		return
-	chat.partChannel(token=userToken, channel="#multi_{}".format(matchID))
+	chat.partChannel(token=userToken, channel="#multi_{}".format(matchID), force=True)
 	userToken.matchID = 0

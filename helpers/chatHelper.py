@@ -8,7 +8,7 @@ from objects import fokabot
 from objects import glob
 
 
-def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
+def joinChannel(userID = 0, channel = "", token = None, toIRC = True, force=False):
 	"""
 	Join a channel
 
@@ -16,6 +16,7 @@ def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 	:param token: user token object of user that joins the channel. Optional. userID can be used instead.
 	:param channel: channel name
 	:param toIRC: if True, send this channel join event to IRC. Must be true if joining from bancho. Default: True
+	:param force: whether to allow game clients to join #spect_ and #multi_ channels
 	:return: 0 if joined or other IRC code in case of error. Needed only on IRC-side
 	"""
 	try:
@@ -33,8 +34,13 @@ def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 		if channel not in glob.channels.channels:
 			raise exceptions.channelUnknownException()
 
+		# Make sure a game client is not trying to join a #multi_ or #spect_ channel manually
+		channelObject = glob.channels.channels[channel]
+		if channelObject.isSpecial and not token.irc and not force:
+			raise exceptions.channelUnknownException()
+
 		# Add the channel to our joined channel
-		token.joinChannel(glob.channels.channels[channel])
+		token.joinChannel(channelObject)
 
 		# Send channel joined (IRC)
 		if glob.irc == True and toIRC == True:
@@ -58,7 +64,7 @@ def joinChannel(userID = 0, channel = "", token = None, toIRC = True):
 		log.warning("User not connected to IRC/Bancho")
 		return 403	# idk
 
-def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = False):
+def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = False, force=False):
 	"""
 	Part a channel
 
@@ -67,6 +73,7 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 	:param channel: channel name
 	:param toIRC: if True, send this channel join event to IRC. Must be true if joining from bancho. Optional. Default: True
 	:param kick: if True, channel tab will be closed on client. Used when leaving lobby. Optional. Default: False
+	:param force: whether to allow game clients to part #spect_ and #multi_ channels
 	:return: 0 if joined or other IRC code in case of error. Needed only on IRC-side
 	"""
 	try:
@@ -103,12 +110,16 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 		if channel not in glob.channels.channels:
 			raise exceptions.channelUnknownException()
 
+		# Make sure a game client is not trying to join a #multi_ or #spect_ channel manually
+		channelObject = glob.channels.channels[channel]
+		if channelObject.isSpecial and not token.irc and not force:
+			raise exceptions.channelUnknownException()
+
 		# Make sure the user is in the channel
 		if channel not in token.joinedChannels:
 			raise exceptions.userNotInChannelException()
 
 		# Part channel (token-side and channel-side)
-		channelObject = glob.channels.channels[channel]
 		token.partChannel(channelObject)
 
 		# Delete temporary channel if everyone left
@@ -219,6 +230,12 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			# Make sure the channel is not in moderated mode
 			if glob.channels.channels[to].moderated == True and token.admin == False:
 				raise exceptions.channelModeratedException()
+
+			# Make sure we are in the channel
+			if to not in token.joinedChannels:
+				# I'm too lazy to put and test the correct IRC error code here...
+				# but IRC is not strict at all so who cares
+				raise exceptions.channelNoPermissionsException()
 
 			# Make sure we have write permissions
 			if glob.channels.channels[to].publicWrite == False and token.admin == False:
