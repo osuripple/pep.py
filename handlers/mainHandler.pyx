@@ -179,7 +179,7 @@ class handler(requestsManager.asyncRequestHandler):
 					# Process/ignore packet
 					if packetID != 4:
 						if packetID in eventHandler:
-							if userToken.restricted == False or (userToken.restricted and packetID in packetsRestricted):
+							if not userToken.restricted or (userToken.restricted and packetID in packetsRestricted):
 								eventHandler[packetID]()
 							else:
 								log.warning("Ignored packet id from {} ({}) (user is restricted)".format(requestTokenString, packetID))
