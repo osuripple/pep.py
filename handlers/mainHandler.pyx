@@ -106,7 +106,7 @@ class handler(requestsManager.asyncRequestHandler):
 					packetData = requestData[pos:(pos+dataLength+7)]
 
 					# Console output if needed
-					if glob.outputPackets == True and packetID != 4:
+					if glob.outputPackets and packetID != 4:
 						log.debug("Incoming packet ({})({}):\n\nPacket code: {}\nPacket length: {}\nSingle packet data: {}\n".format(requestTokenString, userToken.username, str(packetID), str(dataLength), str(packetData)))
 
 					# Event handler
@@ -179,7 +179,7 @@ class handler(requestsManager.asyncRequestHandler):
 					# Process/ignore packet
 					if packetID != 4:
 						if packetID in eventHandler:
-							if userToken.restricted == False or (userToken.restricted == True and packetID in packetsRestricted):
+							if userToken.restricted == False or (userToken.restricted and packetID in packetsRestricted):
 								eventHandler[packetID]()
 							else:
 								log.warning("Ignored packet id from {} ({}) (user is restricted)".format(requestTokenString, packetID))

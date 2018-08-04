@@ -17,7 +17,7 @@ class handler(requestsManager.asyncRequestHandler):
 		data = {"message": "unknown error"}
 		try:
 			# Get online users count
-			data["result"] = -1 if glob.restarting == True else 1
+			data["result"] = -1 if glob.restarting else 1
 
 			# Status code and message
 			statusCode = 200

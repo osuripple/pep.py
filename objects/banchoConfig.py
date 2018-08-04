@@ -57,5 +57,5 @@ class banchoConfig:
 		glob.streams.broadcast("main", serverPackets.mainMenuIcon(glob.banchoConf.config["menuIcon"]))
 		glob.streams.broadcast("main", serverPackets.channelInfoEnd())
 		for key, value in glob.channels.channels.items():
-			if value.publicRead == True and value.hidden == False:
+			if value.publicRead and not value.hidden:
 				glob.streams.broadcast("main", serverPackets.channelInfo(key))

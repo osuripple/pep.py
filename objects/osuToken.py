@@ -141,7 +141,7 @@ class token:
 		"""
 		if channelObject.name in self.joinedChannels:
 			raise exceptions.userAlreadyInChannelException()
-		if channelObject.publicRead == False and self.admin == False:
+		if not channelObject.publicRead and not self.admin:
 			raise exceptions.channelNoPermissionsException()
 		self.joinedChannels.append(channelObject.name)
 		self.joinStream("chat/{}".format(channelObject.name))

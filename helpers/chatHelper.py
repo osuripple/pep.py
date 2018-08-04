@@ -43,7 +43,7 @@ def joinChannel(userID = 0, channel = "", token = None, toIRC = True, force=Fals
 		token.joinChannel(channelObject)
 
 		# Send channel joined (IRC)
-		if glob.irc == True and toIRC == True:
+		if glob.irc and not toIRC:
 			glob.ircServer.banchoJoinChannel(token.username, channel)
 
 		# Console output
@@ -124,7 +124,7 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 
 		# Delete temporary channel if everyone left
 		if "chat/{}".format(channelObject.name) in glob.streams.streams:
-			if channelObject.temp == True and len(glob.streams.streams["chat/{}".format(channelObject.name)].clients) - 1 == 0:
+			if channelObject.temp and len(glob.streams.streams["chat/{}".format(channelObject.name)].clients) - 1 == 0:
 				glob.channels.removeChannel(channelObject.name)
 
 		# Force close tab if needed
@@ -133,7 +133,7 @@ def partChannel(userID = 0, channel = "", token = None, toIRC = True, kick = Fal
 			token.enqueue(serverPackets.channelKicked(channelClient))
 
 		# IRC part
-		if glob.irc == True and toIRC == True:
+		if glob.irc and toIRC:
 			glob.ircServer.banchoPartChannel(token.username, channel)
 
 		# Console output
@@ -228,7 +228,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 				raise exceptions.channelUnknownException()
 
 			# Make sure the channel is not in moderated mode
-			if glob.channels.channels[to].moderated == True and token.admin == False:
+			if glob.channels.channels[to].moderated and not token.admin:
 				raise exceptions.channelModeratedException()
 
 			# Make sure we are in the channel
@@ -238,7 +238,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 				raise exceptions.channelNoPermissionsException()
 
 			# Make sure we have write permissions
-			if glob.channels.channels[to].publicWrite == False and token.admin == False:
+			if not glob.channels.channels[to].publicWrite and not token.admin:
 				raise exceptions.channelNoPermissionsException()
 
 			# Add message in buffer
@@ -258,7 +258,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			#	raise exceptions.userTournamentException()
 
 			# Make sure the recipient is not restricted or we are FokaBot
-			if recipientToken.restricted == True and fro.lower() != "fokabot":
+			if recipientToken.restricted and fro.lower() != "fokabot":
 				raise exceptions.userRestrictedException()
 
 			# TODO: Make sure the recipient has not disabled PMs for non-friends or he's our friend
@@ -268,14 +268,14 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 				sendMessage(to, fro, "\x01ACTION is away: {}\x01".format(recipientToken.awayMessage))
 
 			# Check message templates (mods/admins only)
-			if message in messageTemplates.templates and token.admin == True:
+			if message in messageTemplates.templates and token.admin:
 				sendMessage(fro, to, messageTemplates.templates[message])
 
 			# Everything seems fine, send packet
 			recipientToken.enqueue(packet)
 
 		# Send the message to IRC
-		if glob.irc == True and toIRC == True:
+		if glob.irc and toIRC:
 			messageSplitInLines = message.encode("latin-1").decode("utf-8").split("\n")
 			for line in messageSplitInLines:
 				if line == messageSplitInLines[:1] and line == "":
@@ -287,7 +287,7 @@ def sendMessage(fro = "", to = "", message = "", token = None, toIRC = True):
 			token.spamProtection()
 
 		# Fokabot message
-		if isChannel == True or to.lower() == "fokabot":
+		if isChannel or to.lower() == "fokabot":
 			fokaMessage = fokabot.fokabotResponse(token.username, to, message)
 			if fokaMessage:
 				sendMessage("FokaBot", to if isChannel else fro, fokaMessage)

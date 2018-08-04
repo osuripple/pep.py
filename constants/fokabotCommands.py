@@ -63,7 +63,7 @@ def faq(fro, chan, message):
 def roll(fro, chan, message):
 	maxPoints = 100
 	if len(message) >= 1:
-		if message[0].isdigit() == True and int(message[0]) > 0:
+		if message[0].isdigit() and int(message[0]) > 0:
 			maxPoints = int(message[0])
 
 	points = random.randrange(0,maxPoints)
