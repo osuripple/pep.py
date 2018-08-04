@@ -788,6 +788,12 @@ def multiplayer(fro, chan, message):
 			raise exceptions.invalidArgumentsException("Wrong syntax: !mp join <id>")
 		matchID = int(message[1])
 		userToken = glob.tokens.getTokenFromUsername(fro, ignoreIRC=True)
+		if userToken is not None:
+			raise exceptions.invalidArgumentsException(
+				"No game clients found for {}, can't join the match. "
+			    "If you're a referee and you want to join the chat "
+				"channel from IRC, use /join #multi_{} instead.".format(fro, matchID)
+			)
 		userToken.joinMatch(matchID)
 		return "Attempting to join match #{}!".format(matchID)
 
