@@ -1,3 +1,6 @@
+import logging
+
+from constants import exceptions
 from objects import glob
 
 class channel:
@@ -23,7 +26,10 @@ class channel:
 		# Make Foka join the channel
 		fokaToken = glob.tokens.getTokenFromUserID(999)
 		if fokaToken is not None:
-			fokaToken.joinChannel(self)
+			try:
+				fokaToken.joinChannel(self)
+			except exceptions.userAlreadyInChannelException:
+				logging.warning("FokaBot has already joined channel {}".format(self.name))
 
 	@property
 	def isSpecial(self):
