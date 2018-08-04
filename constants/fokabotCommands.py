@@ -10,7 +10,7 @@ from common import generalUtils
 from common.constants import mods
 from common.log import logUtils as log
 from common.ripple import userUtils
-from constants import exceptions, slotStatuses, matchModModes, matchTeams, matchTeamTypes
+from constants import exceptions, slotStatuses, matchModModes, matchTeams, matchTeamTypes, matchScoringTypes
 from common.constants import gameModes
 from common.constants import privileges
 from constants import serverPackets
@@ -1071,6 +1071,16 @@ def multiplayer(fro, chan, message):
 			msg += "Nobody.\n"
 		return msg
 
+	def mpScoreV():
+		if len(message) < 2 or message[1] not in ("1", "2"):
+			raise exceptions.invalidArgumentsException("Wrong syntax: !mp scorev <1|2>")
+		_match = glob.matches.matches[getMatchIDFromChannel(chan)]
+		_match.matchScoringType = matchScoringTypes.SCORE_V2 if message[1] == "2" else matchScoringTypes.SCORE
+		_match.sendUpdates()
+		return "Match scoring type set to scorev{}".format(message[1])
+
+	def mpHelp():
+		return "Supported subcommands: !mp <{}>".format("|".join(k for k in subcommands.keys()))
 
 	try:
 		subcommands = {
@@ -1094,6 +1104,8 @@ def multiplayer(fro, chan, message):
 			"mods": mpMods,
 			"team": mpTeam,
 			"settings": mpSettings,
+            "scorev": mpScoreV,
+			"help": mpHelp
 		}
 		requestedSubcommand = message[0].lower().strip()
 		if requestedSubcommand not in subcommands:
