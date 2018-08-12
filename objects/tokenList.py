@@ -5,10 +5,13 @@ import redis
 
 from common.ripple import userUtils
 from common.log import logUtils as log
+from common.sentry import sentry
 from constants import serverPackets
+from constants.exceptions import periodicLoopException
 from events import logoutEvent
 from objects import glob
 from objects import osuToken
+
 
 class tokenList:
 	def __init__(self):
@@ -171,6 +174,7 @@ class tokenList:
 		for _, value in self.tokens.items():
 			value.enqueue(packet)
 
+	@sentry.capture()
 	def usersTimeoutCheckLoop(self):
 		"""
 		Start timed out users disconnect loop.
@@ -178,27 +182,41 @@ class tokenList:
 		CALL THIS FUNCTION ONLY ONCE!
 		:return:
 		"""
-		log.debug("Checking timed out clients")
-		timedOutTokens = []		# timed out users
-		timeoutLimit = int(time.time()) - 100
-		for key, value in self.tokens.items():
-			# Check timeout (fokabot is ignored)
-			if value.pingTime < timeoutLimit and value.userID != 999 and not value.irc and not value.tournament:
-				# That user has timed out, add to disconnected tokens
-				# We can't delete it while iterating or items() throws an error
-				timedOutTokens.append(key)
+		try:
+			log.debug("Checking timed out clients")
+			exceptions = []
+			timedOutTokens = []		# timed out users
+			timeoutLimit = int(time.time()) - 100
+			for key, value in self.tokens.items():
+				# Check timeout (fokabot is ignored)
+				if value.pingTime < timeoutLimit and value.userID != 999 and not value.irc and not value.tournament:
+					# That user has timed out, add to disconnected tokens
+					# We can't delete it while iterating or items() throws an error
+					timedOutTokens.append(key)
 
-		# Delete timed out users from self.tokens
-		# i is token string (dictionary key)
-		for i in timedOutTokens:
-			log.debug("{} timed out!!".format(self.tokens[i].username))
-			self.tokens[i].enqueue(serverPackets.notification("Your connection to the server timed out."))
-			logoutEvent.handle(self.tokens[i], None)
-		del timedOutTokens
+			# Delete timed out users from self.tokens
+			# i is token string (dictionary key)
+			for i in timedOutTokens:
+				log.debug("{} timed out!!".format(self.tokens[i].username))
+				self.tokens[i].enqueue(serverPackets.notification("Your connection to the server timed out."))
+				try:
+					logoutEvent.handle(self.tokens[i], None)
+				except Exception as e:
+					exceptions.append(e)
+					log.error(
+						"Something wrong happened while disconnecting a timed out client. Reporting to Sentry "
+						"when the loop ends."
+					)
+			del timedOutTokens
 
-		# Schedule a new check (endless loop)
-		threading.Timer(100, self.usersTimeoutCheckLoop).start()
+			# Re-raise exceptions if needed
+			if exceptions:
+				raise periodicLoopException(exceptions)
+		finally:
+			# Schedule a new check (endless loop)
+			threading.Timer(100, self.usersTimeoutCheckLoop).start()
 
+	@sentry.capture()
 	def spamProtectionResetLoop(self):
 		"""
 		Start spam protection reset loop.
@@ -207,12 +225,13 @@ class tokenList:
 
 		:return:
 		"""
-		# Reset spamRate for every token
-		for _, value in self.tokens.items():
-			value.spamRate = 0
-
-		# Schedule a new check (endless loop)
-		threading.Timer(10, self.spamProtectionResetLoop).start()
+		try:
+			# Reset spamRate for every token
+			for _, value in self.tokens.items():
+				value.spamRate = 0
+		finally:
+			# Schedule a new check (endless loop)
+			threading.Timer(10, self.spamProtectionResetLoop).start()
 
 	def deleteBanchoSessions(self):
 		"""

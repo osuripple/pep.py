@@ -105,3 +105,6 @@ class invalidUserException(Exception):
 
 class wrongChannelException(Exception):
 	pass
+
+class periodicLoopException(Exception):
+	pass

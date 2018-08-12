@@ -1,6 +1,8 @@
 import threading
 import time
 
+from common.sentry import sentry
+from constants.exceptions import periodicLoopException
 from objects import match
 from objects import glob
 from constants import serverPackets
@@ -67,6 +69,7 @@ class matchList:
 		del self.matches[matchID]
 		log.info("MPROOM{}: Room disposed manually".format(_match.matchID))
 
+	@sentry.capture()
 	def cleanupLoop(self):
 		"""
 		Start match cleanup loop.
@@ -76,21 +79,34 @@ class matchList:
 		This method starts an infinite loop, call it only once!
 		:return:
 		"""
-		log.debug("Checking empty matches")
-		t = int(time.time())
-		emptyMatches = []
+		try:
+			log.debug("Checking empty matches")
+			t = int(time.time())
+			emptyMatches = []
+			exceptions = []
 
-		# Collect all empty matches
-		for key, m in self.matches.items():
-			if [x for x in m.slots if x.user is not None]:
-				continue
-			if t - m.createTime >= 120:
-				log.debug("Match #{} marked for cleanup".format(m.matchID))
-				emptyMatches.append(m.matchID)
+			# Collect all empty matches
+			for key, m in self.matches.items():
+				if [x for x in m.slots if x.user is not None]:
+					continue
+				if t - m.createTime >= 120:
+					log.debug("Match #{} marked for cleanup".format(m.matchID))
+					emptyMatches.append(m.matchID)
 
-		# Dispose all empty matches
-		for matchID in emptyMatches:
-			self.disposeMatch(matchID)
+			# Dispose all empty matches
+			for matchID in emptyMatches:
+				try:
+					self.disposeMatch(matchID)
+				except Exception as e:
+					exceptions.append(e)
+					log.error(
+						"Something wrong happened while disposing a timed out match. Reporting to Sentry when "
+						"the loop ends."
+					)
 
-		# Schedule a new check (endless loop)
-		threading.Timer(30, self.cleanupLoop).start()
+			# Re-raise exception if needed
+			if exceptions:
+				raise periodicLoopException(exceptions)
+		finally:
+			# Schedule a new check (endless loop)
+			threading.Timer(30, self.cleanupLoop).start()
