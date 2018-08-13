@@ -20,6 +20,16 @@ from objects import glob
 from helpers import chatHelper as chat
 from common.web import cheesegull
 
+
+def bloodcatMessage(beatmapID):
+	beatmap = glob.db.fetch("SELECT song_name, beatmapset_id FROM beatmaps WHERE beatmap_id = %s LIMIT 1", [beatmapID])
+	if beatmap is None:
+		return "Sorry, I'm not able to provide a download link for this map :("
+	return "Download [https://bloodcat.com/osu/s/{} {}] from Bloodcat".format(
+		beatmap["beatmapset_id"],
+		beatmap["song_name"],
+	)
+
 """
 Commands callbacks
 
@@ -448,6 +458,15 @@ def getPPMessage(userID, just_data = False):
 
 def tillerinoNp(fro, chan, message):
 	try:
+		# Bloodcat trigger for #spect_
+		if chan.startswith("#spect_"):
+			spectatorHostUserID = getSpectatorHostUserIDFromChannel(chan)
+			spectatorHostToken = glob.tokens.getTokenFromUserID(spectatorHostUserID, ignoreIRC=True)
+			if spectatorHostToken is None:
+				return False
+			print("FIFIFI " * 10, message)
+			return bloodcatMessage(spectatorHostToken.beatmapID)
+
 		# Run the command in PM only
 		if chan.startswith("#"):
 			return False
@@ -761,18 +780,27 @@ def report(fro, chan, message):
 					token.enqueue(serverPackets.notification(msg))
 	return False
 
-def multiplayer(fro, chan, message):
-	def getMatchIDFromChannel(chan):
-		if not chan.lower().startswith("#multi_"):
-			raise exceptions.wrongChannelException()
-		parts = chan.lower().split("_")
-		if len(parts) < 2 or not parts[1].isdigit():
-			raise exceptions.wrongChannelException()
-		matchID = int(parts[1])
-		if matchID not in glob.matches.matches:
-			raise exceptions.matchNotFoundException()
-		return matchID
+def getMatchIDFromChannel(chan):
+	if not chan.lower().startswith("#multi_"):
+		raise exceptions.wrongChannelException()
+	parts = chan.lower().split("_")
+	if len(parts) < 2 or not parts[1].isdigit():
+		raise exceptions.wrongChannelException()
+	matchID = int(parts[1])
+	if matchID not in glob.matches.matches:
+		raise exceptions.matchNotFoundException()
+	return matchID
 
+def getSpectatorHostUserIDFromChannel(chan):
+	if not chan.lower().startswith("#spect_"):
+		raise exceptions.wrongChannelException()
+	parts = chan.lower().split("_")
+	if len(parts) < 2 or not parts[1].isdigit():
+		raise exceptions.wrongChannelException()
+	userID = int(parts[1])
+	return userID
+
+def multiplayer(fro, chan, message):
 	def mpMake():
 		if len(message) < 2:
 			raise exceptions.invalidArgumentsException("Wrong syntax: !mp make <name>")
@@ -1167,7 +1195,26 @@ def rtx(fro, chan, message):
 	userToken.enqueue(serverPackets.rtx(message))
 	return ":ok_hand:"
 
+def bloodcat(fro, chan, message):
+	try:
+		matchID = getMatchIDFromChannel(chan)
+	except exceptions.wrongChannelException:
+		matchID = None
+	try:
+		spectatorHostUserID = getSpectatorHostUserIDFromChannel(chan)
+	except exceptions.wrongChannelException:
+		spectatorHostUserID = None
 
+	if matchID is not None:
+		if matchID not in glob.matches.matches:
+			return "This match doesn't seem to exist... Or does it...?"
+		beatmapID = glob.matches.matches[matchID].beatmapID
+	else:
+		spectatorHostToken = glob.tokens.getTokenFromUserID(spectatorHostUserID, ignoreIRC=True)
+		if spectatorHostToken is None:
+			return "The spectator host is offline."
+		beatmapID = spectatorHostToken.beatmapID
+	return bloodcatMessage(beatmapID)
 
 
 """
@@ -1319,6 +1366,9 @@ commands = [
 		"privileges": privileges.ADMIN_MANAGE_USERS,
 		"syntax": "<username> <message>",
 		"callback": rtx
+	}, {
+		"trigger": "!bloodcat",
+		"callback": bloodcat
 	}
 	#
 	#	"trigger": "!acc",

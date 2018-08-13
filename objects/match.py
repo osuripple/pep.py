@@ -67,6 +67,7 @@ class match:
 		self._lock = threading.Lock()
 		self.createTime = int(time.time())
 		self.vinseID = None
+		self.bloodcatAlert = False
 
 		# Create all slots and reset them
 		self.slots = []
@@ -441,6 +442,16 @@ class match:
 			chat.sendMessage("FokaBot", chanName, "Match history available [{} here]".format(
 				"https://vinse.ripple.moe/match/{}".format(self.vinseID)
 			))
+		if not self.bloodcatAlert:
+			chat.sendMessage(
+				"FokaBot",
+				chanName,
+				"Oh by the way, in case you're playing unranked or broken maps "
+				"that are now available through ripple's osu!direct, you can "
+				"type '!bloodcat' in the chat to get a download link for the "
+				"currently selected map from Bloodcat!"
+			)
+			self.bloodcatAlert = True
 
 		# If this is a tournament match, then we send a notification in the chat
 		# saying that the match has completed.
