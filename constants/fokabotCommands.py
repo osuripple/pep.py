@@ -464,7 +464,6 @@ def tillerinoNp(fro, chan, message):
 			spectatorHostToken = glob.tokens.getTokenFromUserID(spectatorHostUserID, ignoreIRC=True)
 			if spectatorHostToken is None:
 				return False
-			print("FIFIFI " * 10, message)
 			return bloodcatMessage(spectatorHostToken.beatmapID)
 
 		# Run the command in PM only
