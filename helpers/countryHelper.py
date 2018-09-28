@@ -1,6 +1,6 @@
 # TODO: Update countries list
 countryCodes = {
-		"IO": 104,
+	"IO": 104,
 	"PS": 178,
 	"LV": 132,
 	"GI": 82,
@@ -50,15 +50,15 @@ countryCodes = {
 	"SK": 196,
 	"VC": 229,
 	"GW": 92,
-	"BQ": 0, // No code
+	"BQ": 0,
 	"UM": 224,
 	"AF": 5,
 	"TZ": 221,
 	"AO": 11,
 	"AW": 17,
-	"AE": 0, // No code
+	"AE": 0,
 	"PF": 170,
-	"MK": 139, 
+	"MK": 139,
 	"AR": 13,
 	"AQ": 12,
 	"SL": 197,
@@ -70,7 +70,7 @@ countryCodes = {
 	"EC": 62,
 	"LC": 125,
 	"MX": 152,
-	"CW": 0, // No code
+	"CW": 0,
 	"LT": 130,
 	"GN": 85,
 	"ZM": 241,
@@ -151,7 +151,7 @@ countryCodes = {
 	"TK": 212,
 	"MN": 142,
 	"SB": 188,
-	"XK": 0, // Kosovo 미승인국
+	"XK": 0,
 	"BH": 25,
 	"ID": 100,
 	"SV": 203,
@@ -208,7 +208,7 @@ countryCodes = {
 	"GH": 81,
 	"GA": 76,
 	"TJ": 211,
-	"SX": 0, //코드없음
+	"SX": 0,
 	"KY": 121,
 	"BO": 30,
 	"UA": 222,
