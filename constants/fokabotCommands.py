@@ -404,19 +404,24 @@ def getPPMessage(userID, just_data = False):
 		currentAcc = token.tillerino[2]
 
 		# Send request to LETS api
-		resp = requests.get("http://127.0.0.1:5002/api/v1/pp?b={}&m={}".format(currentMap, currentMods), timeout=10).text
-		data = json.loads(resp)
+		url = "{}/v1/pp?b={}&m={}".format(glob.conf.config["server"]["letsapiurl"].rstrip("/"), currentMap, currentMods)
+		resp = requests.get(url, timeout=10)
+		try:
+			assert resp is not None
+			data = json.loads(resp.text)
+		except (json.JSONDecodeError, AssertionError):
+			raise exceptions.apiException()
 
 		# Make sure status is in response data
 		if "status" not in data:
-			raise exceptions.apiException
+			raise exceptions.apiException()
 
 		# Make sure status is 200
 		if data["status"] != 200:
 			if "message" in data:
 				return "Error in LETS API call ({}).".format(data["message"])
 			else:
-				raise exceptions.apiException
+				raise exceptions.apiException()
 
 		if just_data:
 			return data
