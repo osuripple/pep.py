@@ -254,11 +254,11 @@ cpdef readPacketData(bytes stream, list structure=None, bint hasFirstBytes = Tru
 					data[i[0]] += chr(j)
 		elif i[1] == dataTypes.BYTE:
 			end = start+1
-		elif i[1] == dataTypes.UINT16 or i[1] == dataTypes.SINT16:
+		elif i[1] in (dataTypes.UINT16, dataTypes.SINT16):
 			end = start+2
-		elif i[1] == dataTypes.UINT32 or i[1] == dataTypes.SINT32:
+		elif i[1] in (dataTypes.UINT32, dataTypes.SINT32, dataTypes.FFLOAT):
 			end = start+4
-		elif i[1] == dataTypes.UINT64 or i[1] == dataTypes.SINT64:
+		elif i[1] in (dataTypes.UINT64, dataTypes.SINT64):
 			end = start+8
 
 		# Unpack if needed
