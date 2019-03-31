@@ -32,7 +32,7 @@ from objects import banchoConfig
 from objects import chatFilters
 from objects import fokabot
 from objects import glob
-from pubSubHandlers import changeUsernameHandler
+from pubSubHandlers import changeUsernameHandler, setMainMenuIconHandler
 
 from pubSubHandlers import disconnectHandler
 from pubSubHandlers import banHandler
@@ -293,6 +293,7 @@ if __name__ == "__main__":
 			"peppy:silence": updateSilenceHandler.handler(),
 			"peppy:ban": banHandler.handler(),
 			"peppy:notification": notificationHandler.handler(),
+			"peppy:set_main_menu_icon": setMainMenuIconHandler.handler(),
 		}).start()
 
 		# Start tornado
