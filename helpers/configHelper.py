@@ -21,59 +21,71 @@ class config:
 			self.generateDefaultConfig()
 			self.default = True
 
+	def reload(self):
+		tempConfig = configparser.ConfigParser()
+		tempConfig.read(self.fileName)
+		if not self.checkConfig(tempConfig):
+			return False
+		self.config = tempConfig
+		return True
+
 
 	# Check if config.ini has all needed the keys
-	def checkConfig(self):
+	def checkConfig(self, parsedConfig=None):
 		"""
 		Check is the config file has all required keys
 
 		:return: True if valid, False if not valid
 		"""
+		if parsedConfig is None:
+			parsedConfig = self.config
 		try:
 			# Try to get all the required keys
-			self.config.get("db", "host")
-			self.config.get("db", "username")
-			self.config.get("db", "password")
-			self.config.get("db", "database")
-			self.config.get("db", "workers")
+			parsedConfig.get("db", "host")
+			parsedConfig.get("db", "username")
+			parsedConfig.get("db", "password")
+			parsedConfig.get("db", "database")
+			parsedConfig.get("db", "workers")
 
-			self.config.get("redis", "host")
-			self.config.get("redis", "port")
-			self.config.get("redis", "database")
-			self.config.get("redis", "password")
+			parsedConfig.get("redis", "host")
+			parsedConfig.get("redis", "port")
+			parsedConfig.get("redis", "database")
+			parsedConfig.get("redis", "password")
 
-			self.config.get("server", "port")
-			self.config.get("server", "threads")
-			self.config.get("server", "gzip")
-			self.config.get("server", "gziplevel")
-			self.config.get("server", "cikey")
-			self.config.get("server", "letsapiurl")
+			parsedConfig.get("server", "port")
+			parsedConfig.get("server", "threads")
+			parsedConfig.get("server", "gzip")
+			parsedConfig.get("server", "gziplevel")
+			parsedConfig.get("server", "cikey")
+			parsedConfig.get("server", "letsapiurl")
+			parsedConfig.get("server", "deltaurl")
+			parsedConfig.get("server", "publicdelta")
 
-			self.config.get("cheesegull", "apiurl")
-			self.config.get("cheesegull", "apikey")
+			parsedConfig.get("cheesegull", "apiurl")
+			parsedConfig.get("cheesegull", "apikey")
 
-			self.config.get("debug", "enable")
-			self.config.get("debug", "packets")
-			self.config.get("debug", "time")
+			parsedConfig.get("debug", "enable")
+			parsedConfig.get("debug", "packets")
+			parsedConfig.get("debug", "time")
 
-			self.config.get("sentry", "enable")
-			self.config.get("sentry", "banchodsn")
-			self.config.get("sentry", "ircdsn")
+			parsedConfig.get("sentry", "enable")
+			parsedConfig.get("sentry", "banchodsn")
+			parsedConfig.get("sentry", "ircdsn")
 
-			self.config.get("discord", "enable")
-			self.config.get("discord", "boturl")
-			self.config.get("discord", "devgroup")
+			parsedConfig.get("discord", "enable")
+			parsedConfig.get("discord", "boturl")
+			parsedConfig.get("discord", "devgroup")
 
-			self.config.get("datadog", "enable")
-			self.config.get("datadog", "apikey")
-			self.config.get("datadog", "appkey")
+			parsedConfig.get("datadog", "enable")
+			parsedConfig.get("datadog", "apikey")
+			parsedConfig.get("datadog", "appkey")
 
-			self.config.get("irc", "enable")
-			self.config.get("irc", "port")
-			self.config.get("irc", "hostname")
+			parsedConfig.get("irc", "enable")
+			parsedConfig.get("irc", "port")
+			parsedConfig.get("irc", "hostname")
 
-			self.config.get("localize", "enable")
-			self.config.get("localize", "ipapiurl")
+			parsedConfig.get("localize", "enable")
+			parsedConfig.get("localize", "ipapiurl")
 			return True
 		except configparser.Error:
 			return False
