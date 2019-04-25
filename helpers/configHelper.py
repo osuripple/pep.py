@@ -120,6 +120,8 @@ class config:
 		self.config.set("server", "gziplevel", "6")
 		self.config.set("server", "cikey", "changeme")
 		self.config.set("server", "letsapiurl", "http://.../letsapi")
+		self.config.set("server", "deltaurl", "delta.ppy.sh")
+		self.config.set("server", "publicdelta", "0")
 
 		self.config.add_section("cheesegull")
 		self.config.set("cheesegull", "apiurl", "http://cheesegu.ll/api")
